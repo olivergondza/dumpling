@@ -123,7 +123,7 @@ public class ProcessThread {
             sb.append(" prio=").append(priority);
             sb.append(" tid=").append(tid);
 
-            sb.append("\n   java.lang.Thread.State: ").append(status.getCode()).append(status.getName());
+            sb.append("\n   java.lang.Thread.State: ").append(status.getName());
 
             for (StackTraceElement traceLine: stackTrace) {
                 sb.append("\n\tat ").append(traceLine);

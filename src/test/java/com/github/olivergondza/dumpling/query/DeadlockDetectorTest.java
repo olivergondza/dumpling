@@ -79,7 +79,6 @@ public class DeadlockDetectorTest {
     }
 
     private static void pause(int time) {
-        System.out.println("pausing");
         try {
             Thread.sleep(time);
         } catch (InterruptedException ex) {
