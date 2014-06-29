@@ -23,10 +23,40 @@
  */
 package com.github.olivergondza.dumpling.model;
 
-public class Lock {
+public class ThreadLock {
 
-    public Lock() {
-        // TODO Auto-generated constructor stub
+    final String className;
+    final int identityHashCode;
+
+    public ThreadLock(String className, int identityHashCode) {
+        this.className = className;
+        this.identityHashCode = identityHashCode;
     }
 
+    public String getClassName() {
+        return className;
+    }
+
+    public int getIdentityHashCode() {
+        return identityHashCode;
+    }
+
+    @Override
+    public boolean equals(Object lhs) {
+        if (lhs == null) return false;
+        if (!lhs.getClass().equals(this.getClass())) return false;
+
+        ThreadLock other = (ThreadLock) lhs;
+        return identityHashCode == other.identityHashCode;
+    }
+
+    @Override
+    public int hashCode() {
+        return 7 + 31 * identityHashCode;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("<%x> (a %s)", identityHashCode, className);
+    }
 }

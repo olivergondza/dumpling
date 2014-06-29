@@ -23,12 +23,17 @@
  */
 package com.github.olivergondza.dumpling.model;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ProcessThread {
 
-    private Builder state;
+    private final ProcessRuntime runtime;
+    private final Builder state;
 
-    private ProcessThread(Builder builder) {
+    private ProcessThread(ProcessRuntime runtime, Builder builder) {
+        this.runtime = runtime;
         this.state = builder.clone();
     }
 
@@ -52,9 +57,55 @@ public class ProcessThread {
         return state.state;
     }
 
+    /**
+     * Get threads that are waiting for lock held by this thread.
+     */
+    public ThreadSet getBlockedThreads() {
+        HashSet<ProcessThread> blocked = new HashSet<ProcessThread>();
+        for (ProcessThread thread: runtime.getThreads()) {
+            if (thread.state.acquiredLocks.contains(state.waitingOnLock)) {
+                blocked.add(thread);
+            }
+        }
+        return new ThreadSet(runtime, blocked);
+    }
+
+    /**
+     * Get threads holding lock this thread is trying to acquire.
+     *
+     * @return {@link ThreadSet} that contains blocked thread or empty set if this thread does not hold any lock.
+     */
+    public ThreadSet getBlockingThreads() {
+        return new ThreadSet(runtime, Collections.singleton(getBlockingThread()));
+    }
+
+    public ProcessThread getBlockingThread() {
+        for (ProcessThread thread: runtime.getThreads()) {
+            if (state.acquiredLocks.contains(thread.state.waitingOnLock)) {
+                return thread;
+            }
+        }
+
+        return null;
+    }
+
     @Override
     public String toString() {
         return state.toString();
+    }
+
+    @Override
+    public boolean equals(Object lhs) {
+        if (lhs == null) return false;
+        if (!lhs.getClass().equals(this.getClass())) return false;
+
+        ProcessThread other = (ProcessThread) lhs;
+        return state.tid == other.state.tid;
+    }
+
+    @Override
+    public int hashCode() {
+        return new Long(state.tid * 31).hashCode();
     }
 
     public static class Builder implements Cloneable {
@@ -66,9 +117,11 @@ public class ProcessThread {
         private StackTraceElement[] stackTrace;
         private Thread.State state;
         private ThreadStatus status;
+        private ThreadLock waitingOnLock;
+        private Set<ThreadLock> acquiredLocks;
 
-        public ProcessThread build() {
-            return new ProcessThread(this);
+        public ProcessThread build(ProcessRuntime runtime) {
+            return new ProcessThread(runtime, this);
         }
 
         @Override
@@ -112,6 +165,16 @@ public class ProcessThread {
 
         public Builder setStatus(ThreadStatus status) {
             this.status = status;
+            return this;
+        }
+
+        public Builder setLock(ThreadLock lock) {
+            this.waitingOnLock = lock;
+            return this;
+        }
+
+        public Builder setAcquiredLocks(Set<ThreadLock> locks) {
+            this.acquiredLocks = Collections.unmodifiableSet(locks);
             return this;
         }
 

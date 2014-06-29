@@ -23,17 +23,41 @@
  */
 package com.github.olivergondza.dumpling.query;
 
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
+import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
 public class DeadlockDetector {
 
     public Set<ThreadSet> getAll(ProcessRuntime runtime) {
-        ThreadSet threads = runtime.getThreads();
-System.out.println(threads);
-        return Collections.emptySet();
+        final ThreadSet threads = runtime.getThreads();
+
+        // No need to revisit threads more than once
+        final Set<ProcessThread> analyzed = new HashSet<ProcessThread>(threads.size());
+        final HashSet<ThreadSet> deadlocks = new HashSet<ThreadSet>(1);
+
+        for (ProcessThread thread: threads) {
+
+            Set<ProcessThread> cycleCandidate = new HashSet<ProcessThread>(2);
+            for (ProcessThread blocking = thread.getBlockingThread(); blocking != null; blocking = blocking.getBlockingThread()) {
+                if (analyzed.contains(thread)) break;
+
+                cycleCandidate.add(blocking);
+
+                if (thread == blocking) {
+                    // Cycle detected - record deadlock and break the cycle traversing.
+                    deadlocks.add(new ThreadSet(runtime, cycleCandidate));
+                    analyzed.addAll(cycleCandidate);
+                    break;
+                }
+            }
+
+            analyzed.add(thread);
+        }
+
+        return deadlocks;
     }
 }

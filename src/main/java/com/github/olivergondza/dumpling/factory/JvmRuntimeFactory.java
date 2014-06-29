@@ -23,6 +23,11 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
+import java.lang.management.LockInfo;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MonitorInfo;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,13 +35,16 @@ import java.util.Set;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ProcessThread.Builder;
+import com.github.olivergondza.dumpling.model.ThreadLock;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 
 public class JvmRuntimeFactory {
 
     public ProcessRuntime currentRuntime() {
+        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
         Set<Thread> threads = Thread.getAllStackTraces().keySet();
         HashSet<ProcessThread.Builder> state = new HashSet<ProcessThread.Builder>(threads.size());
+
         for (Thread thread: threads) {
             Builder builder = ProcessThread.builder()
                     .setName(thread.getName())
@@ -47,10 +55,36 @@ public class JvmRuntimeFactory {
                     .setState(thread.getState())
                     .setStatus(status(thread))
             ;
+
+            ThreadInfo info = threadMXBean.getThreadInfo(new long[] { thread.getId()}, true, true)[0];
+            builder.setAcquiredLocks(locks(info));
+            LockInfo lock = info.getLockInfo();
+            if (lock != null) builder.setLock(lock(lock));
+
             state.add(builder);
         }
 
         return new ProcessRuntime(state);
+    }
+
+    private Set<ThreadLock> locks(ThreadInfo threadInfo) {
+        MonitorInfo[] monitors = threadInfo.getLockedMonitors();
+        LockInfo[] synchronizers = threadInfo.getLockedSynchronizers();
+
+        Set<ThreadLock> locks = new HashSet<ThreadLock>(monitors.length + synchronizers.length);
+        for (LockInfo info: monitors) {
+            locks.add(lock(info));
+        }
+
+        for (LockInfo info: synchronizers) {
+            locks.add(lock(info));
+        }
+
+        return locks;
+    }
+
+    private ThreadLock lock(LockInfo info) {
+        return new ThreadLock(info.getClassName(), info.getIdentityHashCode());
     }
 
     private ThreadStatus status(Thread thread) {

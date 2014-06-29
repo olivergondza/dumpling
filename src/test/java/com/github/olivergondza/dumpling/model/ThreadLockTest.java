@@ -23,34 +23,18 @@
  */
 package com.github.olivergondza.dumpling.model;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
-/**
- * Snapshot of threads in JVM at given time.
- * @author ogondza
- */
-public class ProcessRuntime {
+import org.junit.Test;
 
-    private final ThreadSet threads;
+public class ThreadLockTest {
 
-    public ProcessRuntime(Set<ProcessThread.Builder> builders) {
-        this.threads = createThreads(builders);
-    }
+    @Test
+    public void equals() {
+        assertEquals(new ThreadLock("my.class.Name", 42), new ThreadLock("my.class.Name", 42));
 
-    private ThreadSet createThreads(Set<ProcessThread.Builder> builders) {
-        Set<ProcessThread> threads = new HashSet<ProcessThread>(builders.size());
-        for (ProcessThread.Builder builder: builders) {
-            threads.add(builder.build(this));
-        }
-        return new ThreadSet(this, Collections.unmodifiableSet(threads));
-    }
-
-    /**
-     * All threads in current runtime.
-     */
-    public ThreadSet getThreads() {
-        return threads;
+        assertNotEquals(new ThreadLock("my.class.Name", 42), new ThreadLock("my.class.Name", 43));
+        assertNotEquals(new ThreadLock("my.other.class.Name", 42), new ThreadLock("my.class.Name", 43));
     }
 }

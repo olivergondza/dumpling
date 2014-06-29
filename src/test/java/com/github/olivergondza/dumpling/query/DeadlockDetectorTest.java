@@ -23,7 +23,7 @@
  */
 package com.github.olivergondza.dumpling.query;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
@@ -31,6 +31,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.factory.JvmRuntimeFactory;
+import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
 public class DeadlockDetectorTest {
@@ -43,7 +44,7 @@ public class DeadlockDetectorTest {
     @Test
     public void discoverActualDeadlock() {
         final Object lockA = new Object();
-        final Object lockB = this;
+        final Object lockB = new Object();
 
         new Thread("Deadlock thread A") {
             @Override
@@ -73,9 +74,17 @@ public class DeadlockDetectorTest {
             }
         }.start();
 
-//        pause(100000);
+        pause(1000);
 
-        assertFalse("Deadlock should be present", deadlocks().isEmpty());
+        final Set<ThreadSet> deadlocks = deadlocks();
+
+        assertEquals("One deadlock should be present", 1, deadlocks.size());
+        for (ThreadSet deadlock: deadlocks) {
+            assertEquals("Deadlock should contain of 2 threads", 2, deadlock.size());
+            for (ProcessThread thread: deadlock) {
+                assertTrue(thread.getName().matches("Deadlock thread [AB]"));
+            }
+        }
     }
 
     private static void pause(int time) {
