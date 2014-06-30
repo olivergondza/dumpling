@@ -63,4 +63,18 @@ public enum ThreadStatus {
 
         return UNKNOWN;
     }
+
+    public static ThreadStatus fromString(String title) {
+        try {
+
+            return Enum.valueOf(ThreadStatus.class, title);
+        } catch (IllegalArgumentException ex) {
+
+            for (ThreadStatus value: values()) {
+                if (value.getName().equals(title)) return value;
+            }
+
+            throw ex;
+        }
+    }
 }

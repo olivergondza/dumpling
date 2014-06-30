@@ -24,6 +24,7 @@
 package com.github.olivergondza.dumpling.model;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -35,6 +36,40 @@ public class ThreadSet implements Collection<ProcessThread> {
     public ThreadSet(ProcessRuntime runtime, Set<ProcessThread> threads) {
         this.runtime = runtime;
         this.threads = threads;
+    }
+
+    /**
+     * Extract the only thread from set.
+     *
+     * @throws IllegalStateException if not exactly one thread present.
+     */
+    public ProcessThread onlyThread() throws IllegalStateException {
+        if (size() != 1) throw new IllegalStateException(
+                "Exactly one thread expected in the set. Found " + size()
+        );
+
+        return threads.iterator().next();
+    }
+
+    public ThreadSet onlyNamed(final String name) {
+        return filter(new Predicate() {
+            public boolean isValid(ProcessThread thread) {
+                return thread.getName().equals(name);
+            }
+        });
+    }
+
+    private ThreadSet filter(Predicate pred) {
+        HashSet<ProcessThread> subset = new HashSet<ProcessThread>(size() / 2);
+        for (ProcessThread thread: threads) {
+            if (pred.isValid(thread)) subset.add(thread);
+        }
+
+        return new ThreadSet(runtime, subset);
+    }
+
+    private static interface Predicate {
+        boolean isValid(ProcessThread thread);
     }
 
     @Override

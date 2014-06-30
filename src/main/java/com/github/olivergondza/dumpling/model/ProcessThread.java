@@ -57,6 +57,10 @@ public class ProcessThread {
         return state.state;
     }
 
+    public StackTraceElement[] getStackTrace() {
+        return state.stackTrace.clone();
+    }
+
     /**
      * Get threads that are waiting for lock held by this thread.
      */
@@ -114,7 +118,7 @@ public class ProcessThread {
         private boolean daemon;
         private int priority;
         private long tid;
-        private StackTraceElement[] stackTrace;
+        private StackTraceElement[] stackTrace = new StackTraceElement[] {};
         private Thread.State state;
         private ThreadStatus status;
         private ThreadLock waitingOnLock;
@@ -186,7 +190,9 @@ public class ProcessThread {
             sb.append(" prio=").append(priority);
             sb.append(" tid=").append(tid);
 
-            sb.append("\n   java.lang.Thread.State: ").append(status.getName());
+            if (status != null) {
+                sb.append("\n   java.lang.Thread.State: ").append(status.getName());
+            }
 
             for (StackTraceElement traceLine: stackTrace) {
                 sb.append("\n\tat ").append(traceLine);
