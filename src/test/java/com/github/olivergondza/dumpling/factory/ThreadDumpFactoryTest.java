@@ -62,6 +62,30 @@ public class ThreadDumpFactoryTest {
         assertEquals(4233, trace[1].getLineNumber());
     }
 
+    @Test
+    public void oracleJdk7() throws Exception {
+
+        ThreadSet threads = runtimeFrom("oraclejdk-1.7.0_51.log").getThreads();
+
+        assertEquals(143, threads.size());
+
+        ProcessThread thread = threads.onlyNamed("Channel reader thread: jenkins_slave_02").onlyThread();
+        assertEquals(ThreadStatus.RUNNABLE, thread.getThreadStatus());
+        StackTraceElement[] trace = thread.getStackTrace();
+        assertEquals(13, trace.length);
+
+        assertEquals("java.io.FileInputStream", trace[0].getClassName());
+        assertEquals("readBytes", trace[0].getMethodName());
+        assertEquals(null, trace[0].getFileName());
+        assertEquals(-2, trace[0].getLineNumber());
+
+        StackTraceElement lastTrace = trace[trace.length - 1];
+        assertEquals("hudson.remoting.SynchronousCommandTransport$ReaderThread", lastTrace.getClassName());
+        assertEquals("run", lastTrace.getMethodName());
+        assertEquals("SynchronousCommandTransport.java", lastTrace.getFileName());
+        assertEquals(48, lastTrace.getLineNumber());
+    }
+
     private ProcessRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {
         return new ThreadDumpFactory().fromFile(traceFile("ThreadDumpFactoryTest/" + resource));
     }
