@@ -36,9 +36,32 @@ import com.github.olivergondza.dumpling.model.ThreadSet;
 
 public class DeadlockDetectorTest {
 
+    volatile boolean running = false;
     @Test
     public void noDeadlockShouldBePresentNormally() {
+
+        Thread thread = new Thread("Running thread") {
+            @Override
+            public void run() {
+                running = true;
+                synchronized (this) {
+                    try {
+                        wait();
+                    } catch (InterruptedException ex) {
+                        // TODO Auto-generated catch block
+                        ex.printStackTrace();
+                    }
+                }
+                running = false;
+            }
+        };
+        thread.start();
+
+        pause(100);
+
         assertTrue("No deadlock should be present", deadlocks().isEmpty());
+
+        assertTrue(running);
     }
 
     @Test
