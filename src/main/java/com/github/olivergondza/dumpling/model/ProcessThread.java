@@ -80,7 +80,10 @@ public class ProcessThread {
      * @return {@link ThreadSet} that contains blocked thread or empty set if this thread does not hold any lock.
      */
     public ThreadSet getBlockingThreads() {
-        return new ThreadSet(runtime, Collections.singleton(getBlockingThread()));
+        final ProcessThread blocking = getBlockingThread();
+        if (blocking == null) return runtime.getEmptyThreadSet();
+
+        return new ThreadSet(runtime, Collections.singleton(blocking));
     }
 
     public ProcessThread getBlockingThread() {
@@ -122,7 +125,7 @@ public class ProcessThread {
         private Thread.State state;
         private ThreadStatus status;
         private ThreadLock waitingOnLock;
-        private Set<ThreadLock> acquiredLocks;
+        private Set<ThreadLock> acquiredLocks = Collections.emptySet();
 
         public ProcessThread build(ProcessRuntime runtime) {
             return new ProcessThread(runtime, this);
@@ -197,6 +200,7 @@ public class ProcessThread {
             for (StackTraceElement traceLine: stackTrace) {
                 sb.append("\n\tat ").append(traceLine);
             }
+
             return sb.toString();
         }
     }

@@ -36,6 +36,7 @@ import org.apache.commons.io.IOUtils;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ProcessThread.Builder;
+import com.github.olivergondza.dumpling.model.ThreadLock;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 
 public class ThreadDumpFactory {
@@ -76,6 +77,39 @@ public class ThreadDumpFactory {
 
         if (chunks.length > 2) {
             builder = initStacktrace(builder, chunks[2]);
+            builder = initLocks(builder, chunks[2]);
+        }
+
+        return builder;
+    }
+
+    private Builder initLocks(Builder builder, String string) {
+        Matcher acquiredLine = Pattern.compile("- locked <0x(\\w+)> \\(a ([^\\)]+)\\)").matcher(string);
+        Matcher waitingForLine = Pattern.compile("- (?:waiting on|waiting to lock) <0x(\\w+)> \\(a ([^\\)]+)\\)").matcher(string);
+
+        HashSet<ThreadLock> acquired = new HashSet<ThreadLock>(2);
+        HashSet<ThreadLock> waitingFor = new HashSet<ThreadLock>(1);
+        while (acquiredLine.find()) {
+            acquired.add(new ThreadLock(
+                    acquiredLine.group(2), Long.parseLong(acquiredLine.group(1), 16)
+            ));
+        }
+
+        while (waitingForLine.find()) {
+            waitingFor.add(new ThreadLock(
+                    waitingForLine.group(2), Long.parseLong(waitingForLine.group(1), 16)
+            ));
+        }
+
+        builder.setAcquiredLocks(acquired);
+
+        switch(waitingFor.size()) {
+            case 0: // Noop
+            break;
+            case 1:
+                builder.setLock(waitingFor.iterator().next());
+            break;
+            default: throw new AssertionError("Waiting for locks: " + waitingFor.size());
         }
 
         return builder;

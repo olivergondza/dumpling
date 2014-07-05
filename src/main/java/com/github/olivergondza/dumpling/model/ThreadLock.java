@@ -26,9 +26,9 @@ package com.github.olivergondza.dumpling.model;
 public class ThreadLock {
 
     final String className;
-    final int identityHashCode;
+    final long identityHashCode;
 
-    public ThreadLock(String className, int identityHashCode) {
+    public ThreadLock(String className, long identityHashCode) {
         this.className = className;
         this.identityHashCode = identityHashCode;
     }
@@ -37,7 +37,7 @@ public class ThreadLock {
         return className;
     }
 
-    public int getIdentityHashCode() {
+    public long getIdentityHashCode() {
         return identityHashCode;
     }
 
@@ -52,7 +52,7 @@ public class ThreadLock {
 
     @Override
     public int hashCode() {
-        return 7 + 31 * identityHashCode;
+        return 7 + 31 * new Long(identityHashCode).hashCode();
     }
 
     @Override

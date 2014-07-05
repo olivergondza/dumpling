@@ -24,6 +24,7 @@
 package com.github.olivergondza.dumpling.factory;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -84,6 +85,21 @@ public class ThreadDumpFactoryTest {
         assertEquals("run", lastTrace.getMethodName());
         assertEquals("SynchronousCommandTransport.java", lastTrace.getFileName());
         assertEquals(48, lastTrace.getLineNumber());
+    }
+
+    @Test
+    public void lockRelationshipsShouldBePreserved() throws Exception {
+
+        ThreadSet threads = runtimeFrom("contention.log").getThreads();
+
+        ProcessThread blocked = threads.onlyNamed("blocked_thread").onlyThread();
+        ProcessThread owning = threads.onlyNamed("owning_thread").onlyThread();
+
+        assertTrue(blocked.getBlockingThreads().isEmpty());
+        assertEquals(threads.onlyNamed("owning_thread"), blocked.getBlockedThreads());
+
+        assertEquals(threads.onlyNamed("blocked_thread"), owning.getBlockingThreads());
+        assertTrue(owning.getBlockedThreads().isEmpty());
     }
 
     private ProcessRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {

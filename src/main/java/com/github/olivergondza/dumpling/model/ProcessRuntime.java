@@ -34,9 +34,11 @@ import java.util.Set;
 public class ProcessRuntime {
 
     private final ThreadSet threads;
+    private final ThreadSet emptySet;
 
     public ProcessRuntime(Set<ProcessThread.Builder> builders) {
         this.threads = createThreads(builders);
+        this.emptySet = new ThreadSet(this, Collections.<ProcessThread>emptySet());
     }
 
     private ThreadSet createThreads(Set<ProcessThread.Builder> builders) {
@@ -52,5 +54,9 @@ public class ProcessRuntime {
      */
     public ThreadSet getThreads() {
         return threads;
+    }
+
+    /*package*/ ThreadSet getEmptyThreadSet() {
+        return emptySet;
     }
 }

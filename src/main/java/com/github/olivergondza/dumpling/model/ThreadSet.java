@@ -81,6 +81,24 @@ public class ThreadSet implements Collection<ProcessThread> {
         return stringBuilder.toString();
     }
 
+    @Override
+    public boolean equals(Object rhs) {
+        if (rhs == null) return false;
+
+        if (this == rhs) return true;
+
+        if (!this.getClass().equals(rhs.getClass())) return false;
+
+        ThreadSet other = (ThreadSet) rhs;
+
+        return runtime.equals(other.runtime) && threads.equals(other.threads);
+    }
+
+    @Override
+    public int hashCode() {
+        return runtime.hashCode() + threads.hashCode() * 31;
+    }
+
     public int size() {
         return threads.size();
     }
