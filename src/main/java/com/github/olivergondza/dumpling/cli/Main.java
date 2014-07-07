@@ -62,8 +62,11 @@ public class Main {
         } catch (CmdLineException ex) {
 
             err.println(ex.getMessage());
-
-            HelpCommand.printUsage(err);
+            if (handler == null) {
+                HelpCommand.printUsage(err);
+            } else {
+                HelpCommand.printUsage(handler, err);
+            }
         }
 
         return -1;

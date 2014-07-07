@@ -55,15 +55,15 @@ public class HelpCommand implements CliCommand {
 
     /*package*/ static void printUsage(CliCommand handler, PrintStream out) {
         CmdLineParser parser = new CmdLineParser(handler);
-        out.print(commandInvocation(handler.getName()));
+        out.print(usage(handler.getName()));
         parser.printSingleLineUsage(out);
-        out.println();
+        out.println("\n");
         out.println(handler.getDescription());
         parser.printUsage(out);
     }
 
     /*package*/ static void printUsage(PrintStream out) {
-        out.println("Usage: java -jar dumpling.jar <COMMAND> [...]\n");
+        out.println(usage("<COMMAND> [...]\n"));
         out.println("Available commands:");
         for (CliCommand handler: CliCommandOptionHandler.getAllHandlers()) {
             CmdLineParser parser = new CmdLineParser(handler);
@@ -74,7 +74,7 @@ public class HelpCommand implements CliCommand {
         }
     }
 
-    private static String commandInvocation(String rest) {
-        return "java -jar dumpling.jar " + rest;
+    private static String usage(String rest) {
+        return "Usage: java -jar dumpling.jar " + rest;
     }
 }
