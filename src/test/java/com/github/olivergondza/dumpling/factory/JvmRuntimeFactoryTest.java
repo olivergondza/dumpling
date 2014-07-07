@@ -26,7 +26,6 @@ package com.github.olivergondza.dumpling.factory;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import java.util.Set;
 import java.util.concurrent.locks.LockSupport;
 
 import org.junit.Test;
@@ -37,21 +36,17 @@ import com.github.olivergondza.dumpling.model.ThreadStatus;
 
 public class JvmRuntimeFactoryTest {
 
-    @Test
-    public void test() {
-        Set<Thread> threads = Thread.getAllStackTraces().keySet();
-        assertEquals(threads.size(), runtime().getThreads().size());
-    }
+    private Thread thread;
 
     @Test
     public synchronized void newThreadShouldNotBeAPartOfReportedRuntime() {
-        Thread notRun = new Thread(getClass().getName() + " not run");
-        assertNull("Not started thread should not be a part fo runtime", forThread(runtime(), notRun));
+        thread = new Thread(getClass().getName() + " not run");
+        assertNull("Not started thread should not be a part fo runtime", forThread(runtime(), thread));
     }
 
     @Test
     public synchronized void runnableThreadStatus() {
-        Thread running = new Thread(getClass().getName() + " running") {
+        thread = new Thread(getClass().getName() + " running") {
             long a;
             @Override
             public void run() {
@@ -60,14 +55,14 @@ public class JvmRuntimeFactoryTest {
                 }
             }
         };
-        running.start();
+        thread.start();
 
-        assertStatusIs(ThreadStatus.RUNNABLE, running);
+        assertStatusIs(ThreadStatus.RUNNABLE, thread);
     }
 
     @Test
     public void sleepingThreadStatus() {
-        Thread sleeping = new Thread(getClass().getName() + " sleeping") {
+        thread = new Thread(getClass().getName() + " sleeping") {
             @Override
             public void run() {
                 try {
@@ -77,14 +72,14 @@ public class JvmRuntimeFactoryTest {
                 }
             }
         };
-        sleeping.start();
+        thread.start();
 
-        assertStatusIs(ThreadStatus.SLEEPING, sleeping);
+        assertStatusIs(ThreadStatus.SLEEPING, thread);
     }
 
     @Test
     public void waitingThredStatus() {
-        Thread waiting = new Thread(getClass().getName() + " in object wait") {
+        thread = new Thread(getClass().getName() + " in object wait") {
             @Override
             public synchronized void run() {
                 try {
@@ -94,14 +89,14 @@ public class JvmRuntimeFactoryTest {
                 }
             }
         };
-        waiting.start();
+        thread.start();
 
-        assertStatusIs(ThreadStatus.IN_OBJECT_WAIT, waiting);
+        assertStatusIs(ThreadStatus.IN_OBJECT_WAIT, thread);
     }
 
     @Test
     public void timedWaitingThredStatus() {
-        Thread timedWaiting = new Thread(getClass().getName() + " in timed object wait") {
+        thread = new Thread(getClass().getName() + " in timed object wait") {
             @Override
             public synchronized void run() {
                 try {
@@ -111,40 +106,40 @@ public class JvmRuntimeFactoryTest {
                 }
             }
         };
-        timedWaiting.start();
+        thread.start();
 
-        assertStatusIs(ThreadStatus.IN_OBJECT_WAIT_TIMED, timedWaiting);
+        assertStatusIs(ThreadStatus.IN_OBJECT_WAIT_TIMED, thread);
     }
 
     @Test
     public void parkedThreadStatus() {
-        Thread parked = new Thread(getClass().getName() + " parked") {
+        thread = new Thread(getClass().getName() + " parked") {
             @Override
             public void run() {
                 LockSupport.park();
             }
         };
-        parked.start();
+        thread.start();
 
-        assertStatusIs(ThreadStatus.PARKED, parked);
+        assertStatusIs(ThreadStatus.PARKED, thread);
     }
 
     @Test
     public void parkedTimedThreadStatus() {
-        Thread parkedTimed = new Thread(getClass().getName() + " parked timed") {
+        thread = new Thread(getClass().getName() + " parked timed") {
             @Override
             public void run() {
-                LockSupport.parkNanos(1000000000);
+                LockSupport.parkNanos(1000000000L);
             }
         };
-        parkedTimed.start();
+        thread.start();
 
-        assertStatusIs(ThreadStatus.PARKED_TIMED, parkedTimed);
+        assertStatusIs(ThreadStatus.PARKED_TIMED, thread);
     }
 
     @Test
     public synchronized void blockedOnMonitorThreadStatus() {
-        Thread waitingOnMonitor = new Thread(getClass().getName() + " waiting on monitor") {
+        thread = new Thread(getClass().getName() + " waiting on monitor") {
             @Override
             public void run() {
                 synchronized (JvmRuntimeFactoryTest.this) {
@@ -152,9 +147,16 @@ public class JvmRuntimeFactoryTest {
                 }
             }
         };
-        waitingOnMonitor.start();
+        thread.start();
 
-        assertStatusIs(ThreadStatus.BLOCKED_ON_MONITOR_ENTER, waitingOnMonitor);
+        assertStatusIs(ThreadStatus.BLOCKED_ON_MONITOR_ENTER, thread);
+    }
+
+    @Test // https://github.com/olivergondza/dumpling/issues/4
+    public void threadInfoShouldExist() {
+        for (int i = 0; i < 100; i++) {
+            parkedTimedThreadStatus();
+        }
     }
 
     private void assertStatusIs(ThreadStatus expected, Thread thread) {
@@ -162,7 +164,11 @@ public class JvmRuntimeFactoryTest {
     }
 
     private ThreadStatus statusOf(Thread thread) {
-        return forThread(runtime(), thread).getThreadStatus();
+        final ProcessThread processThread = forThread(runtime(), thread);
+        if (processThread == null) throw new AssertionError(
+                "No process thread in runtime for " + thread.getName()
+        );
+        return processThread.getThreadStatus();
     }
 
     private ProcessRuntime runtime() {

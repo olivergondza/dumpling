@@ -57,6 +57,6 @@ public class ThreadLock {
 
     @Override
     public String toString() {
-        return String.format("<%x> (a %s)", identityHashCode, className);
+        return String.format("<0x%x> (a %s)", identityHashCode, className);
     }
 }

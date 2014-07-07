@@ -31,6 +31,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.factory.JvmRuntimeFactory;
+import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
@@ -59,7 +60,7 @@ public class DeadlockDetectorTest {
 
         pause(100);
 
-        assertTrue("No deadlock should be present", deadlocks().isEmpty());
+        assertTrue("No deadlock should be present", deadlocks(runtime()).isEmpty());
 
         assertTrue(running);
     }
@@ -99,9 +100,10 @@ public class DeadlockDetectorTest {
 
         pause(1000);
 
-        final Set<ThreadSet> deadlocks = deadlocks();
+        ProcessRuntime runtime = runtime();
+        final Set<ThreadSet> deadlocks = deadlocks(runtime);
 
-        assertEquals("One deadlock should be present", 1, deadlocks.size());
+        assertEquals("One deadlock should be present\n\n" + runtime.getThreads().toString(), 1, deadlocks.size());
         for (ThreadSet deadlock: deadlocks) {
             assertEquals("Deadlock should contain of 2 threads", 2, deadlock.size());
             for (ProcessThread thread: deadlock) {
@@ -117,7 +119,11 @@ public class DeadlockDetectorTest {
         }
     }
 
-    private Set<ThreadSet> deadlocks() {
-        return new DeadlockDetector().getAll(new JvmRuntimeFactory().currentRuntime());
+    private Set<ThreadSet> deadlocks(ProcessRuntime runtime) {
+        return new DeadlockDetector().getAll(runtime);
+    }
+
+    private ProcessRuntime runtime() {
+        return new JvmRuntimeFactory().currentRuntime();
     }
 }

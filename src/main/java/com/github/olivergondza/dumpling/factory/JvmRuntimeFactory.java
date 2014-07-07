@@ -29,7 +29,9 @@ import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
@@ -41,8 +43,9 @@ import com.github.olivergondza.dumpling.model.ThreadStatus;
 public class JvmRuntimeFactory {
 
     public ProcessRuntime currentRuntime() {
-        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
         Set<Thread> threads = Thread.getAllStackTraces().keySet();
+        Map<Long, ThreadInfo> infos = infos();
+
         HashSet<ProcessThread.Builder> state = new HashSet<ProcessThread.Builder>(threads.size());
 
         for (Thread thread: threads) {
@@ -56,7 +59,8 @@ public class JvmRuntimeFactory {
                     .setStatus(status(thread))
             ;
 
-            ThreadInfo info = threadMXBean.getThreadInfo(new long[] { thread.getId()}, true, true)[0];
+            ThreadInfo info = infos.get(thread.getId());
+            if (info == null) throw new AssertionError("No thread info for thread " + thread.getName());
             builder.setAcquiredLocks(locks(info));
             LockInfo lock = info.getLockInfo();
             if (lock != null) builder.setLock(lock(lock));
@@ -65,6 +69,17 @@ public class JvmRuntimeFactory {
         }
 
         return new ProcessRuntime(state);
+    }
+
+    private Map<Long, ThreadInfo> infos() {
+        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        Map<Long, ThreadInfo> infos= new HashMap<Long, ThreadInfo>();
+        for (ThreadInfo info: threadMXBean.getThreadInfo(threadMXBean.getAllThreadIds(), true, true)) {
+
+            infos.put(info.getThreadId(), info);
+        }
+
+        return infos;
     }
 
     private Set<ThreadLock> locks(ThreadInfo threadInfo) {

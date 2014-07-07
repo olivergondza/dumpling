@@ -201,6 +201,14 @@ public class ProcessThread {
                 sb.append("\n\tat ").append(traceLine);
             }
 
+            if (waitingOnLock != null) {
+                sb.append("\n\t - waiting to lock " + waitingOnLock);
+            }
+
+            for (ThreadLock lock: acquiredLocks) {
+                sb.append("\n\t - locking " + lock);
+            }
+
             return sb.toString();
         }
     }
