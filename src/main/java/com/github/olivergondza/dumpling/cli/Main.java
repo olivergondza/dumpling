@@ -37,8 +37,8 @@ import org.kohsuke.args4j.CmdLineParser;
  */
 public class Main {
 
-    // TODO metaVar is not extracted from handler
-    @Argument(required = true, index = 0, handler = CliCommandOptionHandler.class, metaVar = "COMMAND")
+    // TODO metaVar is not extracted from handler in: Argument "COMMAND" is required
+    @Argument(required = true, index = 0, metaVar = "COMMAND")
     private CliCommand handler;
 
     // All arguments not parsed by Main will be forwarded to handler
@@ -67,5 +67,9 @@ public class Main {
         }
 
         return -1;
+    }
+
+    static {
+        CmdLineParser.registerHandler(CliCommand.class, CliCommandOptionHandler.class);
     }
 }

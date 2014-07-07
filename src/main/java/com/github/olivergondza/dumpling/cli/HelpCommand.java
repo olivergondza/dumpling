@@ -32,7 +32,7 @@ import org.kohsuke.args4j.CmdLineParser;
 
 public class HelpCommand implements CliCommand {
 
-    @Argument(required = false, usage = "Print detailed usage", handler = CliCommandOptionHandler.class)
+    @Argument(required = false, usage = "Print detailed usage")
     private CliCommand command;
 
     public String getName() {
