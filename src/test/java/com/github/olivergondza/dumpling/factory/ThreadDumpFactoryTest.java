@@ -23,22 +23,25 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 
 import org.junit.Test;
 
+import com.github.olivergondza.dumpling.Util;
+import com.github.olivergondza.dumpling.cli.AbstractCliTest;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 
-public class ThreadDumpFactoryTest {
+public class ThreadDumpFactoryTest extends AbstractCliTest {
 
     @Test
     public void openJdk7() throws Exception {
@@ -102,12 +105,15 @@ public class ThreadDumpFactoryTest {
         assertTrue(owning.getBlockedThreads().isEmpty());
     }
 
-    private ProcessRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {
-        return new ThreadDumpFactory().fromFile(traceFile("ThreadDumpFactoryTest/" + resource));
+    @Test
+    public void cliNoSuchFile() {
+        run("detect-deadlocks", "--in", "threaddump", "/there_is_no_such_file");
+        assertThat(exitValue, equalTo(-1));
+        assertThat(err.toString(), containsString("/there_is_no_such_file (No such file or directory)"));
+        assertThat(out.toString(), equalTo(""));
     }
 
-    private File traceFile(String resource) throws URISyntaxException {
-        URL res = getClass().getResource(resource);
-        return new File(res.toURI());
+    private ProcessRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {
+        return new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), resource));
     }
 }

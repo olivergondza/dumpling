@@ -32,8 +32,8 @@ import org.kohsuke.args4j.CmdLineParser;
 
 public class HelpCommand implements CliCommand {
 
-    @Argument(required = false, usage = "Print detailed usage")
-    private CliCommand command;
+    @Argument(required = false, usage = "Print detailed usage", metaVar = "Command")
+    private String commandName;
 
     public String getName() {
         return "help";
@@ -44,10 +44,13 @@ public class HelpCommand implements CliCommand {
     }
 
     public int run(InputStream in, PrintStream out, PrintStream err) throws CmdLineException {
-        if (command != null) {
-            printUsage(command, out);
-        } else {
+        if (commandName == null) {
             printUsage(out);
+        } else {
+            CliCommand command = CliCommandOptionHandler.getHandler(commandName);
+            if (command == null) throw new CmdLineException(null, "No such command " + commandName);
+
+            printUsage(command, out);
         }
 
         return 0;

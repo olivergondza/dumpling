@@ -23,7 +23,6 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import org.kohsuke.args4j.CmdLineException;
@@ -34,66 +33,53 @@ import org.kohsuke.args4j.spi.Parameters;
 import org.kohsuke.args4j.spi.Setter;
 import org.reflections.Reflections;
 
-public class CliCommandOptionHandler extends OptionHandler<CliCommand> {
+import com.github.olivergondza.dumpling.model.ProcessRuntime;
 
-    public CliCommandOptionHandler(
-            CmdLineParser parser, OptionDef option, Setter<? super CliCommand> setter
-    ) {
+public class ProcessRuntimeOptionHandler extends OptionHandler<ProcessRuntime> {
+
+    public ProcessRuntimeOptionHandler(CmdLineParser parser, OptionDef option, Setter<? super ProcessRuntime> setter) {
         super(parser, option, setter);
     }
 
     @Override
     public int parseArguments(Parameters params) throws CmdLineException {
-        String name = params.getParameter(0);
-        CliCommand handler = getHandler(name);
+        String scheme = params.getParameter(0);
+        CliRuntimeFactory factory = getFactory(scheme);
+        if (factory == null) throw new CmdLineException(owner, "Unknown runtime source kind: " + scheme);
 
-        if (handler == null) throw new CmdLineException(
-                owner, "Command \"" + name + "\" not found"
-        );
+        String locator = params.getParameter(1);
+        ProcessRuntime runtime = factory.createRuntime(locator);
+        if (runtime == null) throw new AssertionError(factory.getClass() + " failed to create runtime");
 
-        setter.addValue(handler);
+        setter.addValue(runtime);
 
-        // Collect subcommand arguments
-        int paramCount = params.size();
-        String[] subCommandParams = new String[paramCount - 1];
-        for (int i = 1; i < paramCount; i++) {
-            subCommandParams[i - 1] = params.getParameter(i);
-        }
-        new CmdLineParser(handler).parseArgument(subCommandParams);
-
-        return params.size(); // All arguments consumed
+        return 2;
     }
 
     @Override
     public String getDefaultMetaVariable() {
-        return "COMMAND";
+        return "KIND LOCATOR";
     }
 
-    public static CliCommand getHandler(String name) {
-        for (CliCommand handler: getAllHandlers()) {
-            if (handler.getName().equals(name)) {
-                return handler;
-            }
+    public static CliRuntimeFactory getFactory(String name) {
+        Reflections reflections = new Reflections("com.github.olivergondza.dumpling");
+        final Set<Class<? extends CliRuntimeFactory>> types = reflections.getSubTypesOf(CliRuntimeFactory.class);
+
+        for (Class<? extends CliRuntimeFactory> type: types) {
+            CliRuntimeFactory factory = factory(type);
+            if (name.equals(factory.getKind())) return factory;
         }
 
         return null;
     }
 
-    public static Set<? extends CliCommand> getAllHandlers() {
-        Reflections reflections = new Reflections("com.github.olivergondza.dumpling");
-        final Set<Class<? extends CliCommand>> types = reflections.getSubTypesOf(CliCommand.class);
+    private static CliRuntimeFactory factory(Class<? extends CliRuntimeFactory> type) {
+        try {
 
-        final Set<CliCommand> handlers = new HashSet<CliCommand>();
-        for (Class<? extends CliCommand> type: types) {
-            try {
+            return type.newInstance();
+        } catch (ReflectiveOperationException ex) {
 
-                handlers.add(type.newInstance());
-            } catch (ReflectiveOperationException ex) {
-
-                throw new AssertionError("Cli handler " + type.getName() + " does not declare default contructor");
-            }
+            throw new AssertionError("Cli handler " + type.getName() + " does not declare default contructor");
         }
-
-        return handlers;
     }
 }

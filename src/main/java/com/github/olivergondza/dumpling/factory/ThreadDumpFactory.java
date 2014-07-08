@@ -33,13 +33,15 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 
+import com.github.olivergondza.dumpling.cli.CliRuntimeFactory;
+import com.github.olivergondza.dumpling.cli.CommandFailedException;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ProcessThread.Builder;
 import com.github.olivergondza.dumpling.model.ThreadLock;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 
-public class ThreadDumpFactory {
+public class ThreadDumpFactory implements CliRuntimeFactory {
 
     /**
      * Create runtime from thread dump.
@@ -159,5 +161,17 @@ public class ThreadDumpFactory {
         return builder.setStacktrace(
                 traceElements.toArray(new StackTraceElement[traceElements.size()])
         );
+    }
+
+    public String getKind() {
+        return "threaddump";
+    }
+
+    public ProcessRuntime createRuntime(String locator) throws CommandFailedException {
+        try {
+            return fromFile(new File(locator));
+        } catch (IOException ex) {
+            throw new CommandFailedException(ex);
+        }
     }
 }

@@ -23,6 +23,9 @@
  */
 package com.github.olivergondza.dumpling.query;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -30,12 +33,14 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import com.github.olivergondza.dumpling.Util;
+import com.github.olivergondza.dumpling.cli.AbstractCliTest;
 import com.github.olivergondza.dumpling.factory.JvmRuntimeFactory;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
-public class DeadlockDetectorTest {
+public class DeadlockDetectorTest extends AbstractCliTest {
 
     volatile boolean running = false;
     @Test
@@ -49,8 +54,7 @@ public class DeadlockDetectorTest {
                     try {
                         wait();
                     } catch (InterruptedException ex) {
-                        // TODO Auto-generated catch block
-                        ex.printStackTrace();
+                        // Ignore
                     }
                 }
                 running = false;
@@ -110,6 +114,15 @@ public class DeadlockDetectorTest {
                 assertTrue(thread.getName().matches("Deadlock thread [AB]"));
             }
         }
+    }
+
+    @Test
+    public void cliCurrentJvm() throws Exception {
+        run("detect-deadlocks", "--in", "threaddump", Util.resourceFile(getClass(), "deadlock.log").getAbsolutePath());
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), containsString("1 deadlocks detected"));
+        assertThat(out.toString(), containsString("- Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24 - Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107"));
+        assertThat(exitValue, equalTo(1));
     }
 
     private static void pause(int time) {

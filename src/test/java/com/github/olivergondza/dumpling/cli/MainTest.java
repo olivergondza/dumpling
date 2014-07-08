@@ -28,57 +28,46 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-
 import org.junit.Test;
 
-public class MainTest {
-
-    private ByteArrayOutputStream err = new ByteArrayOutputStream();
-    private ByteArrayOutputStream out = new ByteArrayOutputStream();
-    private int exitValue;
+public class MainTest extends AbstractCliTest {
 
     @Test
     public void notEnoughArguments() {
 
         run();
-        assertThat(exitValue, not(equalTo(0)));
-        assertThat(out.toString(), equalTo(""));
         assertThat(err.toString(), containsString("Argument \"COMMAND\" is required"));
+        assertThat(out.toString(), equalTo(""));
+        assertThat(exitValue, not(equalTo(0)));
     }
 
     @Test
     public void noSuchCommand() {
 
         run("there_is_no_such_command");
-        assertThat(exitValue, not(equalTo(0)));
-        assertThat(out.toString(), equalTo(""));
         assertThat(err.toString(), containsString("Command \"there_is_no_such_command\" not found"));
+        assertThat(out.toString(), equalTo(""));
+        assertThat(exitValue, not(equalTo(0)));
     }
 
     @Test
     public void help() {
 
         run("help");
-        assertThat(exitValue, equalTo(0));
+        assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), containsString("Usage: "));
         assertThat(out.toString(), containsString("Available commands:"));
         assertThat(out.toString(), containsString("detect-deadlocks"));
-        assertThat(err.toString(), equalTo(""));
+        assertThat(exitValue, equalTo(0));
     }
 
     @Test
     public void detailedHelp() {
 
         run("help", "detect-deadlocks");
-        assertThat(exitValue, equalTo(0));
+        assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), containsString("java -jar dumpling.jar detect-deadlocks"));
         assertThat(out.toString(), containsString("Detect cycles of blocked threads"));
-        assertThat(err.toString(), equalTo(""));
-    }
-
-    private int run(String... args) {
-        return exitValue = new Main().run(args, null, new PrintStream(out), new PrintStream(err));
+        assertThat(exitValue, equalTo(0));
     }
 }

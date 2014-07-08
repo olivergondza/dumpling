@@ -30,6 +30,8 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
+import com.github.olivergondza.dumpling.model.ProcessRuntime;
+
 /**
  * Cli entry point.
  *
@@ -40,10 +42,6 @@ public class Main {
     // TODO metaVar is not extracted from handler in: Argument "COMMAND" is required
     @Argument(required = true, index = 0, metaVar = "COMMAND")
     private CliCommand handler;
-
-    // All arguments not parsed by Main will be forwarded to handler
-    @Argument(index = 1, hidden = true, multiValued = true)
-    private String[] handlerArgs = new String[] {};
 
     public static void main(String[] args) {
         int exitCode = new Main().run(args, System.in, System.out, System.err);
@@ -56,8 +54,6 @@ public class Main {
         try {
             parser.parseArgument(args);
 
-            new CmdLineParser(handler).parseArgument(handlerArgs);
-
             return handler.run(in, out, err);
         } catch (CmdLineException ex) {
 
@@ -67,6 +63,8 @@ public class Main {
             } else {
                 HelpCommand.printUsage(handler, err);
             }
+        } catch (CommandFailedException ex) {
+            err.println(ex.getMessage());
         }
 
         return -1;
@@ -74,5 +72,6 @@ public class Main {
 
     static {
         CmdLineParser.registerHandler(CliCommand.class, CliCommandOptionHandler.class);
+        CmdLineParser.registerHandler(ProcessRuntime.class, ProcessRuntimeOptionHandler.class);
     }
 }
