@@ -64,7 +64,11 @@ public class Main {
                 HelpCommand.printUsage(handler, err);
             }
         } catch (CommandFailedException ex) {
+
             err.println(ex.getMessage());
+        } catch (RuntimeException ex) {
+
+            ex.printStackTrace(err);
         }
 
         return -1;

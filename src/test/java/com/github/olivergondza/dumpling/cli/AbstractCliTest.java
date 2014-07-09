@@ -24,15 +24,28 @@
 package com.github.olivergondza.dumpling.cli;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
+
+import org.apache.commons.io.IOUtils;
 
 public abstract class AbstractCliTest {
 
+    protected InputStream in = null;
     protected ByteArrayOutputStream err = new ByteArrayOutputStream();
     protected ByteArrayOutputStream out = new ByteArrayOutputStream();
     protected int exitValue;
 
     protected int run(String... args) {
-        return exitValue = new Main().run(args, null, new PrintStream(out), new PrintStream(err));
+        return exitValue = new Main().run(args, in, new PrintStream(out), new PrintStream(err));
+    }
+
+    protected void stdin(String string) {
+        try {
+            in = IOUtils.toInputStream(string, "UTF-8");
+        } catch (IOException ex) {
+            throw new AssertionError(ex);
+        }
     }
 }
