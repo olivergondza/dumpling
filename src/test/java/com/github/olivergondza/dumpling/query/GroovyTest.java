@@ -38,37 +38,106 @@ import com.github.olivergondza.dumpling.cli.AbstractCliTest;
 public class GroovyTest extends AbstractCliTest {
 
     @Test
-    public void executeScript() throws URISyntaxException {
-        stdin("print runtime.threads.size()");
-        run("groovy", "--in", "threaddump", Util.resourceFile(getClass(), "jstack.log").getAbsolutePath());
+    public void executeScript() {
+        invoke("print runtime.threads.size()");
         assertThat(err.toString(), equalTo(""));
         assertThat(exitValue, equalTo(0));
         assertThat(out.toString(), equalTo("8"));
     }
 
     @Test
-    public void filter() throws URISyntaxException {
-        stdin("print runtime.threads.onlyNamed('owning_thread').collect { it.name }");
-        run("groovy", "--in", "threaddump", Util.resourceFile(getClass(), "jstack.log").getAbsolutePath());
+    public void filter() {
+        invoke("print runtime.threads.onlyNamed('owning_thread').collect { it.name }");
         assertThat(err.toString(), equalTo(""));
         assertThat(exitValue, equalTo(0));
         assertThat(out.toString(), equalTo("[owning_thread]"));
     }
 
     @Test
-    public void loadSymbolsFromOtherDumplingPackages() throws URISyntaxException {
-        stdin("new DeadlockDetector(); new ThreadLock('', 0); new JvmRuntimeFactory(); new CommandFailedException('')");
-        run("groovy", "--in", "threaddump", Util.resourceFile(getClass(), "jstack.log").getAbsolutePath());
+    public void loadSymbolsFromOtherDumplingPackages() {
+        invoke("new DeadlockDetector(); new ThreadLock('', 0); new JvmRuntimeFactory(); new CommandFailedException('')");
         assertThat(err.toString(), equalTo(""));
         assertThat(exitValue, equalTo(0));
     }
 
     @Test
-    public void failTheScript() throws URISyntaxException {
-        stdin("new ThereIsNoSuchClass()");
-        run("groovy", "--in", "threaddump", Util.resourceFile(getClass(), "jstack.log").getAbsolutePath());
+    public void failTheScript() {
+        invoke("new ThereIsNoSuchClass()");
         assertThat(err.toString(), containsString("dumpling-script: 1: unable to resolve class ThereIsNoSuchClass"));
         assertThat(out.toString(), equalTo(""));
         assertThat(exitValue, not(equalTo(0)));
+    }
+
+    @Test
+    public void groovyGrep() {
+        invoke("print runtime.threads.grep().getClass()");
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), equalTo("class com.github.olivergondza.dumpling.model.ThreadSet"));
+        assertThat(exitValue, equalTo(0));
+    }
+
+    @Test
+    public void groovyGrepWithArg() {
+        invoke("print runtime.threads.grep { it.name == 'blocked_thread' }.getClass()");
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), equalTo("class com.github.olivergondza.dumpling.model.ThreadSet"));
+        assertThat(exitValue, equalTo(0));
+    }
+
+    @Test
+    public void groovyFindAll() {
+        invoke("print runtime.threads.findAll().getClass()");
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), equalTo("class com.github.olivergondza.dumpling.model.ThreadSet"));
+        assertThat(exitValue, equalTo(0));
+    }
+
+    @Test
+    public void groovyFindAllWithArg() {
+        invoke("print runtime.threads.findAll { it.name == 'blocked_thread' }.getClass()");
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), equalTo("class com.github.olivergondza.dumpling.model.ThreadSet"));
+        assertThat(exitValue, equalTo(0));
+    }
+
+    @Test
+    public void groovyAsImmutable() {
+        invoke("print runtime.threads.asImmutable().getClass()");
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), equalTo("class com.github.olivergondza.dumpling.model.ThreadSet"));
+        assertThat(exitValue, equalTo(0));
+    }
+
+    @Test
+    public void groovyIntersect() {
+        invoke("print runtime.threads.intersect(runtime.threads).getClass()");
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), equalTo("class com.github.olivergondza.dumpling.model.ThreadSet"));
+        assertThat(exitValue, equalTo(0));
+    }
+
+    @Test
+    public void groovyPlus() {
+        invoke("threadSum = runtime.threads + runtime.threads; print threadSum.getClass()");
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), equalTo("class com.github.olivergondza.dumpling.model.ThreadSet"));
+        assertThat(exitValue, equalTo(0));
+    }
+
+    @Test
+    public void groovyToSet() {
+        invoke("print runtime.threads.toSet().getClass()");
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), equalTo("class com.github.olivergondza.dumpling.model.ThreadSet"));
+        assertThat(exitValue, equalTo(0));
+    }
+
+    private void invoke(String script) {
+        stdin(script);
+        try {
+            run("groovy", "--in", "threaddump", Util.resourceFile(getClass(), "jstack.log").getAbsolutePath());
+        } catch (URISyntaxException ex) {
+            throw new AssertionError(ex);
+        }
     }
 }

@@ -23,6 +23,8 @@
  */
 package com.github.olivergondza.dumpling.model;
 
+import groovy.lang.Closure;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,7 +32,9 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-public class ThreadSet implements Collection<ProcessThread> {
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+
+public class ThreadSet implements Set<ProcessThread> {
 
     private @Nonnull ProcessRuntime runtime;
     private @Nonnull Set<ProcessThread> threads;
@@ -128,6 +132,63 @@ public class ThreadSet implements Collection<ProcessThread> {
     public <T> T[] toArray(T[] a) {
         return threads.toArray(a);
     }
+
+    /**
+     * Create derived set from this one.
+     *
+     * New set will share runtime, threads will be replaced.
+     */
+    private @Nonnull ThreadSet derive(Collection<ProcessThread> threads) {
+        Set<ProcessThread> threadSet = threads instanceof Set
+                ? (Set<ProcessThread>) threads
+                : new HashSet<ProcessThread>(threads)
+        ;
+        return new ThreadSet(runtime, threadSet);
+    }
+
+    // Groovy interop
+
+    public @Nonnull ThreadSet grep() {
+        return derive(DefaultGroovyMethods.grep(threads));
+    }
+
+    public @Nonnull ThreadSet grep(Object filter) {
+        return derive(DefaultGroovyMethods.grep(threads, filter));
+    }
+
+    public @Nonnull ThreadSet findAll() {
+        return derive(DefaultGroovyMethods.findAll(threads));
+    }
+
+    public @Nonnull ThreadSet findAll(Closure<ProcessThread> predicate) {
+        return derive(DefaultGroovyMethods.findAll(threads, predicate));
+    }
+
+    public @Nonnull ThreadSet asImmutable() {
+        return this;
+    }
+
+    public @Nonnull ThreadSet toSet() {
+        return this;
+    }
+
+    public @Nonnull ThreadSet intersect(ThreadSet other) {
+        if (!runtime.equals(other.runtime)) throw new IllegalStateException(
+                "Unable to intersect thread sets bound to different runtime"
+        );
+
+        return derive(DefaultGroovyMethods.intersect(threads, other.threads));
+    }
+
+    public @Nonnull ThreadSet plus(ThreadSet other) {
+        if (!runtime.equals(other.runtime)) throw new IllegalStateException(
+                "Unable to merge thread sets bound to different runtime"
+        );
+
+        return derive(DefaultGroovyMethods.plus(threads, other.threads));
+    }
+
+    // Unmodifiable collection
 
     public boolean add(ProcessThread e) {
         throw new UnsupportedOperationException();
