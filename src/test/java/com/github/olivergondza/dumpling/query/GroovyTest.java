@@ -135,7 +135,7 @@ public class GroovyTest extends AbstractCliTest {
     private void invoke(String script) {
         stdin(script);
         try {
-            run("groovy", "--in", "threaddump", Util.resourceFile(getClass(), "jstack.log").getAbsolutePath());
+            run("groovy", "--in", "threaddump", Util.resourceFile("producer-consumer.log").getAbsolutePath());
         } catch (URISyntaxException ex) {
             throw new AssertionError(ex);
         }

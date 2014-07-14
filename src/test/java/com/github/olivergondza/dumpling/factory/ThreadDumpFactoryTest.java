@@ -93,7 +93,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     @Test
     public void lockRelationshipsShouldBePreserved() throws Exception {
 
-        ThreadSet threads = runtimeFrom("contention.log").getThreads();
+        ThreadSet threads = new ThreadDumpFactory().fromFile(Util.resourceFile("producer-consumer.log")).getThreads();
 
         ProcessThread blocked = threads.onlyNamed("blocked_thread").onlyThread();
         ProcessThread owning = threads.onlyNamed("owning_thread").onlyThread();

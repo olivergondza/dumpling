@@ -35,4 +35,11 @@ public class Util {
 
         return new File(res.toURI());
     }
+
+    public static File resourceFile(String resource) throws URISyntaxException {
+        URL res = Util.class.getResource(resource);
+        if (res == null) throw new AssertionError("Resource does not exist: " + Util.class.getSimpleName() + "/" + resource);
+
+        return new File(res.toURI());
+    }
 }
