@@ -28,6 +28,8 @@ import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
@@ -38,7 +40,7 @@ import com.github.olivergondza.dumpling.model.ThreadSet;
 
 public class DeadlockDetector {
 
-    public Set<ThreadSet> getAll(ProcessRuntime runtime) {
+    public @Nonnull Set<ThreadSet> getAll(@Nonnull ProcessRuntime runtime) {
         final ThreadSet threads = runtime.getThreads();
 
         // No need to revisit threads more than once

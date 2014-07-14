@@ -26,6 +26,8 @@ package com.github.olivergondza.dumpling.cli;
 import java.io.InputStream;
 import java.io.PrintStream;
 
+import javax.annotation.Nonnull;
+
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -43,12 +45,12 @@ public class Main {
     @Argument(required = true, index = 0, metaVar = "COMMAND")
     private CliCommand handler;
 
-    public static void main(String[] args) {
+    public static void main(@Nonnull String[] args) {
         int exitCode = new Main().run(args, System.in, System.out, System.err);
         System.exit(exitCode);
     }
 
-    /*package*/ int run(String[] args, InputStream in, PrintStream out, PrintStream err) {
+    /*package*/ int run(@Nonnull String[] args, @Nonnull InputStream in, @Nonnull PrintStream out, @Nonnull PrintStream err) {
         CmdLineParser parser = new CmdLineParser(this);
 
         try {

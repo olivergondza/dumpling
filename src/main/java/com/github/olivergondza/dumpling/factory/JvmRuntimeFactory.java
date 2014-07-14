@@ -34,6 +34,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ProcessThread.Builder;
@@ -42,7 +44,7 @@ import com.github.olivergondza.dumpling.model.ThreadStatus;
 
 public class JvmRuntimeFactory {
 
-    public ProcessRuntime currentRuntime() {
+    public @Nonnull ProcessRuntime currentRuntime() {
         Set<Thread> threads = Thread.getAllStackTraces().keySet();
         Map<Long, ThreadInfo> infos = infos();
 

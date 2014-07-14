@@ -27,21 +27,23 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 /**
  * Snapshot of threads in JVM at given time.
  * @author ogondza
  */
 public class ProcessRuntime {
 
-    private final ThreadSet threads;
-    private final ThreadSet emptySet;
+    private @Nonnull final ThreadSet threads;
+    private @Nonnull final ThreadSet emptySet;
 
-    public ProcessRuntime(Set<ProcessThread.Builder> builders) {
+    public ProcessRuntime(@Nonnull Set<ProcessThread.Builder> builders) {
         this.threads = createThreads(builders);
         this.emptySet = new ThreadSet(this, Collections.<ProcessThread>emptySet());
     }
 
-    private ThreadSet createThreads(Set<ProcessThread.Builder> builders) {
+    private @Nonnull ThreadSet createThreads(@Nonnull Set<ProcessThread.Builder> builders) {
         Set<ProcessThread> threads = new HashSet<ProcessThread>(builders.size());
         for (ProcessThread.Builder builder: builders) {
             threads.add(builder.build(this));
@@ -52,11 +54,11 @@ public class ProcessRuntime {
     /**
      * All threads in current runtime.
      */
-    public ThreadSet getThreads() {
+    public @Nonnull ThreadSet getThreads() {
         return threads;
     }
 
-    /*package*/ ThreadSet getEmptyThreadSet() {
+    /*package*/ @Nonnull ThreadSet getEmptyThreadSet() {
         return emptySet;
     }
 }

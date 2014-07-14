@@ -28,12 +28,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 public class ThreadSet implements Collection<ProcessThread> {
 
-    private ProcessRuntime runtime;
-    private Set<ProcessThread> threads;
+    private @Nonnull ProcessRuntime runtime;
+    private @Nonnull Set<ProcessThread> threads;
 
-    public ThreadSet(ProcessRuntime runtime, Set<ProcessThread> threads) {
+    public ThreadSet(@Nonnull ProcessRuntime runtime, @Nonnull Set<ProcessThread> threads) {
         this.runtime = runtime;
         this.threads = threads;
     }
@@ -43,7 +45,7 @@ public class ThreadSet implements Collection<ProcessThread> {
      *
      * @throws IllegalStateException if not exactly one thread present.
      */
-    public ProcessThread onlyThread() throws IllegalStateException {
+    public @Nonnull ProcessThread onlyThread() throws IllegalStateException {
         if (size() != 1) throw new IllegalStateException(
                 "Exactly one thread expected in the set. Found " + size()
         );
@@ -51,7 +53,7 @@ public class ThreadSet implements Collection<ProcessThread> {
         return threads.iterator().next();
     }
 
-    public ThreadSet onlyNamed(final String name) {
+    public @Nonnull ThreadSet onlyNamed(final String name) {
         return filter(new Predicate() {
             public boolean isValid(ProcessThread thread) {
                 return thread.getName().equals(name);
@@ -59,9 +61,9 @@ public class ThreadSet implements Collection<ProcessThread> {
         });
     }
 
-    private ThreadSet filter(Predicate pred) {
+    private @Nonnull ThreadSet filter(Predicate pred) {
         HashSet<ProcessThread> subset = new HashSet<ProcessThread>(size() / 2);
-        for (ProcessThread thread: threads) {
+        for (@Nonnull ProcessThread thread: threads) {
             if (pred.isValid(thread)) subset.add(thread);
         }
 
@@ -69,7 +71,7 @@ public class ThreadSet implements Collection<ProcessThread> {
     }
 
     private static interface Predicate {
-        boolean isValid(ProcessThread thread);
+        boolean isValid(@Nonnull ProcessThread thread);
     }
 
     @Override

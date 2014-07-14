@@ -26,6 +26,8 @@ package com.github.olivergondza.dumpling.cli;
 import java.io.InputStream;
 import java.io.PrintStream;
 
+import javax.annotation.Nonnull;
+
 import org.kohsuke.args4j.CmdLineException;
 
 
@@ -40,12 +42,12 @@ public interface CliCommand {
     /**
      * Name of the command.
      */
-    String getName();
+    @Nonnull String getName();
 
     /**
      * Get one-line description of command.
      */
-    String getDescription();
+    @Nonnull String getDescription();
 
     /**
      * Invoke the command.
@@ -55,5 +57,5 @@ public interface CliCommand {
      * @param err Stderr for command.
      * @return Command return code.
      */
-    int run(InputStream in, PrintStream out, PrintStream err) throws CmdLineException;
+    int run(@Nonnull InputStream in, @Nonnull PrintStream out, @Nonnull PrintStream err) throws CmdLineException;
 }

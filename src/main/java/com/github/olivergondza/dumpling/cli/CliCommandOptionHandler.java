@@ -26,6 +26,9 @@ package com.github.olivergondza.dumpling.cli;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionDef;
@@ -69,7 +72,7 @@ public class CliCommandOptionHandler extends OptionHandler<CliCommand> {
         return "COMMAND";
     }
 
-    public static CliCommand getHandler(String name) {
+    public static @CheckForNull CliCommand getHandler(String name) {
         for (CliCommand handler: getAllHandlers()) {
             if (handler.getName().equals(name)) {
                 return handler;
@@ -79,7 +82,7 @@ public class CliCommandOptionHandler extends OptionHandler<CliCommand> {
         return null;
     }
 
-    public static Set<? extends CliCommand> getAllHandlers() {
+    public static @Nonnull Set<? extends CliCommand> getAllHandlers() {
         Reflections reflections = new Reflections("com.github.olivergondza.dumpling");
         final Set<Class<? extends CliCommand>> types = reflections.getSubTypesOf(CliCommand.class);
 

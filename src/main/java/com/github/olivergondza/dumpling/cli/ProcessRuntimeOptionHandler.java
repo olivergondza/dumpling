@@ -25,6 +25,9 @@ package com.github.olivergondza.dumpling.cli;
 
 import java.util.Set;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionDef;
@@ -43,11 +46,11 @@ public class ProcessRuntimeOptionHandler extends OptionHandler<ProcessRuntime> {
 
     @Override
     public int parseArguments(Parameters params) throws CmdLineException {
-        String scheme = params.getParameter(0);
+        String scheme = namedParameter("KIND", params, 0);
         CliRuntimeFactory factory = getFactory(scheme);
         if (factory == null) throw new CmdLineException(owner, "Unknown runtime source kind: " + scheme);
 
-        String locator = params.getParameter(1);
+        String locator = namedParameter("LOCATOR", params, 1);
         ProcessRuntime runtime = factory.createRuntime(locator);
         if (runtime == null) throw new AssertionError(factory.getClass() + " failed to create runtime");
 
@@ -56,24 +59,32 @@ public class ProcessRuntimeOptionHandler extends OptionHandler<ProcessRuntime> {
         return 2;
     }
 
+    private @Nonnull String namedParameter(String name, Parameters params, int index) throws CmdLineException {
+        try {
+            return params.getParameter(index);
+        } catch (CmdLineException ex) {
+            throw new CmdLineException(owner, ex.getMessage() + " " + name);
+        }
+    }
+
     @Override
     public String getDefaultMetaVariable() {
         return "KIND LOCATOR";
     }
 
-    public static CliRuntimeFactory getFactory(String name) {
+    public static @CheckForNull CliRuntimeFactory getFactory(String name) {
         Reflections reflections = new Reflections("com.github.olivergondza.dumpling");
         final Set<Class<? extends CliRuntimeFactory>> types = reflections.getSubTypesOf(CliRuntimeFactory.class);
 
         for (Class<? extends CliRuntimeFactory> type: types) {
-            CliRuntimeFactory factory = factory(type);
+            CliRuntimeFactory factory = instantiateFactory(type);
             if (name.equals(factory.getKind())) return factory;
         }
 
         return null;
     }
 
-    private static CliRuntimeFactory factory(Class<? extends CliRuntimeFactory> type) {
+    private static CliRuntimeFactory instantiateFactory(Class<? extends CliRuntimeFactory> type) {
         try {
 
             return type.newInstance();

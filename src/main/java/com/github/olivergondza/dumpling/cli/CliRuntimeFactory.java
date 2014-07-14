@@ -23,6 +23,8 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
+import javax.annotation.Nonnull;
+
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 
 /**
@@ -36,13 +38,15 @@ public interface CliRuntimeFactory {
 
     /**
      * String identifier used to identify factory from command line.
+     *
+     * Expected to be unique.
      */
-    String getKind();
+    @Nonnull String getKind();
 
     /**
      * Create Runtime from String locator.
      *
      * @param locator Factory specific resource locator.
      */
-    ProcessRuntime createRuntime(String locator) throws CommandFailedException;
+    @Nonnull ProcessRuntime createRuntime(@Nonnull String locator) throws CommandFailedException;
 }

@@ -23,17 +23,19 @@
  */
 package com.github.olivergondza.dumpling.model;
 
+import javax.annotation.Nonnull;
+
 public class ThreadLock {
 
-    final String className;
+    final @Nonnull String className;
     final long identityHashCode;
 
-    public ThreadLock(String className, long identityHashCode) {
+    public ThreadLock(@Nonnull String className, long identityHashCode) {
         this.className = className;
         this.identityHashCode = identityHashCode;
     }
 
-    public String getClassName() {
+    public @Nonnull String getClassName() {
         return className;
     }
 

@@ -23,6 +23,8 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
+import javax.annotation.Nonnull;
+
 import org.kohsuke.args4j.CmdLineException;
 
 /**
@@ -37,11 +39,11 @@ import org.kohsuke.args4j.CmdLineException;
  */
 public class CommandFailedException extends RuntimeException {
 
-    public CommandFailedException(String message) {
+    public CommandFailedException(@Nonnull String message) {
         super(message);
     }
 
-    public CommandFailedException(Throwable ex) {
+    public CommandFailedException(@Nonnull Throwable ex) {
         super(ex.getMessage(), ex);
     }
 }

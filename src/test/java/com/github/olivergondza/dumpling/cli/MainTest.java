@@ -70,4 +70,22 @@ public class MainTest extends AbstractCliTest {
         assertThat(out.toString(), containsString("Detect cycles of blocked threads"));
         assertThat(exitValue, equalTo(0));
     }
+
+    @Test
+    public void factoryWithoutKind() {
+
+        run("detect-deadlocks", "--in");
+        assertThat(out.toString(), equalTo(""));
+        assertThat(exitValue, not(equalTo(0)));
+        assertThat(err.toString(), containsString("takes an operand KIND"));
+    }
+
+    @Test
+    public void factoryWithoutLocator() {
+
+        run("detect-deadlocks", "--in", "threaddump");
+        assertThat(out.toString(), equalTo(""));
+        assertThat(exitValue, not(equalTo(0)));
+        assertThat(err.toString(), containsString("takes an operand LOCATOR"));
+    }
 }

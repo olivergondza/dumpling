@@ -23,6 +23,8 @@
  */
 package com.github.olivergondza.dumpling.model;
 
+import javax.annotation.Nonnull;
+
 /**
  *
  * @author ogondza
@@ -40,15 +42,15 @@ public enum ThreadStatus {
     TERMINATED                  ("TERMINATED", 2),
     UNKNOWN                     ("UNKNOWN", -1);
 
-    private String name;
+    private @Nonnull String name;
     private int code;
 
-    private ThreadStatus(String name, int code) {
+    private ThreadStatus(@Nonnull String name, int code) {
         this.name = name;
         this.code = code;
     }
 
-    public String getName() {
+    public @Nonnull String getName() {
         return name;
     }
 
@@ -56,7 +58,7 @@ public enum ThreadStatus {
         return code;
     }
 
-    public static ThreadStatus valueOf(int code) {
+    public static @Nonnull ThreadStatus valueOf(int code) {
         for (ThreadStatus status: values()) {
             if (status.code == code) return status;
         }
@@ -64,7 +66,7 @@ public enum ThreadStatus {
         return UNKNOWN;
     }
 
-    public static ThreadStatus fromString(String title) {
+    public static @Nonnull ThreadStatus fromString(String title) {
         try {
 
             return Enum.valueOf(ThreadStatus.class, title);

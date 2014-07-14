@@ -27,17 +27,20 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
 public class ProcessThread {
 
-    private final ProcessRuntime runtime;
-    private final Builder state;
+    private @Nonnull final ProcessRuntime runtime;
+    private @Nonnull final Builder state;
 
-    private ProcessThread(ProcessRuntime runtime, Builder builder) {
+    private ProcessThread(@Nonnull ProcessRuntime runtime, @Nonnull Builder builder) {
         this.runtime = runtime;
         this.state = builder.clone();
     }
 
-    public static Builder builder() {
+    public static @Nonnull Builder builder() {
         return new Builder();
     }
 
@@ -57,14 +60,14 @@ public class ProcessThread {
         return state.state;
     }
 
-    public StackTraceElement[] getStackTrace() {
+    public @Nonnull StackTraceElement[] getStackTrace() {
         return state.stackTrace.clone();
     }
 
     /**
      * Get threads that are waiting for lock held by this thread.
      */
-    public ThreadSet getBlockedThreads() {
+    public @Nonnull ThreadSet getBlockedThreads() {
         HashSet<ProcessThread> blocked = new HashSet<ProcessThread>();
         for (ProcessThread thread: runtime.getThreads()) {
             if (thread.state.acquiredLocks.contains(state.waitingOnLock)) {
@@ -79,14 +82,18 @@ public class ProcessThread {
      *
      * @return {@link ThreadSet} that contains blocked thread or empty set if this thread does not hold any lock.
      */
-    public ThreadSet getBlockingThreads() {
+    public @Nonnull ThreadSet getBlockingThreads() {
         final ProcessThread blocking = getBlockingThread();
         if (blocking == null) return runtime.getEmptyThreadSet();
 
         return new ThreadSet(runtime, Collections.singleton(blocking));
     }
 
-    public ProcessThread getBlockingThread() {
+    /**
+     * Get thread blocking this threads execution.
+     * @return Blocking thread or null if not block by a thread.
+     */
+    public @CheckForNull ProcessThread getBlockingThread() {
         for (ProcessThread thread: runtime.getThreads()) {
             if (state.acquiredLocks.contains(thread.state.waitingOnLock)) {
                 return thread;
@@ -121,18 +128,18 @@ public class ProcessThread {
         private boolean daemon;
         private int priority;
         private long tid;
-        private StackTraceElement[] stackTrace = new StackTraceElement[] {};
+        private @Nonnull StackTraceElement[] stackTrace = new StackTraceElement[] {};
         private Thread.State state;
         private ThreadStatus status;
-        private ThreadLock waitingOnLock;
-        private Set<ThreadLock> acquiredLocks = Collections.emptySet();
+        private @CheckForNull ThreadLock waitingOnLock;
+        private @Nonnull Set<ThreadLock> acquiredLocks = Collections.emptySet();
 
-        public ProcessThread build(ProcessRuntime runtime) {
+        public ProcessThread build(@Nonnull ProcessRuntime runtime) {
             return new ProcessThread(runtime, this);
         }
 
         @Override
-        public Builder clone() {
+        public @Nonnull Builder clone() {
             try {
                 return (Builder) super.clone();
             } catch (CloneNotSupportedException ex) {
@@ -140,47 +147,47 @@ public class ProcessThread {
             }
         }
 
-        public Builder setName(String name) {
+        public @Nonnull Builder setName(String name) {
             this.name = name;
             return this;
         }
 
-        public Builder setId(long tid) {
+        public @Nonnull Builder setId(long tid) {
             this.tid = tid;
             return this;
         }
 
-        public Builder setDaemon(boolean daemon) {
+        public @Nonnull Builder setDaemon(boolean daemon) {
             this.daemon = daemon;
             return this;
         }
 
-        public Builder setPriority(int priority) {
+        public @Nonnull Builder setPriority(int priority) {
             this.priority = priority;
             return this;
         }
 
-        public Builder setStacktrace(StackTraceElement[] stackTrace) {
+        public @Nonnull Builder setStacktrace(@Nonnull StackTraceElement[] stackTrace) {
             this.stackTrace = stackTrace;
             return this;
         }
 
-        public Builder setState(Thread.State state) {
+        public @Nonnull Builder setState(Thread.State state) {
             this.state = state;
             return this;
         }
 
-        public Builder setStatus(ThreadStatus status) {
+        public @Nonnull Builder setStatus(ThreadStatus status) {
             this.status = status;
             return this;
         }
 
-        public Builder setLock(ThreadLock lock) {
+        public @Nonnull Builder setLock(ThreadLock lock) {
             this.waitingOnLock = lock;
             return this;
         }
 
-        public Builder setAcquiredLocks(Set<ThreadLock> locks) {
+        public @Nonnull Builder setAcquiredLocks(Set<ThreadLock> locks) {
             this.acquiredLocks = Collections.unmodifiableSet(locks);
             return this;
         }

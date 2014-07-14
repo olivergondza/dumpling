@@ -31,6 +31,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.io.IOUtils;
 
 import com.github.olivergondza.dumpling.cli.CliRuntimeFactory;
@@ -43,18 +45,30 @@ import com.github.olivergondza.dumpling.model.ThreadStatus;
 
 public class ThreadDumpFactory implements CliRuntimeFactory {
 
+    public @Nonnull String getKind() {
+        return "threaddump";
+    }
+
+    public @Nonnull ProcessRuntime createRuntime(String locator) throws CommandFailedException {
+        try {
+            return fromFile(new File(locator));
+        } catch (IOException ex) {
+            throw new CommandFailedException(ex);
+        }
+    }
+
     /**
      * Create runtime from thread dump.
      *
      * @throws IOException File could not be loaded.
      */
-    public ProcessRuntime fromFile(File threadDump) throws IOException {
+    public @Nonnull ProcessRuntime fromFile(File threadDump) throws IOException {
         String content = IOUtils.toString(threadDump.toURI());
 
         return new ProcessRuntime(threads(content));
     }
 
-    private Set<Builder> threads(String content) {
+    private @Nonnull Set<Builder> threads(String content) {
         HashSet<Builder> threads = new HashSet<Builder>();
 
         for (String singleThread: content.split("\n\n")) {
@@ -161,17 +175,5 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
         return builder.setStacktrace(
                 traceElements.toArray(new StackTraceElement[traceElements.size()])
         );
-    }
-
-    public String getKind() {
-        return "threaddump";
-    }
-
-    public ProcessRuntime createRuntime(String locator) throws CommandFailedException {
-        try {
-            return fromFile(new File(locator));
-        } catch (IOException ex) {
-            throw new CommandFailedException(ex);
-        }
     }
 }
