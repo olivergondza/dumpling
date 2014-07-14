@@ -48,4 +48,11 @@ public abstract class AbstractCliTest {
             throw new AssertionError(ex);
         }
     }
+
+    protected static void pause(int time) {
+        try {
+            Thread.sleep(time);
+        } catch (InterruptedException ex) {
+        }
+    }
 }

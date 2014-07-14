@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
@@ -61,6 +62,14 @@ public class ThreadSet implements Set<ProcessThread> {
         return filter(new Predicate() {
             public boolean isValid(ProcessThread thread) {
                 return thread.getName().equals(name);
+            }
+        });
+    }
+
+    public @Nonnull ThreadSet onlyNamed(final Pattern pattern) {
+        return filter(new Predicate() {
+            public boolean isValid(ProcessThread thread) {
+                return pattern.matcher(thread.getName()).find();
             }
         });
     }

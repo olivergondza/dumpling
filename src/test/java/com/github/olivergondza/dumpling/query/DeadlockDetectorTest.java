@@ -125,13 +125,6 @@ public class DeadlockDetectorTest extends AbstractCliTest {
         assertThat(exitValue, equalTo(1));
     }
 
-    private static void pause(int time) {
-        try {
-            Thread.sleep(time);
-        } catch (InterruptedException ex) {
-        }
-    }
-
     private Set<ThreadSet> deadlocks(ProcessRuntime runtime) {
         return new DeadlockDetector().getAll(runtime);
     }
