@@ -70,7 +70,7 @@ public class ProcessThread {
     public @Nonnull ThreadSet getBlockedThreads() {
         HashSet<ProcessThread> blocked = new HashSet<ProcessThread>();
         for (ProcessThread thread: runtime.getThreads()) {
-            if (thread.state.acquiredLocks.contains(state.waitingOnLock)) {
+            if (state.acquiredLocks.contains(thread.state.waitingOnLock)) {
                 blocked.add(thread);
             }
         }
@@ -95,7 +95,7 @@ public class ProcessThread {
      */
     public @CheckForNull ProcessThread getBlockingThread() {
         for (ProcessThread thread: runtime.getThreads()) {
-            if (state.acquiredLocks.contains(thread.state.waitingOnLock)) {
+            if (thread.state.acquiredLocks.contains(state.waitingOnLock)) {
                 return thread;
             }
         }

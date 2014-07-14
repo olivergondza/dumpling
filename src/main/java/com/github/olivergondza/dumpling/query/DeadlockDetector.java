@@ -53,14 +53,14 @@ public class DeadlockDetector {
             for (ProcessThread blocking = thread.getBlockingThread(); blocking != null; blocking = blocking.getBlockingThread()) {
                 if (analyzed.contains(thread)) break;
 
-                cycleCandidate.add(blocking);
-
-                if (thread == blocking) {
+                if (cycleCandidate.contains(blocking)) {
                     // Cycle detected - record deadlock and break the cycle traversing.
                     deadlocks.add(new ThreadSet(runtime, cycleCandidate));
                     analyzed.addAll(cycleCandidate);
                     break;
                 }
+
+                cycleCandidate.add(blocking);
             }
 
             analyzed.add(thread);

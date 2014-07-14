@@ -98,11 +98,11 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         ProcessThread blocked = threads.onlyNamed("blocked_thread").onlyThread();
         ProcessThread owning = threads.onlyNamed("owning_thread").onlyThread();
 
-        assertTrue(blocked.getBlockingThreads().isEmpty());
-        assertEquals(threads.onlyNamed("owning_thread"), blocked.getBlockedThreads());
+        assertTrue(owning.getBlockingThreads().isEmpty());
+        assertEquals(threads.onlyNamed("blocked_thread"), owning.getBlockedThreads());
 
-        assertEquals(threads.onlyNamed("blocked_thread"), owning.getBlockingThreads());
-        assertTrue(owning.getBlockedThreads().isEmpty());
+        assertEquals(threads.onlyNamed("owning_thread"), blocked.getBlockingThreads());
+        assertTrue(blocked.getBlockedThreads().isEmpty());
     }
 
     @Test
