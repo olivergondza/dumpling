@@ -23,6 +23,7 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
+import static com.github.olivergondza.dumpling.Util.pause;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -152,11 +153,34 @@ public class JvmRuntimeFactoryTest {
         assertStatusIs(ThreadStatus.BLOCKED_ON_MONITOR_ENTER, thread);
     }
 
-    @Test // https://github.com/olivergondza/dumpling/issues/4
-    public void threadInfoShouldExist() {
-        for (int i = 0; i < 100; i++) {
-            parkedTimedThreadStatus();
+    @Test
+    public void creatingAndTerminatingThreadsShouldBeHandledGracefully() {
+        class Thrd extends Thread {
+            int countdown;
+            public Thrd(int countdown) {
+                this.countdown = countdown;
+            }
+
+            @Override
+            public void run() {
+                pause(1);
+                new Thrd(countdown - 1).start();
+            }
         }
+
+        int originalCount = new JvmRuntimeFactory().currentRuntime().getThreads().size();
+
+        new Thrd(10).start();
+        new Thrd(10).start();
+        new Thrd(10).start();
+        new Thrd(10).start();
+        new Thrd(10).start();
+
+        ProcessRuntime runtime;
+        do {
+            runtime = new JvmRuntimeFactory().currentRuntime();
+
+        } while (runtime.getThreads().size() > originalCount);
     }
 
     private void assertStatusIs(ThreadStatus expected, Thread thread) {
@@ -172,11 +196,7 @@ public class JvmRuntimeFactoryTest {
     }
 
     private ProcessRuntime runtime() {
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException ex) {
-            throw new AssertionError();
-        }
+        pause(100);
         return new JvmRuntimeFactory().currentRuntime();
     }
 

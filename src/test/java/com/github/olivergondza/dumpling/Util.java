@@ -42,4 +42,11 @@ public class Util {
 
         return new File(res.toURI());
     }
+
+    public static void pause(int time) {
+        try {
+            Thread.sleep(time);
+        } catch (InterruptedException ex) {
+        }
+    }
 }

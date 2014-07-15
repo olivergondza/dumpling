@@ -62,7 +62,9 @@ public class JvmRuntimeFactory {
             ;
 
             ThreadInfo info = infos.get(thread.getId());
-            if (info == null) throw new AssertionError("No thread info for thread " + thread.getName());
+            // The thread was terminated between Thread.getAllStackTraces() and ThreadMXBean.getThreadInfo()
+            if (info == null) continue;
+
             builder.setAcquiredLocks(locks(info));
             LockInfo lock = info.getLockInfo();
             if (lock != null) builder.setLock(lock(lock));
@@ -77,6 +79,8 @@ public class JvmRuntimeFactory {
         ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
         Map<Long, ThreadInfo> infos= new HashMap<Long, ThreadInfo>();
         for (ThreadInfo info: threadMXBean.getThreadInfo(threadMXBean.getAllThreadIds(), true, true)) {
+            // The thread was terminated between threadMXBean.getAllThreadIds() and ThreadMXBean.getThreadInfo()
+            if (info == null) continue;
 
             infos.put(info.getThreadId(), info);
         }

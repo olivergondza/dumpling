@@ -62,7 +62,7 @@ public class DeadlockDetectorTest extends AbstractCliTest {
         };
         thread.start();
 
-        pause(100);
+        Util.pause(100);
 
         assertTrue("No deadlock should be present", deadlocks(runtime()).isEmpty());
 
@@ -79,7 +79,7 @@ public class DeadlockDetectorTest extends AbstractCliTest {
             public void run() {
                 while (true) {
                     synchronized (lockA) {
-                        pause(100);
+                        Util.pause(100);
                         synchronized (lockB) {
                             hashCode();
                         }
@@ -93,7 +93,7 @@ public class DeadlockDetectorTest extends AbstractCliTest {
             public void run() {
                 while (true) {
                     synchronized (lockB) {
-                        pause(100);
+                        Util.pause(100);
                         synchronized (lockA) {
                             hashCode();
                         }
@@ -102,7 +102,7 @@ public class DeadlockDetectorTest extends AbstractCliTest {
             }
         }.start();
 
-        pause(1000);
+        Util.pause(1000);
 
         ProcessRuntime runtime = runtime();
         final Set<ThreadSet> deadlocks = deadlocks(runtime);
