@@ -106,6 +106,20 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     }
 
     @Test
+    public void doNotIncludeSelfToBlockedOrBlockingThreads() throws Exception {
+
+        ThreadSet threads = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "self-lock.log")).getThreads();
+
+        ProcessThread handler = threads.onlyNamed("Reference Handler").onlyThread();
+        ProcessThread finalizer = threads.onlyNamed("Finalizer").onlyThread();
+
+        assertTrue(handler.getBlockedThreads().isEmpty());
+        assertTrue(handler.getBlockingThreads().isEmpty());
+        assertTrue(finalizer.getBlockedThreads().isEmpty());
+        assertTrue(finalizer.getBlockingThreads().isEmpty());
+    }
+
+    @Test
     public void cliNoSuchFile() {
         run("detect-deadlocks", "--in", "threaddump", "/there_is_no_such_file");
         assertThat(exitValue, equalTo(-1));
