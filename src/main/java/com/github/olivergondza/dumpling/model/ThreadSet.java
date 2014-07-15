@@ -149,11 +149,13 @@ public class ThreadSet implements Set<ProcessThread> {
     // Groovy interop
 
     public @Nonnull ThreadSet grep() {
-        return derive(DefaultGroovyMethods.grep(threads));
+        // Do not invoke grep(Collection) as it was added in 2.0
+        return derive(DefaultGroovyMethods.grep((Object) threads));
     }
 
     public @Nonnull ThreadSet grep(Object filter) {
-        return derive(DefaultGroovyMethods.grep(threads, filter));
+        // Do not invoke grep(Collection, Object) as it was added in 2.0
+        return derive(DefaultGroovyMethods.grep((Object) threads, filter));
     }
 
     public @Nonnull ThreadSet findAll() {
