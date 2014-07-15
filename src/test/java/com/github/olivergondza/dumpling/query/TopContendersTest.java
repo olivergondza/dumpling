@@ -34,7 +34,6 @@ import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
 import com.github.olivergondza.dumpling.cli.AbstractCliTest;
-import com.github.olivergondza.dumpling.factory.JvmRuntimeFactory;
 import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
@@ -59,42 +58,7 @@ public class TopContendersTest extends AbstractCliTest {
 
     @Test
     public void contenders() throws Exception {
-        final Object lock = new Object();
-
-        Thread producer = new Thread("producer") {
-            @Override
-            public void run() {
-                synchronized (lock) {
-                    pause(10000);
-                }
-            }
-        };
-        producer.start();
-
-        class Consumer extends Thread {
-
-            public Consumer(String name) {
-                super(name);
-            }
-
-            @Override
-            public void run() {
-                pause(100);
-                synchronized (lock) {
-                    hashCode();
-                }
-            }
-        };
-        Consumer consumerA = new Consumer("consumerA");
-        Consumer consumerB = new Consumer("consumerB");
-        Consumer consumerC = new Consumer("consumerC");
-        consumerA.start();
-        consumerB.start();
-        consumerC.start();
-
-        pause(200);
-
-        final ProcessRuntime runtime = new JvmRuntimeFactory().currentRuntime();
+        ProcessRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "contention.log"));
 
         Map<ProcessThread, ThreadSet> contenders = new TopContenders().getAll(runtime);
 
