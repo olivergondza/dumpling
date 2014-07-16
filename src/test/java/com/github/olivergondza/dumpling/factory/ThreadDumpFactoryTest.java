@@ -52,8 +52,8 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
         ProcessThread main = threads.onlyNamed("main").onlyThread();
         assertEquals(ThreadStatus.RUNNABLE, main.getThreadStatus());
-        assertEquals(139675222183936L, main.getTid());
-        assertEquals(24597, main.getNid());
+        assertThat(139675222183936L, equalTo(main.getTid()));
+        assertThat(24597L, equalTo(main.getNid()));
         assertEquals(10, main.getPriority());
 
         StackTraceElement[] trace = main.getStackTrace();

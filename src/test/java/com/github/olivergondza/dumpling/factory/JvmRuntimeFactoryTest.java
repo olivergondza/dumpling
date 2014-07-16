@@ -192,7 +192,7 @@ public class JvmRuntimeFactoryTest {
         ProcessThread actual = new JvmRuntimeFactory().currentRuntime()
                 .getThreads().onlyNamed(expected.getName()).onlyThread()
         ;
-
+System.out.println(new JvmRuntimeFactory().currentRuntime().getThreads());
         assertThat(expected.getName(), equalTo(actual.getName()));
         assertThat(expected.getState(), equalTo(actual.getState()));
         assertThat(expected.getPriority(), equalTo(actual.getPriority()));

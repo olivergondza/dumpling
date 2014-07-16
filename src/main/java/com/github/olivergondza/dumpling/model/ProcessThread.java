@@ -48,15 +48,25 @@ public class ProcessThread {
         return state.name;
     }
 
-    public long getId() {
+    /**
+     * Java thread id.
+     *
+     * @return Null if not provided.
+     */
+    public Long getId() {
         return state.id;
     }
 
-    public long getNid() {
+    /**
+     * Native thread id.
+     *
+     * @return Null if not provided.
+     */
+    public Long getNid() {
         return state.nid;
     }
 
-    public long getTid() {
+    public Long getTid() {
         return state.tid;
     }
 
@@ -123,17 +133,31 @@ public class ProcessThread {
     }
 
     @Override
-    public boolean equals(Object lhs) {
-        if (lhs == null) return false;
-        if (!lhs.getClass().equals(this.getClass())) return false;
+    public boolean equals(Object rhs) {
+        if (rhs == null) return false;
+        if (!rhs.getClass().equals(this.getClass())) return false;
 
-        ProcessThread other = (ProcessThread) lhs;
-        return state.tid == other.state.tid && state.nid == other.state.nid && state.id == other.state.id;
+        ProcessThread other = (ProcessThread) rhs;
+
+        if (state.tid == null ? other.state.tid != null : !state.tid.equals(other.state.tid)) return false;
+        if (state.nid == null ? other.state.nid != null : !state.nid.equals(other.state.nid)) return false;
+        if (state.id == null ? other.state.id != null : !state.id.equals(other.state.id)) return false;
+
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return new Long(state.tid * 31).hashCode();
+        Long tid = state.tid;
+        if (tid == null) tid = 0L;
+
+        Long nid = state.nid;
+        if (nid == null) nid = 0L;
+
+        Long id = state.id;
+        if (id == null) id = 0L;
+
+        return new Long(7 + 31 * tid + 17 * nid + 11 * id).hashCode();
     }
 
     public static class Builder implements Cloneable {
@@ -142,7 +166,7 @@ public class ProcessThread {
         private boolean daemon;
         private int priority;
         // https://gist.github.com/rednaxelafx/843622
-        private long id, nid, tid;
+        private Long id, nid, tid;
         private @Nonnull StackTraceElement[] stackTrace = new StackTraceElement[] {};
         private Thread.State state;
         private ThreadStatus status;
