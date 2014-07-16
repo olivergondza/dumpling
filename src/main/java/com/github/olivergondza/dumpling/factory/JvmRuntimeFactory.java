@@ -78,10 +78,7 @@ public class JvmRuntimeFactory {
     private Map<Long, ThreadInfo> infos() {
         ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
         Map<Long, ThreadInfo> infos= new HashMap<Long, ThreadInfo>();
-        for (ThreadInfo info: threadMXBean.getThreadInfo(threadMXBean.getAllThreadIds(), true, true)) {
-            // The thread was terminated between threadMXBean.getAllThreadIds() and ThreadMXBean.getThreadInfo()
-            if (info == null) continue;
-
+        for (ThreadInfo info: threadMXBean.dumpAllThreads(true, true)) {
             infos.put(info.getThreadId(), info);
         }
 
