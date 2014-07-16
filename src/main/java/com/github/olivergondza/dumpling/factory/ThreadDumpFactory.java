@@ -144,9 +144,14 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
     }
 
     private Builder initStatus(Builder builder, String statusLine) {
-        Matcher status = Pattern.compile("\\s*java.lang.Thread.State: (.*)").matcher(statusLine);
-        status.find();
-        return builder.setStatus(ThreadStatus.fromString(status.group(1)));
+        Matcher matcher = Pattern.compile("\\s*java.lang.Thread.State: (.*)").matcher(statusLine);
+        matcher.find();
+
+        final ThreadStatus status = ThreadStatus.fromString(matcher.group(1));
+        builder.setStatus(status);
+        builder.setState(status.getState());
+
+        return builder;
     }
 
     private Builder initStacktrace(Builder builder, String trace) {

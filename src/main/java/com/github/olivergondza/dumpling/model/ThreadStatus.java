@@ -23,31 +23,38 @@
  */
 package com.github.olivergondza.dumpling.model;
 
+import java.lang.Thread.State;
+
 import javax.annotation.Nonnull;
 
 /**
+ * Thread status.
+ *
+ * More detailed version of {@link Thread.State}.
  *
  * @author ogondza
  * @see http://hg.openjdk.java.net/jdk7/jdk7/hotspot/file/167b70ff3abc/src/share/vm/classfile/javaClasses.cpp#l922
  */
 public enum ThreadStatus {
-    NEW                         ("NEW", 0),
-    RUNNABLE                    ("RUNNABLE", 5), // runnable / running
-    SLEEPING                    ("TIMED_WAITING (sleeping)", /*121*/ 225), // Thread.sleep()
-    IN_OBJECT_WAIT              ("WAITING (on object monitor)", /*281*/ 401), // Object.wait()
-    IN_OBJECT_WAIT_TIMED        ("TIMED_WAITING (on object monitor)", /*297*/ 417),  // Object.wait(long)
-    PARKED                      ("WAITING (parking)", /*537*/ 657), // LockSupport.park()
-    PARKED_TIMED                ("TIMED_WAITING (parking)", /*553*/ 673), // LockSupport.park(long)
-    BLOCKED_ON_MONITOR_ENTER    ("BLOCKED (on object monitor)", 1025), // (re-)entering a synchronization block
-    TERMINATED                  ("TERMINATED", 2),
-    UNKNOWN                     ("UNKNOWN", -1);
+    NEW                         ("NEW",                                 0,      State.NEW),
+    RUNNABLE                    ("RUNNABLE",                            5,      State.RUNNABLE),        // runnable / running
+    SLEEPING                    ("TIMED_WAITING (sleeping)",            225,    State.TIMED_WAITING),   // Thread.sleep()
+    IN_OBJECT_WAIT              ("WAITING (on object monitor)",         401,    State.WAITING),         // Object.wait()
+    IN_OBJECT_WAIT_TIMED        ("TIMED_WAITING (on object monitor)",   417,    State.TIMED_WAITING),   // Object.wait(long)
+    PARKED                      ("WAITING (parking)",                   657,    State.WAITING),         // LockSupport.park()
+    PARKED_TIMED                ("TIMED_WAITING (parking)",             673,    State.TIMED_WAITING),   // LockSupport.park(long)
+    BLOCKED_ON_MONITOR_ENTER    ("BLOCKED (on object monitor)",         1025,   State.BLOCKED),         // (re-)entering a synchronization block
+    TERMINATED                  ("TERMINATED",                          2,      State.TERMINATED),
+    UNKNOWN                     ("UNKNOWN",                             -1,     null);
 
-    private @Nonnull String name;
-    private int code;
+    private final @Nonnull String name;
+    private final int code;
+    private final State state;
 
-    private ThreadStatus(@Nonnull String name, int code) {
+    private ThreadStatus(@Nonnull String name, int code, State state) {
         this.name = name;
         this.code = code;
+        this.state = state;
     }
 
     public @Nonnull String getName() {
@@ -56,6 +63,10 @@ public enum ThreadStatus {
 
     public int getCode() {
         return code;
+    }
+
+    public State getState() {
+        return state;
     }
 
     public static @Nonnull ThreadStatus valueOf(int code) {

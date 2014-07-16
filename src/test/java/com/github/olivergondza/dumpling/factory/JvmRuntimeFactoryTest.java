@@ -61,6 +61,7 @@ public class JvmRuntimeFactoryTest {
         thread.start();
 
         assertStatusIs(ThreadStatus.RUNNABLE, thread);
+        assertStateIs(Thread.State.RUNNABLE, thread);
     }
 
     @Test
@@ -78,6 +79,7 @@ public class JvmRuntimeFactoryTest {
         thread.start();
 
         assertStatusIs(ThreadStatus.SLEEPING, thread);
+        assertStateIs(Thread.State.TIMED_WAITING, thread);
     }
 
     @Test
@@ -95,6 +97,7 @@ public class JvmRuntimeFactoryTest {
         thread.start();
 
         assertStatusIs(ThreadStatus.IN_OBJECT_WAIT, thread);
+        assertStateIs(Thread.State.WAITING, thread);
     }
 
     @Test
@@ -112,6 +115,7 @@ public class JvmRuntimeFactoryTest {
         thread.start();
 
         assertStatusIs(ThreadStatus.IN_OBJECT_WAIT_TIMED, thread);
+        assertStateIs(Thread.State.TIMED_WAITING, thread);
     }
 
     @Test
@@ -125,6 +129,7 @@ public class JvmRuntimeFactoryTest {
         thread.start();
 
         assertStatusIs(ThreadStatus.PARKED, thread);
+        assertStateIs(Thread.State.WAITING, thread);
     }
 
     @Test
@@ -138,6 +143,7 @@ public class JvmRuntimeFactoryTest {
         thread.start();
 
         assertStatusIs(ThreadStatus.PARKED_TIMED, thread);
+        assertStateIs(Thread.State.TIMED_WAITING, thread);
     }
 
     @Test
@@ -153,6 +159,7 @@ public class JvmRuntimeFactoryTest {
         thread.start();
 
         assertStatusIs(ThreadStatus.BLOCKED_ON_MONITOR_ENTER, thread);
+        assertStateIs(Thread.State.BLOCKED, thread);
     }
 
     @Test
@@ -192,7 +199,7 @@ public class JvmRuntimeFactoryTest {
         ProcessThread actual = new JvmRuntimeFactory().currentRuntime()
                 .getThreads().onlyNamed(expected.getName()).onlyThread()
         ;
-System.out.println(new JvmRuntimeFactory().currentRuntime().getThreads());
+
         assertThat(expected.getName(), equalTo(actual.getName()));
         assertThat(expected.getState(), equalTo(actual.getState()));
         assertThat(expected.getPriority(), equalTo(actual.getPriority()));
@@ -201,6 +208,10 @@ System.out.println(new JvmRuntimeFactory().currentRuntime().getThreads());
 
     private void assertStatusIs(ThreadStatus expected, Thread thread) {
         assertEquals("Reported state: " + thread.getState(), expected, statusOf(thread));
+    }
+
+    private void assertStateIs(Thread.State expected, Thread thread) {
+        assertEquals("Reported state: " + thread.getState(), expected, statusOf(thread).getState());
     }
 
     private ThreadStatus statusOf(Thread thread) {
