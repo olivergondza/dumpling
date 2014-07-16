@@ -49,6 +49,14 @@ public class ProcessThread {
     }
 
     public long getId() {
+        return state.id;
+    }
+
+    public long getNid() {
+        return state.nid;
+    }
+
+    public long getTid() {
         return state.tid;
     }
 
@@ -58,6 +66,10 @@ public class ProcessThread {
 
     public Thread.State getState() {
         return state.state;
+    }
+
+    public int getPriority() {
+        return state.priority;
     }
 
     public @Nonnull StackTraceElement[] getStackTrace() {
@@ -116,7 +128,7 @@ public class ProcessThread {
         if (!lhs.getClass().equals(this.getClass())) return false;
 
         ProcessThread other = (ProcessThread) lhs;
-        return state.tid == other.state.tid;
+        return state.tid == other.state.tid && state.nid == other.state.nid && state.id == other.state.id;
     }
 
     @Override
@@ -129,7 +141,8 @@ public class ProcessThread {
         private String name;
         private boolean daemon;
         private int priority;
-        private long tid;
+        // https://gist.github.com/rednaxelafx/843622
+        private long id, nid, tid;
         private @Nonnull StackTraceElement[] stackTrace = new StackTraceElement[] {};
         private Thread.State state;
         private ThreadStatus status;
@@ -154,7 +167,17 @@ public class ProcessThread {
             return this;
         }
 
-        public @Nonnull Builder setId(long tid) {
+        public @Nonnull Builder setId(long id) {
+            this.id = id;
+            return this;
+        }
+
+        public @Nonnull Builder setNid(long nid) {
+            this.nid = nid;
+            return this;
+        }
+
+        public @Nonnull Builder setTid(long tid) {
             this.tid = tid;
             return this;
         }
@@ -200,7 +223,9 @@ public class ProcessThread {
             sb.append('"').append(name).append('"');
             if (daemon) sb.append(" daemon");
             sb.append(" prio=").append(priority);
+            sb.append(" id=").append(id);
             sb.append(" tid=").append(tid);
+            sb.append(" nid=").append(nid);
 
             if (status != null) {
                 sb.append("\n   java.lang.Thread.State: ").append(status.getName());

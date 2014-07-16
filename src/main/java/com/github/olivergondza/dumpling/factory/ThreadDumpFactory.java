@@ -138,8 +138,8 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
         return builder.setName(details.group(1))
                 .setDaemon(!details.group(2).isEmpty())
                 .setPriority(Integer.parseInt(details.group(3)))
-                .setId(Long.parseLong(details.group(4), 16))
-                // .setNativeId() TODO
+                .setTid(Long.parseLong(details.group(4), 16))
+                .setNid(Long.parseLong(details.group(5), 16))
         ;
     }
 
