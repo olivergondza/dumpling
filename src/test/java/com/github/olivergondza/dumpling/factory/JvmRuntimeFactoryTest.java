@@ -24,6 +24,8 @@
 package com.github.olivergondza.dumpling.factory;
 
 import static com.github.olivergondza.dumpling.Util.pause;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -181,6 +183,20 @@ public class JvmRuntimeFactoryTest {
             runtime = new JvmRuntimeFactory().currentRuntime();
 
         } while (runtime.getThreads().size() > originalCount);
+    }
+
+    @Test
+    public void testThreadAttributes() {
+        Thread expected = Thread.currentThread();
+
+        ProcessThread actual = new JvmRuntimeFactory().currentRuntime()
+                .getThreads().onlyNamed(expected.getName()).onlyThread()
+        ;
+
+        assertThat(expected.getName(), equalTo(actual.getName()));
+        assertThat(expected.getState(), equalTo(actual.getState()));
+        assertThat(expected.getPriority(), equalTo(actual.getPriority()));
+        assertThat(expected.getId(), equalTo(actual.getId()));
     }
 
     private void assertStatusIs(ThreadStatus expected, Thread thread) {
