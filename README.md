@@ -1,7 +1,7 @@
 # Dumpling
 
-Dumpling is an object model and domain specific language to represent state of
-process threads and lock based dependencies.
+Dumpling is an object model and domain specific language to represent and query the state of
+process threads and their lock based dependencies.
 
 Dumpling is shipped with a collection of predefined queries to cover most common
 situations as well as several factories to create thread model from various sources.
@@ -9,6 +9,8 @@ situations as well as several factories to create thread model from various sour
 ## Usage
 
 ### Bundle dumpling to your application
+
+Make dumpling part of your application and inspect threads from within.
 
 - Include following maven dependency
 ```
@@ -21,12 +23,15 @@ situations as well as several factories to create thread model from various sour
 
 - Instantiate runtime of current JVM
 ```
-    ProcessRuntime runtime = new JvmRuntimeFactory().currentRuntime()
+    // JvmRuntimeFactory creates model from host JVM
+    ProcessRuntime runtime = new JvmRuntimeFactory().currentRuntime();
 ```
 
 - Get the work done
 
 ### Invoking dumpling from console
+
+Use dumpling to discover problems in thread dumps.
 
 - Build self-contained `dumpling.jar`
 ```
@@ -55,7 +60,7 @@ situations as well as several factories to create thread model from various sour
 
 ### model
 
-Immutable domain objects.
+Immutable domain objects. 
 
 ### query
 
