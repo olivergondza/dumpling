@@ -58,7 +58,7 @@ public class ThreadSet implements Set<ProcessThread> {
         return threads.iterator().next();
     }
 
-    public @Nonnull ThreadSet onlyNamed(final String name) {
+    public @Nonnull ThreadSet onlyNamed(@Nonnull final String name) {
         return filter(new Predicate() {
             public boolean isValid(ProcessThread thread) {
                 return thread.getName().equals(name);
@@ -66,12 +66,18 @@ public class ThreadSet implements Set<ProcessThread> {
         });
     }
 
-    public @Nonnull ThreadSet onlyNamed(final Pattern pattern) {
+    public @Nonnull ThreadSet onlyNamed(@Nonnull final Pattern pattern) {
         return filter(new Predicate() {
             public boolean isValid(ProcessThread thread) {
                 return pattern.matcher(thread.getName()).find();
             }
         });
+    }
+
+    public @Nonnull ThreadSet ignoring(@Nonnull ThreadSet actualThreads) {
+        HashSet<ProcessThread> newThreads = new HashSet<ProcessThread>(threads);
+        newThreads.removeAll(actualThreads);
+        return derive(newThreads);
     }
 
     private @Nonnull ThreadSet filter(Predicate pred) {

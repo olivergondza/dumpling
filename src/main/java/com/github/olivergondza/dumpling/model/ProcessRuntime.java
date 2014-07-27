@@ -41,6 +41,12 @@ public class ProcessRuntime {
     public ProcessRuntime(@Nonnull Set<ProcessThread.Builder> builders) {
         this.threads = createThreads(builders);
         this.emptySet = new ThreadSet(this, Collections.<ProcessThread>emptySet());
+
+        int buildersSize = builders.size();
+        int threadsSize = threads.size();
+        if (buildersSize != threadsSize) throw new AssertionError(
+                String.format("%d builders produced %d threads", buildersSize, threadsSize)
+        );
     }
 
     private @Nonnull ThreadSet createThreads(@Nonnull Set<ProcessThread.Builder> builders) {

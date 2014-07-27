@@ -25,6 +25,7 @@ package com.github.olivergondza.dumpling.model;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.annotation.CheckForNull;
@@ -82,8 +83,20 @@ public class ProcessThread {
         return state.priority;
     }
 
+    public boolean isDaemon() {
+        return state.daemon;
+    }
+
     public @Nonnull StackTraceElement[] getStackTrace() {
         return state.stackTrace.clone();
+    }
+
+    public @CheckForNull ThreadLock getWaitingOnLock() {
+        return state.waitingOnLock;
+    }
+
+    public @Nonnull Set<ThreadLock> getAcquiredLocks() {
+        return state.acquiredLocks;
     }
 
     /**
@@ -239,6 +252,12 @@ public class ProcessThread {
         public @Nonnull Builder setAcquiredLocks(Set<ThreadLock> locks) {
             this.acquiredLocks = Collections.unmodifiableSet(locks);
             return this;
+        }
+
+        public @Nonnull Builder setAcquiredLocks(ThreadLock... locks) {
+            LinkedHashSet<ThreadLock> data = new LinkedHashSet<ThreadLock>(locks.length);
+            Collections.addAll(data, locks);
+            return setAcquiredLocks(data);
         }
 
         @Override
