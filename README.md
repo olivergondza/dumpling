@@ -13,7 +13,7 @@ situations as well as several factories to create thread model from various sour
 Make dumpling part of your application and inspect threads from within.
 
 - Include following maven dependency
-```
+```xml
     <dependency>
       <groupId>com.github.olivergondza.dumpling</groupId>
       <artifactId>dumpling</artifactId>
@@ -22,7 +22,7 @@ Make dumpling part of your application and inspect threads from within.
 ```
 
 - Instantiate runtime of current JVM
-```
+```java
     // JvmRuntimeFactory creates model from host JVM
     ProcessRuntime runtime = new JvmRuntimeFactory().currentRuntime();
 ```
@@ -34,7 +34,7 @@ Make dumpling part of your application and inspect threads from within.
 Use dumpling to discover problems in thread dumps.
 
 - Build self-contained `dumpling.jar`
-```
+```bash
     git clone https://github.com/olivergondza/dumpling.git
     cd dumpling
     mvn package
@@ -43,7 +43,7 @@ Use dumpling to discover problems in thread dumps.
 ```
 
 - Invoke queries as needed
-```
+```bash
     java -jar dumpling.jar help
     java -jar dumpling.jar help <command>
 
