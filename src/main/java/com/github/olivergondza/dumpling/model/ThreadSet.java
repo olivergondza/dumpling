@@ -35,6 +35,8 @@ import javax.annotation.Nonnull;
 
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
+import com.github.olivergondza.dumpling.query.SingleRuntimeQuery;
+
 public class ThreadSet implements Set<ProcessThread> {
 
     private @Nonnull ProcessRuntime runtime;
@@ -43,6 +45,10 @@ public class ThreadSet implements Set<ProcessThread> {
     public ThreadSet(@Nonnull ProcessRuntime runtime, @Nonnull Set<ProcessThread> threads) {
         this.runtime = runtime;
         this.threads = threads;
+    }
+
+    public @Nonnull ProcessRuntime getProcessRuntime() {
+        return runtime;
     }
 
     /**
@@ -91,6 +97,10 @@ public class ThreadSet implements Set<ProcessThread> {
 
     private static interface Predicate {
         boolean isValid(@Nonnull ProcessThread thread);
+    }
+
+    public <T> T query(SingleRuntimeQuery<T> query) {
+        return query.query(this);
     }
 
     @Override

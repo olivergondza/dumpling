@@ -126,7 +126,7 @@ public class DeadlockDetectorTest extends AbstractCliTest {
     }
 
     private Set<ThreadSet> deadlocks(ProcessRuntime runtime) {
-        return new DeadlockDetector().getAll(runtime);
+        return runtime.getThreads().query(new DeadlockDetector());
     }
 
     private ProcessRuntime runtime() {

@@ -29,6 +29,8 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
+import com.github.olivergondza.dumpling.query.SingleRuntimeQuery;
+
 /**
  * Snapshot of threads in JVM at given time.
  * @author ogondza
@@ -66,5 +68,9 @@ public class ProcessRuntime {
 
     /*package*/ @Nonnull ThreadSet getEmptyThreadSet() {
         return emptySet;
+    }
+
+    public <T> T query(SingleRuntimeQuery<T> query) {
+        return threads.query(query);
     }
 }

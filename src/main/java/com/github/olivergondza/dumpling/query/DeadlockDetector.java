@@ -38,10 +38,10 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
-public class DeadlockDetector {
+public class DeadlockDetector implements SingleRuntimeQuery<Set<ThreadSet>>{
 
-    public @Nonnull Set<ThreadSet> getAll(@Nonnull ProcessRuntime runtime) {
-        final ThreadSet threads = runtime.getThreads();
+    public @Nonnull Set<ThreadSet> query(@Nonnull ThreadSet threads) {
+        final ProcessRuntime runtime = threads.getProcessRuntime();
 
         // No need to revisit threads more than once
         final Set<ProcessThread> analyzed = new HashSet<ProcessThread>(threads.size());
@@ -84,7 +84,7 @@ public class DeadlockDetector {
 
         public int run(InputStream in, PrintStream out, PrintStream err) throws CmdLineException {
 
-            Set<ThreadSet> deadlocks = new DeadlockDetector().getAll(runtime);
+            Set<ThreadSet> deadlocks = runtime.query(new DeadlockDetector());
             out.println(deadlocks.size() + " deadlocks detected");
 
             for(ThreadSet deadlock: deadlocks) {

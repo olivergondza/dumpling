@@ -32,8 +32,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.annotation.Nonnull;
-
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
@@ -42,7 +40,7 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
-public class TopContenders {
+public class TopContenders implements SingleRuntimeQuery<Map<ProcessThread, ThreadSet>> {
 
     /**
      * Get threads that block other threads.
@@ -50,7 +48,7 @@ public class TopContenders {
      * @return Mapping between blocking thread and a set of blocked threads.
      * Map is sorted by the number of blocked threads.
      */
-    public @Nonnull Map<ProcessThread, ThreadSet> getAll(ProcessRuntime runtime) {
+    public Map<ProcessThread, ThreadSet> query(ThreadSet threads) {
         Map<ProcessThread, ThreadSet> contenders = new TreeMap<ProcessThread, ThreadSet>(new Comparator<ProcessThread>() {
             public int compare(ProcessThread lhs, ProcessThread rhs) {
                 int lhsSize = lhs.getBlockedThreads().size();
@@ -63,7 +61,7 @@ public class TopContenders {
             }
         });
 
-        for (ProcessThread thread: runtime.getThreads()) {
+        for (ProcessThread thread: threads) {
             ThreadSet blocked = thread.getBlockedThreads();
             if (blocked.isEmpty()) continue;
 
@@ -87,7 +85,7 @@ public class TopContenders {
 
         public int run(InputStream in, PrintStream out, PrintStream err) throws CmdLineException {
 
-            Map<ProcessThread, ThreadSet> contenders = new TopContenders().getAll(runtime);
+            Map<ProcessThread, ThreadSet> contenders = runtime.query(new TopContenders());
 
             out.print(contenders.size());
             out.println(" blocking threads");

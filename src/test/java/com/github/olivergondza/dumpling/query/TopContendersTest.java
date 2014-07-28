@@ -46,7 +46,7 @@ public class TopContendersTest extends AbstractCliTest {
     public void trivial() throws Exception {
         ProcessRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("producer-consumer.log"));
 
-        Map<ProcessThread, ThreadSet> contenders = new TopContenders().getAll(runtime);
+        Map<ProcessThread, ThreadSet> contenders = runtime.query(new TopContenders());
 
         Map<ProcessThread, ThreadSet> expected = new HashMap<ProcessThread, ThreadSet>();
         expected.put(
@@ -61,7 +61,7 @@ public class TopContendersTest extends AbstractCliTest {
     public void contenders() throws Exception {
         ProcessRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "contention.log"));
 
-        Map<ProcessThread, ThreadSet> contenders = new TopContenders().getAll(runtime);
+        Map<ProcessThread, ThreadSet> contenders = runtime.query(new TopContenders());
 
         ThreadSet ts = runtime.getThreads();
         Map<ProcessThread, ThreadSet> expected = new HashMap<ProcessThread, ThreadSet>();
