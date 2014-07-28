@@ -23,12 +23,21 @@
  */
 package com.github.olivergondza.dumpling.query;
 
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.annotation.Nonnull;
 
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.Option;
+
+import com.github.olivergondza.dumpling.cli.CliCommand;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
@@ -61,5 +70,48 @@ public class TopContenders {
             contenders.put(thread, blocked);
         }
         return contenders;
+    }
+
+    public static class Command implements CliCommand {
+
+        @Option(name = "-i", aliases = {"--in"}, required = true, usage = "Input for process runtime")
+        private ProcessRuntime runtime;
+
+        public String getName() {
+            return "top-contenders";
+        }
+
+        public String getDescription() {
+            return "Detect top-contenders, threads that block largest number of other threads";
+        }
+
+        public int run(InputStream in, PrintStream out, PrintStream err) throws CmdLineException {
+
+            Map<ProcessThread, ThreadSet> contenders = new TopContenders().getAll(runtime);
+
+            out.print(contenders.size());
+            out.println(" blocking threads");
+            out.println();
+
+            Set<ProcessThread> engagedThreads = new LinkedHashSet<ProcessThread>();
+            for (Entry<ProcessThread, ThreadSet> contention: contenders.entrySet()) {
+
+                engagedThreads.add(contention.getKey());
+                out.print("* ");
+                out.println(contention.getKey().getHeader());
+                int i = 1;
+                for (ProcessThread blocked: contention.getValue()) {
+
+                    engagedThreads.add(blocked);
+                    out.printf("  (%d) ", i++);
+                    out.println(blocked.getHeader());
+                }
+            }
+
+            out.println();
+            out.print(new ThreadSet(runtime, engagedThreads).toString());
+
+            return contenders.size();
+        }
     }
 }

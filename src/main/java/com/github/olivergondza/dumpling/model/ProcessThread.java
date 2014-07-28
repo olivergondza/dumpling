@@ -140,6 +140,10 @@ public class ProcessThread {
         return null;
     }
 
+    public String getHeader() {
+        return state.getHeader();
+    }
+
     @Override
     public String toString() {
         return state.toString();
@@ -260,15 +264,13 @@ public class ProcessThread {
             return setAcquiredLocks(data);
         }
 
+        public String getHeader() {
+            return headerBuilder().toString();
+        }
+
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append('"').append(name).append('"');
-            if (daemon) sb.append(" daemon");
-            sb.append(" prio=").append(priority);
-            sb.append(" id=").append(id);
-            sb.append(" tid=").append(tid);
-            sb.append(" nid=").append(nid);
+            StringBuilder sb = headerBuilder();
 
             if (status != null) {
                 sb.append("\n   java.lang.Thread.State: ").append(status.getName());
@@ -287,6 +289,17 @@ public class ProcessThread {
             }
 
             return sb.toString();
+        }
+
+        private StringBuilder headerBuilder() {
+            StringBuilder sb = new StringBuilder();
+            sb.append('"').append(name).append('"');
+            if (daemon) sb.append(" daemon");
+            sb.append(" prio=").append(priority);
+            sb.append(" id=").append(id);
+            sb.append(" tid=").append(tid);
+            sb.append(" nid=").append(nid);
+            return sb;
         }
     }
 }
