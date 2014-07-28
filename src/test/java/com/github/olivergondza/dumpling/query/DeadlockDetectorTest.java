@@ -117,7 +117,7 @@ public class DeadlockDetectorTest extends AbstractCliTest {
     }
 
     @Test
-    public void cliCurrentJvm() throws Exception {
+    public void cliQuery() throws Exception {
         run("detect-deadlocks", "--in", "threaddump", Util.resourceFile(getClass(), "deadlock.log").getAbsolutePath());
         assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), containsString("1 deadlocks detected"));
