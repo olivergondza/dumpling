@@ -79,7 +79,7 @@ public class ProcessThread {
         return state.state;
     }
 
-    public int getPriority() {
+    public Integer getPriority() {
         return state.priority;
     }
 
@@ -181,7 +181,7 @@ public class ProcessThread {
 
         private String name;
         private boolean daemon;
-        private int priority;
+        private Integer priority;
         // https://gist.github.com/rednaxelafx/843622
         private Long id, nid, tid;
         private @Nonnull StackTraceElement[] stackTrace = new StackTraceElement[] {};
@@ -228,7 +228,7 @@ public class ProcessThread {
             return this;
         }
 
-        public @Nonnull Builder setPriority(int priority) {
+        public @Nonnull Builder setPriority(Integer priority) {
             this.priority = priority;
             return this;
         }

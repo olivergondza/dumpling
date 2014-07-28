@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -132,15 +133,21 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
     }
 
     private Builder initHeader(Builder builder, String headerLine) {
-        Matcher details = Pattern.compile("\"(.*)\"( daemon|) prio=(\\d+) tid=0x(\\w+) nid=0x(\\w+)").matcher(headerLine);
-        if (!details.find()) return null;
+        if (!headerLine.startsWith("\"")) return null;
 
-        return builder.setName(details.group(1))
-                .setDaemon(!details.group(2).isEmpty())
-                .setPriority(Integer.parseInt(details.group(3)))
-                .setTid(Long.parseLong(details.group(4), 16))
-                .setNid(Long.parseLong(details.group(5), 16))
-        ;
+        int endOfName = headerLine.indexOf('"', 1);
+        builder.setName(headerLine.substring(1, endOfName));
+
+        StringTokenizer tknzr = new StringTokenizer(headerLine.substring(endOfName + 1), " ");
+        while (tknzr.hasMoreTokens()) {
+            String token = tknzr.nextToken();
+            if ("daemon".equals(token)) builder.setDaemon(true);
+            else if (token.startsWith("prio=")) builder.setPriority(Integer.parseInt(token.substring(5)));
+            else if (token.startsWith("tid=")) builder.setTid(Long.parseLong(token.substring(6), 16));
+            else if (token.startsWith("nid=")) builder.setNid(Long.parseLong(token.substring(6), 16));
+        }
+
+        return builder;
     }
 
     private Builder initStatus(Builder builder, String statusLine) {

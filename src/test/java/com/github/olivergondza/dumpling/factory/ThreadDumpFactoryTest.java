@@ -65,7 +65,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertEquals(Thread.State.RUNNABLE, main.getState());
         assertThat(139675222183936L, equalTo(main.getTid()));
         assertThat(24597L, equalTo(main.getNid()));
-        assertEquals(10, main.getPriority());
+        assertEquals(10, main.getPriority().intValue());
 
         StackTraceElement[] trace = main.getStackTrace();
         assertEquals(27, trace.length);
@@ -109,27 +109,27 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     public void oracleJdk7() throws Exception {
 
         ProcessRuntime expected = runtime (
-                daemon("Attach Listener").setTid(194867200).setNid(18909).setStatus(ThreadStatus.RUNNABLE),
-                thread("GC task thread#0 (ParallelGC)").setTid(191416320).setNid(18882),
-                thread("GC task thread#1 (ParallelGC)").setTid(191424512).setNid(18883),
-                thread("GC task thread#2 (ParallelGC)").setTid(191430656).setNid(18884),
-                thread("GC task thread#3 (ParallelGC)").setTid(191438848).setNid(18885),
-                thread("VM Periodic Task Thread").setTid(192006144).setNid(18893),
-                daemon("Signal Dispatcher").setTid(191895552).setNid(18889).setStatus(ThreadStatus.RUNNABLE),
-                daemon("process reaper").setTid(47867348480000L).setNid(18895).setStatus(ThreadStatus.RUNNABLE),
-                daemon("C2 CompilerThread0").setTid(191905792).setNid(18890).setStatus(ThreadStatus.RUNNABLE),
-                daemon("C2 CompilerThread1").setTid(191952896).setNid(18891).setStatus(ThreadStatus.RUNNABLE),
-                thread("VM Thread").setTid(191717376).setNid(18886),
-                daemon("Service Thread").setTid(191963136).setNid(18892).setStatus(ThreadStatus.RUNNABLE),
-                daemon("Finalizer").setTid(191744000).setNid(18888).setStatus(ThreadStatus.IN_OBJECT_WAIT)
+                daemon("Attach Listener").setTid(194867200).setNid(18909).setStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                thread("GC task thread#0 (ParallelGC)").setTid(191416320).setNid(18882).setPriority(10),
+                thread("GC task thread#1 (ParallelGC)").setTid(191424512).setNid(18883).setPriority(10),
+                thread("GC task thread#2 (ParallelGC)").setTid(191430656).setNid(18884).setPriority(10),
+                thread("GC task thread#3 (ParallelGC)").setTid(191438848).setNid(18885).setPriority(10),
+                thread("VM Periodic Task Thread").setTid(192006144).setNid(18893).setPriority(10),
+                daemon("Signal Dispatcher").setTid(191895552).setNid(18889).setStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("process reaper").setTid(47867348480000L).setNid(18895).setStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("C2 CompilerThread0").setTid(191905792).setNid(18890).setStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("C2 CompilerThread1").setTid(191952896).setNid(18891).setStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                thread("VM Thread").setTid(191717376).setNid(18886).setPriority(10),
+                daemon("Service Thread").setTid(191963136).setNid(18892).setStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("Finalizer").setTid(191744000).setNid(18888).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
                         .setLock(lock("java.lang.ref.ReferenceQueue$Lock", 33678346384L))
                         .setAcquiredLocks(lock("java.lang.ref.ReferenceQueue$Lock", 33678346384L))
                 ,
-                daemon("Reference Handler").setTid(191727616).setNid(18887).setStatus(ThreadStatus.IN_OBJECT_WAIT)
+                daemon("Reference Handler").setTid(191727616).setNid(18887).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
                         .setLock(lock("java.lang.ref.Reference$Lock", 33678167272L))
                         .setAcquiredLocks(lock("java.lang.ref.Reference$Lock", 33678167272L))
                 ,
-                thread("main").setTid(191326208).setNid(18881).setStatus(ThreadStatus.IN_OBJECT_WAIT)
+                thread("main").setTid(191326208).setNid(18881).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
                         .setLock(lock("java.lang.UNIXProcess", 33649075520L))
                         .setAcquiredLocks(lock("java.lang.UNIXProcess", 33649075520L))
         );
@@ -171,11 +171,71 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertArrayEquals(expectedStackTrace, mainThread.getStackTrace());
     }
 
-    @Test @Ignore
+    @Test
     public void oracleJdk8() throws Exception {
 
-        ThreadSet threads = runtimeFrom("oraclejdk-1.8.log").getThreads();
-        assertEquals(15, threads.size());
+        ProcessRuntime expected = runtime (
+                daemon("Attach Listener").setTid(1716535296).setNid(8144).setStatus(ThreadStatus.RUNNABLE).setPriority(9),
+                thread("GC task thread#0 (ParallelGC)").setTid(3059810304L).setNid(8115),
+                thread("GC task thread#1 (ParallelGC)").setTid(3059815424L).setNid(8116),
+                thread("GC task thread#2 (ParallelGC)").setTid(3059820544L).setNid(8117),
+                thread("GC task thread#3 (ParallelGC)").setTid(3059825664L).setNid(8118),
+                thread("VM Periodic Task Thread").setTid(1718347776).setNid(8127),
+                daemon("Signal Dispatcher").setTid(1718240256).setNid(8122).setStatus(ThreadStatus.RUNNABLE).setPriority(9),
+                daemon("process reaper").setTid(1697889280).setNid(8129).setStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("C2 CompilerThread0").setTid(1718247424).setNid(8123).setStatus(ThreadStatus.RUNNABLE).setPriority(9),
+                daemon("C2 CompilerThread1").setTid(1718254592).setNid(8124).setStatus(ThreadStatus.RUNNABLE).setPriority(9),
+                daemon("C1 CompilerThread2").setTid(1718260736).setNid(8125).setStatus(ThreadStatus.RUNNABLE).setPriority(9),
+                thread("VM Thread").setTid(1718094848).setNid(8119),
+                daemon("Service Thread").setTid(1718273024).setNid(8126).setStatus(ThreadStatus.RUNNABLE).setPriority(9),
+                daemon("Finalizer").setTid(1718118400).setNid(8121).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(8)
+                        .setLock(lock("java.lang.ref.ReferenceQueue$Lock", 2495908272L))
+                        .setAcquiredLocks(lock("java.lang.ref.ReferenceQueue$Lock", 2495908272L))
+                ,
+                daemon("Reference Handler").setTid(1718108160).setNid(8120).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
+                        .setLock(lock("java.lang.ref.Reference$Lock", 2495922552L))
+                        .setAcquiredLocks(lock("java.lang.ref.Reference$Lock", 2495922552L))
+                ,
+                thread("main").setTid(3059771392L).setNid(8114).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(5)
+                        .setLock(lock("java.lang.UNIXProcess", 2468857072L))
+                        .setAcquiredLocks(lock("java.lang.UNIXProcess", 2468857072L))
+        );
+
+        ProcessRuntime actual = runtimeFrom("oraclejdk-1.8.log");
+        assertThat(actual, sameThreadsAs(expected));
+
+        ProcessThread mainThread = actual.getThreads().onlyNamed("main").onlyThread();
+        StackTraceElement[] expectedStackTrace = new StackTraceElement[] {
+                StackTrace.nativeElement("java.lang.Object", "wait"),
+                StackTrace.element("java.lang.Object", "wait", "Object.java", 502),
+                StackTrace.element("java.lang.UNIXProcess", "waitFor", "UNIXProcess.java", 264),
+                StackTrace.nativeElement("sun.reflect.NativeMethodAccessorImpl", "invoke0"),
+                StackTrace.element("sun.reflect.NativeMethodAccessorImpl", "invoke", "NativeMethodAccessorImpl.java", 62),
+                StackTrace.element("sun.reflect.DelegatingMethodAccessorImpl", "invoke", "DelegatingMethodAccessorImpl.java", 43),
+                StackTrace.element("java.lang.reflect.Method", "invoke", "Method.java", 483),
+                StackTrace.element("org.codehaus.groovy.runtime.callsite.PojoMetaMethodSite$PojoCachedMethodSiteNoUnwrapNoCoerce", "invoke", "PojoMetaMethodSite.java", 230),
+                StackTrace.element("org.codehaus.groovy.runtime.callsite.PojoMetaMethodSite", "call", "PojoMetaMethodSite.java", 53),
+                StackTrace.element("org.codehaus.groovy.runtime.callsite.CallSiteArray", "defaultCall", "CallSiteArray.java", 45),
+                StackTrace.element("org.codehaus.groovy.runtime.callsite.AbstractCallSite", "call", "AbstractCallSite.java", 108),
+                StackTrace.element("org.codehaus.groovy.runtime.callsite.AbstractCallSite", "call", "AbstractCallSite.java", 112),
+                StackTrace.element("hudson8109898462652879487", "run", "hudson8109898462652879487.groovy", 9),
+                StackTrace.element("groovy.lang.GroovyShell", "runScriptOrMainOrTestOrRunnable", "GroovyShell.java", 257),
+                StackTrace.element("groovy.lang.GroovyShell", "run", "GroovyShell.java", 220),
+                StackTrace.element("groovy.lang.GroovyShell", "run", "GroovyShell.java", 150),
+                StackTrace.element("groovy.ui.GroovyMain", "processOnce", "GroovyMain.java", 588),
+                StackTrace.element("groovy.ui.GroovyMain", "run", "GroovyMain.java", 375),
+                StackTrace.element("groovy.ui.GroovyMain", "process", "GroovyMain.java", 361),
+                StackTrace.element("groovy.ui.GroovyMain", "processArgs", "GroovyMain.java", 120),
+                StackTrace.element("groovy.ui.GroovyMain", "main", "GroovyMain.java", 100),
+                StackTrace.nativeElement("sun.reflect.NativeMethodAccessorImpl", "invoke0"),
+                StackTrace.element("sun.reflect.NativeMethodAccessorImpl", "invoke", "NativeMethodAccessorImpl.java", 62),
+                StackTrace.element("sun.reflect.DelegatingMethodAccessorImpl", "invoke", "DelegatingMethodAccessorImpl.java", 43),
+                StackTrace.element("java.lang.reflect.Method", "invoke", "Method.java", 483),
+                StackTrace.element("org.codehaus.groovy.tools.GroovyStarter", "rootLoader", "GroovyStarter.java", 106),
+                StackTrace.element("org.codehaus.groovy.tools.GroovyStarter", "main", "GroovyStarter.java", 128),
+        };
+
+        assertArrayEquals(expectedStackTrace, mainThread.getStackTrace());
     }
 
     @Test @Ignore
@@ -254,7 +314,6 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     private static volatile int syntheticId = 42;
     private ProcessThread.Builder thread(String name) {
         return ProcessThread.builder().setName(name)
-                .setPriority(10) // Not really any default value, just most common in thread dumps.
                 // Preset unique id for purposes of the test as we can not rely
                 // that SUT will correctly initialize IDs. Threads
                 // with the same Ids will be collapsed into one by Set.
