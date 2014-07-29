@@ -30,6 +30,13 @@ public class StackTrace {
     }
 
     /**
+     * Get {@link StackTraceElement} its source line number is unknown.
+     */
+    public static StackTraceElement element(String declaringClass, String methodName, String fileName) {
+        return new StackTraceElement(declaringClass, methodName, fileName, -1);
+    }
+
+    /**
      * Get {@link StackTraceElement} its source (file name and line number) is unknown.
      */
     public static StackTraceElement element(String declaringClass, String methodName) {
