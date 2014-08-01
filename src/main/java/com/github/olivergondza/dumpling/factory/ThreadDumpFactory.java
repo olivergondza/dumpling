@@ -178,7 +178,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
 
     private Builder initStacktrace(Builder builder, String trace) {
 
-        Matcher match = Pattern.compile(" *at (\\S+)\\.(\\w+)\\(([^:]+?)(\\:\\d+)?\\)").matcher(trace);
+        Matcher match = Pattern.compile(" *at (\\S+)\\.(\\S+)\\(([^:]+?)(\\:\\d+)?\\)").matcher(trace);
         ArrayList<StackTraceElement> traceElements = new ArrayList<StackTraceElement>();
 
         while (match.find()) {

@@ -430,6 +430,24 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     }
 
     @Test
+    public void parseStacktraceContaining$() throws Exception {
+
+        ThreadSet threads = runtimeFrom("oraclejdk-1.7.0_51.log").getThreads();
+
+        StackTraceElement[] actual = threads.onlyNamed("process reaper").iterator().next().getStackTrace();
+        StackTraceElement[] expected = new StackTraceElement[] {
+                StackTrace.nativeElement("java.lang.UNIXProcess", "waitForProcessExit"),
+                StackTrace.element("java.lang.UNIXProcess", "access$200", "UNIXProcess.java", 54),
+                StackTrace.element("java.lang.UNIXProcess$3", "run", "UNIXProcess.java", 174),
+                StackTrace.element("java.util.concurrent.ThreadPoolExecutor", "runWorker", "ThreadPoolExecutor.java", 1145),
+                StackTrace.element("java.util.concurrent.ThreadPoolExecutor$Worker", "run", "ThreadPoolExecutor.java", 615),
+                StackTrace.element("java.lang.Thread", "run", "Thread.java", 744)
+        };
+
+        assertArrayEquals(actual, expected);
+    }
+
+    @Test
     public void cliNoSuchFile() {
         run("detect-deadlocks", "--in", "threaddump", "/there_is_no_such_file");
         assertThat(exitValue, equalTo(-1));
