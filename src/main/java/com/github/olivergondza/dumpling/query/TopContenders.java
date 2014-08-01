@@ -107,7 +107,7 @@ public class TopContenders implements SingleRuntimeQuery<Map<ProcessThread, Thre
             }
 
             out.println();
-            out.print(new ThreadSet(runtime, engagedThreads).toString());
+            out.print(new ThreadSet(runtime, engagedThreads));
 
             return contenders.size();
         }
