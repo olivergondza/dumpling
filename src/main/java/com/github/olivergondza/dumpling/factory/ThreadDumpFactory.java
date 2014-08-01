@@ -26,7 +26,6 @@ package com.github.olivergondza.dumpling.factory;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -102,21 +101,36 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
     }
 
     private Builder initLocks(Builder builder, String string) {
-        Matcher acquiredLine = Pattern.compile("- locked <0x(\\w+)> \\(a ([^\\)]+)\\)").matcher(string);
-        Matcher waitingForLine = Pattern.compile("- (?:waiting on|waiting to lock) <0x(\\w+)> \\(a ([^\\)]+)\\)").matcher(string);
+        Pattern acquiredLine = Pattern.compile("- locked <0x(\\w+)> \\(a ([^\\)]+)\\)");
+        Pattern waitingForLine = Pattern.compile("- (?:waiting on|waiting to lock) <0x(\\w+)> \\(a ([^\\)]+)\\)");
 
-        HashSet<ThreadLock> acquired = new HashSet<ThreadLock>(2);
-        HashSet<ThreadLock> waitingFor = new HashSet<ThreadLock>(1);
-        while (acquiredLine.find()) {
-            acquired.add(new ThreadLock.WithAddress(
-                    acquiredLine.group(2), Long.parseLong(acquiredLine.group(1), 16)
-            ));
-        }
+        ArrayList<ThreadLock> acquired = new ArrayList<ThreadLock>(2);
+        ArrayList<ThreadLock> waitingFor = new ArrayList<ThreadLock>(1);
+        StringTokenizer tokenizer = new StringTokenizer(string, "\n");
+        int depth = -1;
+        while (tokenizer.hasMoreTokens()) {
+            String line = tokenizer.nextToken();
 
-        while (waitingForLine.find()) {
-            waitingFor.add(new ThreadLock.WithAddress(
-                    waitingForLine.group(2), Long.parseLong(waitingForLine.group(1), 16)
-            ));
+            Matcher acquiredMatcher = acquiredLine.matcher(line);
+            if (acquiredMatcher.find()) {
+                acquired.add(new ThreadLock.WithAddress(
+                        depth, acquiredMatcher.group(2), Long.parseLong(acquiredMatcher.group(1), 16)
+                ));
+
+                continue;
+            }
+
+            Matcher waitingForMatcher = waitingForLine.matcher(line);
+            if (waitingForMatcher.find()) {
+                waitingFor.add(new ThreadLock.WithAddress(
+                        depth, waitingForMatcher.group(2), Long.parseLong(waitingForMatcher.group(1), 16)
+                ));
+
+                continue;
+            }
+
+            // Count stack frames - not locks
+            depth++;
         }
 
         builder.setAcquiredLocks(acquired);
@@ -125,7 +139,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
             case 0: // Noop
             break;
             case 1:
-                builder.setLock(waitingFor.iterator().next());
+                builder.setLock(waitingFor.get(0));
             break;
             default: throw new AssertionError("Waiting for locks: " + waitingFor.size());
         }

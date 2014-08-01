@@ -23,18 +23,34 @@
  */
 package com.github.olivergondza.dumpling.model;
 
+import java.lang.management.MonitorInfo;
+
 import javax.annotation.Nonnull;
 
+/**
+ * Thread lock identified by classname and id contributed by subclass.
+ *
+ * @author ogondza
+ */
 public abstract class ThreadLock {
 
     protected final @Nonnull String className;
+    protected final int stackDepth;
 
-    public ThreadLock(@Nonnull String className) {
+    /**
+     * @param stackDepth Position of lock in stacktrace. See {@link MonitorInfo#getLockedStackDepth()}.
+     */
+    protected ThreadLock(int stackDepth, @Nonnull String className) {
+        this.stackDepth = stackDepth;
         this.className = className;
     }
 
     public @Nonnull String getClassName() {
         return className;
+    }
+
+    public int getStackDepth() {
+        return stackDepth;
     }
 
     /**
@@ -46,8 +62,8 @@ public abstract class ThreadLock {
 
         private final int identityHashCode;
 
-        public WithHashCode(@Nonnull String className, int identityHashCode) {
-            super(className);
+        public WithHashCode(int stackDepth, @Nonnull String className, int identityHashCode) {
+            super(stackDepth, className);
             this.identityHashCode = identityHashCode;
         }
 
@@ -84,8 +100,8 @@ public abstract class ThreadLock {
 
         private final long address;
 
-        public WithAddress(@Nonnull String className, long address) {
-            super(className);
+        public WithAddress(int stackDepth, @Nonnull String className, long address) {
+            super(stackDepth, className);
             this.address = address;
         }
 

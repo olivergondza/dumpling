@@ -29,8 +29,10 @@ import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -85,11 +87,11 @@ public class JvmRuntimeFactory {
         return infos;
     }
 
-    private Set<ThreadLock> locks(ThreadInfo threadInfo) {
+    private List<ThreadLock> locks(ThreadInfo threadInfo) {
         MonitorInfo[] monitors = threadInfo.getLockedMonitors();
         LockInfo[] synchronizers = threadInfo.getLockedSynchronizers();
 
-        Set<ThreadLock> locks = new HashSet<ThreadLock>(monitors.length + synchronizers.length);
+        List<ThreadLock> locks = new ArrayList<ThreadLock>(monitors.length + synchronizers.length);
         for (LockInfo info: monitors) {
             locks.add(lock(info));
         }
@@ -102,7 +104,11 @@ public class JvmRuntimeFactory {
     }
 
     private ThreadLock lock(LockInfo info) {
-        return new ThreadLock.WithHashCode(info.getClassName(), info.getIdentityHashCode());
+        int depth = info instanceof MonitorInfo
+                ? ((MonitorInfo) info).getLockedStackDepth() : 0
+        ;
+
+        return new ThreadLock.WithHashCode(depth, info.getClassName(), info.getIdentityHashCode());
     }
 
     private ThreadStatus status(Thread thread) {

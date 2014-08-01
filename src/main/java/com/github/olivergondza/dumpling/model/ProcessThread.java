@@ -23,9 +23,10 @@
  */
 package com.github.olivergondza.dumpling.model;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.CheckForNull;
@@ -96,7 +97,8 @@ public class ProcessThread {
     }
 
     public @Nonnull Set<ThreadLock> getAcquiredLocks() {
-        return state.acquiredLocks;
+        // Convert to Set not to expose duplicates
+        return new HashSet<ThreadLock>(state.acquiredLocks);
     }
 
     /**
@@ -188,7 +190,8 @@ public class ProcessThread {
         private Thread.State state;
         private ThreadStatus status;
         private @CheckForNull ThreadLock waitingOnLock;
-        private @Nonnull Set<ThreadLock> acquiredLocks = Collections.emptySet();
+        // Preserve locks as List not to collapse identical entries
+        private @Nonnull List<ThreadLock> acquiredLocks = Collections.emptyList();
 
         public ProcessThread build(@Nonnull ProcessRuntime runtime) {
             return new ProcessThread(runtime, this);
@@ -253,13 +256,13 @@ public class ProcessThread {
             return this;
         }
 
-        public @Nonnull Builder setAcquiredLocks(Set<ThreadLock> locks) {
-            this.acquiredLocks = Collections.unmodifiableSet(locks);
+        public @Nonnull Builder setAcquiredLocks(List<ThreadLock> locks) {
+            this.acquiredLocks = Collections.unmodifiableList(locks);
             return this;
         }
 
         public @Nonnull Builder setAcquiredLocks(ThreadLock... locks) {
-            LinkedHashSet<ThreadLock> data = new LinkedHashSet<ThreadLock>(locks.length);
+            List<ThreadLock> data = new ArrayList<ThreadLock>(locks.length);
             Collections.addAll(data, locks);
             return setAcquiredLocks(data);
         }
@@ -276,16 +279,21 @@ public class ProcessThread {
                 sb.append("\n   java.lang.Thread.State: ").append(status.getName());
             }
 
+            int depth = 0;
             for (StackTraceElement traceLine: stackTrace) {
                 sb.append("\n\tat ").append(traceLine);
-            }
 
-            if (waitingOnLock != null) {
-                sb.append("\n\t - waiting to lock " + waitingOnLock);
-            }
+                if (waitingOnLock != null && waitingOnLock.getStackDepth() == depth) {
+                    sb.append("\n\t- waiting to lock " + waitingOnLock);
+                }
 
-            for (ThreadLock lock: acquiredLocks) {
-                sb.append("\n\t - locking " + lock);
+                for (ThreadLock lock: acquiredLocks) {
+                    if (lock.getStackDepth() == depth) {
+                        sb.append("\n\t- locked " + lock);
+                    }
+                }
+
+                depth++;
             }
 
             return sb.toString();
