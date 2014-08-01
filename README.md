@@ -56,6 +56,8 @@ Use dumpling to discover problems in thread dumps.
 
 - Profit
 
+[Dumpling DSL tutorial](DOCS/INTRO.md)
+
 ## Modules
 
 ### model
