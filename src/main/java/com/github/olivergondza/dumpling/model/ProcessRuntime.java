@@ -24,7 +24,7 @@
 package com.github.olivergondza.dumpling.model;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -52,7 +52,7 @@ public class ProcessRuntime {
     }
 
     private @Nonnull ThreadSet createThreads(@Nonnull Set<ProcessThread.Builder> builders) {
-        Set<ProcessThread> threads = new HashSet<ProcessThread>(builders.size());
+        Set<ProcessThread> threads = new LinkedHashSet<ProcessThread>(builders.size());
         for (ProcessThread.Builder builder: builders) {
             threads.add(builder.build(this));
         }

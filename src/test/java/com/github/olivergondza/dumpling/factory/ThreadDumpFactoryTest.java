@@ -32,8 +32,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 
@@ -384,6 +386,34 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertTrue(handler.getBlockingThreads().isEmpty());
         assertTrue(finalizer.getBlockedThreads().isEmpty());
         assertTrue(finalizer.getBlockingThreads().isEmpty());
+    }
+
+    @Test
+    public void preserveThreadOrder() throws Exception {
+
+        ThreadSet threads = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "self-lock.log")).getThreads();
+
+        List<String> expectedNames = Arrays.asList(
+                "Service Thread",
+                "C2 CompilerThread1",
+                "C2 CompilerThread0",
+                "Signal Dispatcher",
+                "Finalizer",
+                "Reference Handler",
+                "VM Thread",
+                "GC task thread#0 (ParallelGC)",
+                "GC task thread#1 (ParallelGC)",
+                "GC task thread#2 (ParallelGC)",
+                "GC task thread#3 (ParallelGC)",
+                "VM Periodic Task Thread"
+        );
+
+        List<String> actualNames = new ArrayList<String>();
+        for (ProcessThread thread: threads) {
+            actualNames.add(thread.getName());
+        }
+
+        assertThat(actualNames, equalTo(expectedNames));
     }
 
     @Test

@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
@@ -70,7 +71,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
     }
 
     private @Nonnull Set<Builder> threads(String content) {
-        HashSet<Builder> threads = new HashSet<Builder>();
+        Set<Builder> threads = new LinkedHashSet<Builder>();
 
         for (String singleThread: content.split("\n\n")) {
             ProcessThread.Builder thread = thread(singleThread);
