@@ -25,40 +25,91 @@ package com.github.olivergondza.dumpling.model;
 
 import javax.annotation.Nonnull;
 
-public class ThreadLock {
+public abstract class ThreadLock {
 
-    final @Nonnull String className;
-    final long identityHashCode;
+    protected final @Nonnull String className;
 
-    public ThreadLock(@Nonnull String className, long identityHashCode) {
+    public ThreadLock(@Nonnull String className) {
         this.className = className;
-        this.identityHashCode = identityHashCode;
     }
 
     public @Nonnull String getClassName() {
         return className;
     }
 
-    public long getIdentityHashCode() {
-        return identityHashCode;
+    /**
+     * {@link ThreadLock} identified with lock hashCode.
+     *
+     * @author ogondza
+     */
+    public static class WithHashCode extends ThreadLock {
+
+        private final int identityHashCode;
+
+        public WithHashCode(@Nonnull String className, int identityHashCode) {
+            super(className);
+            this.identityHashCode = identityHashCode;
+        }
+
+        public long getIdentityHashCode() {
+            return identityHashCode;
+        }
+
+        @Override
+        public boolean equals(Object lhs) {
+            if (lhs == null) return false;
+            if (!lhs.getClass().equals(this.getClass())) return false;
+
+            ThreadLock.WithHashCode other = (ThreadLock.WithHashCode) lhs;
+            return identityHashCode == other.identityHashCode;
+        }
+
+        @Override
+        public int hashCode() {
+            return 7 + 31 * identityHashCode;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s@%x", className, identityHashCode);
+        }
     }
 
-    @Override
-    public boolean equals(Object lhs) {
-        if (lhs == null) return false;
-        if (!lhs.getClass().equals(this.getClass())) return false;
+    /**
+     * {@link ThreadLock} identified with lock address.
+     *
+     * @author ogondza
+     */
+    public static class WithAddress extends ThreadLock {
 
-        ThreadLock other = (ThreadLock) lhs;
-        return identityHashCode == other.identityHashCode;
-    }
+        private final long address;
 
-    @Override
-    public int hashCode() {
-        return 7 + 31 * new Long(identityHashCode).hashCode();
-    }
+        public WithAddress(@Nonnull String className, long address) {
+            super(className);
+            this.address = address;
+        }
 
-    @Override
-    public String toString() {
-        return String.format("<0x%x> (a %s)", identityHashCode, className);
+        public long getAddress() {
+            return address;
+        }
+
+        @Override
+        public boolean equals(Object lhs) {
+            if (lhs == null) return false;
+            if (!lhs.getClass().equals(this.getClass())) return false;
+
+            ThreadLock.WithAddress other = (ThreadLock.WithAddress) lhs;
+            return address == other.address;
+        }
+
+        @Override
+        public int hashCode() {
+            return 7 + 67 * new Long(address).hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return String.format("<0x%x> (a %s)", address, className);
+        }
     }
 }

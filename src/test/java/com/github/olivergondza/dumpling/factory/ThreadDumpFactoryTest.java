@@ -447,8 +447,8 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         return thread(name).setDaemon(true);
     }
 
-    private ThreadLock lock(@Nonnull String classname, long id) {
-        return new ThreadLock(classname, id);
+    private ThreadLock lock(@Nonnull String classname, long address) {
+        return new ThreadLock.WithAddress(classname, address);
     }
 
     private TypeSafeMatcher<ProcessRuntime> sameThreadsAs(final ProcessRuntime expectedRuntime) {

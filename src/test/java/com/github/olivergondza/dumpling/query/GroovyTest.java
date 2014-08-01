@@ -55,7 +55,7 @@ public class GroovyTest extends AbstractCliTest {
 
     @Test
     public void loadSymbolsFromOtherDumplingPackages() {
-        invoke("new DeadlockDetector(); new ThreadLock('', 0); new JvmRuntimeFactory(); new CommandFailedException('')");
+        invoke("new DeadlockDetector(); ThreadStatus.valueOf(0); new JvmRuntimeFactory(); new CommandFailedException('')");
         assertThat(err.toString(), equalTo(""));
         assertThat(exitValue, equalTo(0));
     }

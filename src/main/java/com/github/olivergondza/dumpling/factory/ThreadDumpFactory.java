@@ -108,13 +108,13 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
         HashSet<ThreadLock> acquired = new HashSet<ThreadLock>(2);
         HashSet<ThreadLock> waitingFor = new HashSet<ThreadLock>(1);
         while (acquiredLine.find()) {
-            acquired.add(new ThreadLock(
+            acquired.add(new ThreadLock.WithAddress(
                     acquiredLine.group(2), Long.parseLong(acquiredLine.group(1), 16)
             ));
         }
 
         while (waitingForLine.find()) {
-            waitingFor.add(new ThreadLock(
+            waitingFor.add(new ThreadLock.WithAddress(
                     waitingForLine.group(2), Long.parseLong(waitingForLine.group(1), 16)
             ));
         }
