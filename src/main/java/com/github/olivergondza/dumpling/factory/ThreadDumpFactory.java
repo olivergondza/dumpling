@@ -102,7 +102,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
 
     private Builder initLocks(Builder builder, String string) {
         Pattern acquiredLine = Pattern.compile("- locked <0x(\\w+)> \\(a ([^\\)]+)\\)");
-        Pattern waitingForLine = Pattern.compile("- (?:waiting on|waiting to lock) <0x(\\w+)> \\(a ([^\\)]+)\\)");
+        Pattern waitingForLine = Pattern.compile("- (?:waiting on|waiting to lock|parking to wait for ) <0x(\\w+)> \\(a ([^\\)]+)\\)");
 
         ArrayList<ThreadLock> acquired = new ArrayList<ThreadLock>(2);
         ArrayList<ThreadLock> waitingFor = new ArrayList<ThreadLock>(1);

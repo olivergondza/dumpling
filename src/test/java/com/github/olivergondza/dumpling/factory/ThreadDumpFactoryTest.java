@@ -417,6 +417,19 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     }
 
     @Test
+    public void parseParkedLocks() throws Exception {
+
+        ThreadSet threads = runtimeFrom("oraclejdk-1.7.0_51.log").getThreads();
+
+        ProcessThread parking = threads.onlyNamed("ConnectionValidator").onlyThread();
+
+        assertThat(parking.getThreadStatus(), equalTo(ThreadStatus.PARKED_TIMED));
+        assertThat(parking.getWaitingOnLock().getClassName(), equalTo(
+                "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject"
+        ));
+    }
+
+    @Test
     public void cliNoSuchFile() {
         run("detect-deadlocks", "--in", "threaddump", "/there_is_no_such_file");
         assertThat(exitValue, equalTo(-1));
