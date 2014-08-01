@@ -284,7 +284,7 @@ public class ProcessThread {
                 sb.append("\n\tat ").append(traceLine);
 
                 if (waitingOnLock != null && waitingOnLock.getStackDepth() == depth) {
-                    sb.append("\n\t- waiting to lock " + waitingOnLock);
+                    sb.append("\n\t- waiting on " + waitingOnLock);
                 }
 
                 for (ThreadLock lock: acquiredLocks) {

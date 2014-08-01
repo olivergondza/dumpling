@@ -43,7 +43,7 @@ public class ProcessTheadTest {
 
         assertThat(dump, containsString(slice(
                 "at hudson.model.Queue.getItem(Queue.java:719)",
-                "- waiting to lock <0x4063a9378> (a hudson.model.Queue)",
+                "- waiting on <0x4063a9378> (a hudson.model.Queue)",
                 "at hudson.model.AbstractProject.getQueueItem(AbstractProject.java:927)"
         )));
 
