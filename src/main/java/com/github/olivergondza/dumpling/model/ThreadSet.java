@@ -37,7 +37,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import com.github.olivergondza.dumpling.query.SingleRuntimeQuery;
 
-public class ThreadSet implements Set<ProcessThread> {
+public class ThreadSet implements Iterable<ProcessThread> {
 
     private @Nonnull ProcessRuntime runtime;
     private @Nonnull Set<ProcessThread> threads;
@@ -82,7 +82,7 @@ public class ThreadSet implements Set<ProcessThread> {
 
     public @Nonnull ThreadSet ignoring(@Nonnull ThreadSet actualThreads) {
         HashSet<ProcessThread> newThreads = new HashSet<ProcessThread>(threads);
-        newThreads.removeAll(actualThreads);
+        newThreads.removeAll(actualThreads.threads);
         return derive(newThreads);
     }
 
@@ -150,14 +150,6 @@ public class ThreadSet implements Set<ProcessThread> {
         return threads.iterator();
     }
 
-    public Object[] toArray() {
-        return threads.toArray();
-    }
-
-    public <T> T[] toArray(T[] a) {
-        return threads.toArray(a);
-    }
-
     /**
      * Create derived set from this one.
      *
@@ -213,31 +205,5 @@ public class ThreadSet implements Set<ProcessThread> {
         );
 
         return derive(DefaultGroovyMethods.plus(threads, other.threads));
-    }
-
-    // Unmodifiable collection
-
-    public boolean add(ProcessThread e) {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean remove(Object o) {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean addAll(Collection<? extends ProcessThread> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean removeAll(Collection<?> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean retainAll(Collection<?> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    public void clear() {
-        throw new UnsupportedOperationException();
     }
 }
