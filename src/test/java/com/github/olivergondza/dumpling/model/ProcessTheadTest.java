@@ -30,20 +30,19 @@ import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
 import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
+import com.github.olivergondza.dumpling.factory.ThreadDumpFactoryTest;
 
 public class ProcessTheadTest {
 
+    private final ThreadDumpFactory factory = new ThreadDumpFactory();
+
     @Test
     public void printLocksOnCorrectPosionInStackTrace() throws Exception {
-        ProcessRuntime runtime = new ThreadDumpFactory().fromFile(
-                Util.resourceFile("producer-consumer.log")
-        );
-
-        String dump = runtime.getThreads().toString();
+        String dump = factory.fromFile(Util.resourceFile("producer-consumer.log")).getThreads().toString();
 
         assertThat(dump, containsString(slice(
                 "at hudson.model.Queue.getItem(Queue.java:719)",
-                "- waiting on <0x4063a9378> (a hudson.model.Queue)",
+                "- waiting to lock <0x4063a9378> (a hudson.model.Queue)",
                 "at hudson.model.AbstractProject.getQueueItem(AbstractProject.java:927)"
         )));
 
@@ -56,6 +55,19 @@ public class ProcessTheadTest {
                 "at hudson.model.Executor.run(Executor.java:205)",
                 "- locked <0x4063a9378> (a hudson.model.Queue)"
         )));
+    }
+
+    @Test
+    public void differentWaitingVerbs() throws Exception {
+        ProcessRuntime runtime = factory.fromFile(Util.resourceFile("deadlock.log"));
+        assertThat(runtime.getThreads().toString(), containsString(
+                "- waiting to lock <0x404325338> (a hudson.model.Hudson)"
+        ));
+
+        runtime = factory.fromFile(Util.resourceFile(ThreadDumpFactoryTest.class, "oraclejdk-1.7.0_51.log"));
+        assertThat(runtime.getThreads().onlyNamed("MSC service thread 1-2").toString(), containsString(
+                "- parking to wait for <0x7007d87c8> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)"
+        ));
     }
 
     private String slice(String... frames) {

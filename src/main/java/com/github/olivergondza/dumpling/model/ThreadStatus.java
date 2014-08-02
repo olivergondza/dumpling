@@ -37,24 +37,30 @@ import javax.annotation.Nonnull;
  */
 public enum ThreadStatus {
     NEW                         ("NEW",                                 0,      State.NEW),
-    RUNNABLE                    ("RUNNABLE",                            5,      State.RUNNABLE),        // runnable / running
-    SLEEPING                    ("TIMED_WAITING (sleeping)",            225,    State.TIMED_WAITING),   // Thread.sleep()
-    IN_OBJECT_WAIT              ("WAITING (on object monitor)",         401,    State.WAITING),         // Object.wait()
-    IN_OBJECT_WAIT_TIMED        ("TIMED_WAITING (on object monitor)",   417,    State.TIMED_WAITING),   // Object.wait(long)
-    PARKED                      ("WAITING (parking)",                   657,    State.WAITING),         // LockSupport.park()
-    PARKED_TIMED                ("TIMED_WAITING (parking)",             673,    State.TIMED_WAITING),   // LockSupport.park(long)
-    BLOCKED_ON_MONITOR_ENTER    ("BLOCKED (on object monitor)",         1025,   State.BLOCKED),         // (re-)entering a synchronization block
+    RUNNABLE                    ("RUNNABLE",                            5,      State.RUNNABLE), // runnable / running
+    SLEEPING                    ("TIMED_WAITING (sleeping)",            225,    State.TIMED_WAITING,"waiting on"), // Thread.sleep()
+    IN_OBJECT_WAIT              ("WAITING (on object monitor)",         401,    State.WAITING,      "waiting on"), // Object.wait()
+    IN_OBJECT_WAIT_TIMED        ("TIMED_WAITING (on object monitor)",   417,    State.TIMED_WAITING,"waiting on"), // Object.wait(long)
+    PARKED                      ("WAITING (parking)",                   657,    State.WAITING,      "parking to wait for"), // LockSupport.park()
+    PARKED_TIMED                ("TIMED_WAITING (parking)",             673,    State.TIMED_WAITING,"parking to wait for"), // LockSupport.park(long)
+    BLOCKED_ON_MONITOR_ENTER    ("BLOCKED (on object monitor)",         1025,   State.BLOCKED,      "waiting to lock"), // (re-)entering a synchronization block
     TERMINATED                  ("TERMINATED",                          2,      State.TERMINATED),
     UNKNOWN                     ("UNKNOWN",                             -1,     null);
 
     private final @Nonnull String name;
     private final int code;
     private final State state;
+    private final String waitingVerb;
 
     private ThreadStatus(@Nonnull String name, int code, State state) {
+        this(name, code, state, null);
+    }
+
+    private ThreadStatus(@Nonnull String name, int code, State state, String waitingVerb) {
         this.name = name;
         this.code = code;
         this.state = state;
+        this.waitingVerb = waitingVerb;
     }
 
     public @Nonnull String getName() {
@@ -67,6 +73,12 @@ public enum ThreadStatus {
 
     public State getState() {
         return state;
+    }
+
+    /*package*/ String getWaitingVerb() {
+        if (waitingVerb == null) throw new IllegalStateException("No waitign verb for " + this);
+
+        return waitingVerb;
     }
 
     public static @Nonnull ThreadStatus valueOf(int code) {

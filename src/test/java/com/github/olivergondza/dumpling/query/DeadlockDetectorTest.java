@@ -118,7 +118,7 @@ public class DeadlockDetectorTest extends AbstractCliTest {
 
     @Test
     public void cliQuery() throws Exception {
-        run("detect-deadlocks", "--in", "threaddump", Util.resourceFile(getClass(), "deadlock.log").getAbsolutePath());
+        run("detect-deadlocks", "--in", "threaddump", Util.resourceFile("deadlock.log").getAbsolutePath());
         assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), containsString("1 deadlocks detected"));
         assertThat(out.toString(), containsString("- Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24 - Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107"));
