@@ -1,0 +1,10 @@
+"Pipe writer thread: jenkins_slave" daemon prio=10 tid=0x000000006332b000 nid=0x3bc2 runnable [0x00002ad3dfd0a000]
+   java.lang.Thread.State: RUNNABLE
+        at sun.misc.Unsafe.park(Native Method)
+        - parking to wait for  <0x00000004e59ed420> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+        at java.util.concurrent.locks.LockSupport.park(LockSupport.java:156)
+        at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1987)
+        at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:399)
+        at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:957)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:917)
+        at java.lang.Thread.run(Thread.java:662

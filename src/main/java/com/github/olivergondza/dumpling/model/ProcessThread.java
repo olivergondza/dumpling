@@ -88,8 +88,8 @@ public class ProcessThread {
         return state.daemon;
     }
 
-    public @Nonnull StackTraceElement[] getStackTrace() {
-        return state.stackTrace.clone();
+    public @Nonnull StackTrace getStackTrace() {
+        return new StackTrace(state.stackTrace);
     }
 
     public @CheckForNull ThreadLock getWaitingOnLock() {
@@ -284,7 +284,10 @@ public class ProcessThread {
                 sb.append("\n\tat ").append(traceLine);
 
                 if (waitingOnLock != null && waitingOnLock.getStackDepth() == depth) {
-                    sb.append("\n\t- ").append(status.getWaitingVerb()).append(' ').append(waitingOnLock);
+                    assert depth == 0: "Waiting on lock should always relate to the innermost stack frame";
+
+                    String verb = StackTrace.waitingVerb(traceLine);
+                    sb.append("\n\t- ").append(verb).append(' ').append(waitingOnLock);
                 }
 
                 for (ThreadLock lock: acquiredLocks) {

@@ -24,6 +24,7 @@
 package com.github.olivergondza.dumpling.factory;
 
 import static com.github.olivergondza.dumpling.Util.pause;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -98,6 +99,7 @@ public class JvmRuntimeFactoryTest {
 
         assertStatusIs(ThreadStatus.IN_OBJECT_WAIT, thread);
         assertStateIs(Thread.State.WAITING, thread);
+        assertVerbIs("waiting on", thread);
     }
 
     @Test
@@ -160,6 +162,7 @@ public class JvmRuntimeFactoryTest {
 
         assertStatusIs(ThreadStatus.BLOCKED_ON_MONITOR_ENTER, thread);
         assertStateIs(Thread.State.BLOCKED, thread);
+        assertVerbIs("waiting to lock", thread);
     }
 
     @Test
@@ -212,6 +215,10 @@ public class JvmRuntimeFactoryTest {
 
     private void assertStateIs(Thread.State expected, Thread thread) {
         assertEquals("Reported state: " + thread.getState(), expected, statusOf(thread).getState());
+    }
+
+    private void assertVerbIs(String verb, Thread thread) {
+        assertThat(forThread(runtime(), thread).toString(), containsString("- " + verb));
     }
 
     private ThreadStatus statusOf(Thread thread) {

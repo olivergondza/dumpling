@@ -26,7 +26,6 @@ package com.github.olivergondza.dumpling.factory;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -69,18 +68,18 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertThat(24597L, equalTo(main.getNid()));
         assertEquals(10, main.getPriority().intValue());
 
-        StackTraceElement[] trace = main.getStackTrace();
-        assertEquals(27, trace.length);
+        StackTrace trace = main.getStackTrace();
+        assertEquals(27, trace.size());
 
-        assertEquals("org.eclipse.swt.internal.gtk.OS", trace[0].getClassName());
-        assertEquals("Call", trace[0].getMethodName());
-        assertEquals(null, trace[0].getFileName());
-        assertEquals(-2, trace[0].getLineNumber());
+        assertEquals("org.eclipse.swt.internal.gtk.OS", trace.getElement(0).getClassName());
+        assertEquals("Call", trace.getElement(0).getMethodName());
+        assertEquals(null, trace.getElement(0).getFileName());
+        assertEquals(-2, trace.getElement(0).getLineNumber());
 
-        assertEquals("org.eclipse.swt.widgets.Display", trace[1].getClassName());
-        assertEquals("sleep", trace[1].getMethodName());
-        assertEquals("Display.java", trace[1].getFileName());
-        assertEquals(4233, trace[1].getLineNumber());
+        assertEquals("org.eclipse.swt.widgets.Display", trace.getElement(1).getClassName());
+        assertEquals("sleep", trace.getElement(1).getMethodName());
+        assertEquals("Display.java", trace.getElement(1).getFileName());
+        assertEquals(4233, trace.getElement(1).getLineNumber());
     }
 
     @Test
@@ -92,15 +91,15 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
         ProcessThread thread = threads.onlyNamed("Channel reader thread: jenkins_slave_02").onlyThread();
         assertEquals(ThreadStatus.RUNNABLE, thread.getThreadStatus());
-        StackTraceElement[] trace = thread.getStackTrace();
-        assertEquals(13, trace.length);
+        StackTrace trace = thread.getStackTrace();
+        assertEquals(13, trace.size());
 
-        assertEquals("java.io.FileInputStream", trace[0].getClassName());
-        assertEquals("readBytes", trace[0].getMethodName());
-        assertEquals(null, trace[0].getFileName());
-        assertEquals(-2, trace[0].getLineNumber());
+        assertEquals("java.io.FileInputStream", trace.getElement(0).getClassName());
+        assertEquals("readBytes", trace.getElement(0).getMethodName());
+        assertEquals(null, trace.getElement(0).getFileName());
+        assertEquals(-2, trace.getElement(0).getLineNumber());
 
-        StackTraceElement lastTrace = trace[trace.length - 1];
+        StackTraceElement lastTrace = trace.getElement(trace.size() - 1);
         assertEquals("hudson.remoting.SynchronousCommandTransport$ReaderThread", lastTrace.getClassName());
         assertEquals("run", lastTrace.getMethodName());
         assertEquals("SynchronousCommandTransport.java", lastTrace.getFileName());
@@ -140,7 +139,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertThat(actual, sameThreadsAs(expected));
 
         ProcessThread mainThread = actual.getThreads().onlyNamed("main").onlyThread();
-        StackTraceElement[] expectedStackTrace = new StackTraceElement[] {
+        StackTrace expectedStackTrace = new StackTrace(
                 StackTrace.nativeElement("java.lang.Object", "wait"),
                 StackTrace.element("java.lang.Object", "wait", "Object.java", 503),
                 StackTrace.element("java.lang.UNIXProcess", "waitFor", "UNIXProcess.java", 210),
@@ -167,10 +166,10 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                 StackTrace.element("sun.reflect.DelegatingMethodAccessorImpl", "invoke", "DelegatingMethodAccessorImpl.java", 43),
                 StackTrace.element("java.lang.reflect.Method", "invoke", "Method.java", 606),
                 StackTrace.element("org.codehaus.groovy.tools.GroovyStarter", "rootLoader", "GroovyStarter.java", 106),
-                StackTrace.element("org.codehaus.groovy.tools.GroovyStarter", "main", "GroovyStarter.java", 128),
-        };
+                StackTrace.element("org.codehaus.groovy.tools.GroovyStarter", "main", "GroovyStarter.java", 128)
+        );
 
-        assertArrayEquals(expectedStackTrace, mainThread.getStackTrace());
+        assertEquals(expectedStackTrace, mainThread.getStackTrace());
     }
 
     @Test
@@ -207,7 +206,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertThat(actual, sameThreadsAs(expected));
 
         ProcessThread mainThread = actual.getThreads().onlyNamed("main").onlyThread();
-        StackTraceElement[] expectedStackTrace = new StackTraceElement[] {
+        StackTrace expectedStackTrace = new StackTrace(
                 StackTrace.nativeElement("java.lang.Object", "wait"),
                 StackTrace.element("java.lang.Object", "wait", "Object.java", 502),
                 StackTrace.element("java.lang.UNIXProcess", "waitFor", "UNIXProcess.java", 264),
@@ -234,10 +233,10 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                 StackTrace.element("sun.reflect.DelegatingMethodAccessorImpl", "invoke", "DelegatingMethodAccessorImpl.java", 43),
                 StackTrace.element("java.lang.reflect.Method", "invoke", "Method.java", 483),
                 StackTrace.element("org.codehaus.groovy.tools.GroovyStarter", "rootLoader", "GroovyStarter.java", 106),
-                StackTrace.element("org.codehaus.groovy.tools.GroovyStarter", "main", "GroovyStarter.java", 128),
-        };
+                StackTrace.element("org.codehaus.groovy.tools.GroovyStarter", "main", "GroovyStarter.java", 128)
+        );
 
-        assertArrayEquals(expectedStackTrace, mainThread.getStackTrace());
+        assertEquals(expectedStackTrace, mainThread.getStackTrace());
     }
 
     @Test
@@ -273,7 +272,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertThat(actual, sameThreadsAs(expected));
 
         ProcessThread mainThread = actual.getThreads().onlyNamed("main").onlyThread();
-        StackTraceElement[] expectedStackTrace = new StackTraceElement[] {
+        StackTrace expectedStackTrace = new StackTrace(
                 StackTrace.nativeElement("java.lang.Object", "wait"),
                 StackTrace.element("java.lang.Object", "wait", "Object.java", 502),
                 StackTrace.element("java.lang.UNIXProcess", "waitFor", "UNIXProcess.java", 181),
@@ -333,9 +332,9 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                 StackTrace.element("java.lang.reflect.Method", "invoke", "Method.java", 622),
                 StackTrace.element("org.codehaus.groovy.tools.GroovyStarter", "rootLoader", "GroovyStarter.java", 101),
                 StackTrace.element("org.codehaus.groovy.tools.GroovyStarter", "main", "GroovyStarter.java", 130)
-        };
+        );
 
-        assertArrayEquals(expectedStackTrace, mainThread.getStackTrace());
+        assertEquals(expectedStackTrace, mainThread.getStackTrace());
     }
 
     @Test @Ignore
@@ -434,17 +433,17 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
         ThreadSet threads = runtimeFrom("oraclejdk-1.7.0_51.log").getThreads();
 
-        StackTraceElement[] actual = threads.onlyNamed("process reaper").iterator().next().getStackTrace();
-        StackTraceElement[] expected = new StackTraceElement[] {
+        StackTrace actual = threads.onlyNamed("process reaper").iterator().next().getStackTrace();
+        StackTrace expected = new StackTrace(
                 StackTrace.nativeElement("java.lang.UNIXProcess", "waitForProcessExit"),
                 StackTrace.element("java.lang.UNIXProcess", "access$200", "UNIXProcess.java", 54),
                 StackTrace.element("java.lang.UNIXProcess$3", "run", "UNIXProcess.java", 174),
                 StackTrace.element("java.util.concurrent.ThreadPoolExecutor", "runWorker", "ThreadPoolExecutor.java", 1145),
                 StackTrace.element("java.util.concurrent.ThreadPoolExecutor$Worker", "run", "ThreadPoolExecutor.java", 615),
                 StackTrace.element("java.lang.Thread", "run", "Thread.java", 744)
-        };
+        );
 
-        assertArrayEquals(actual, expected);
+        assertEquals(actual, expected);
     }
 
     @Test
@@ -453,6 +452,21 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertThat(exitValue, equalTo(-1));
         assertThat(err.toString(), containsString("/there_is_no_such_file (No such file or directory)"));
         assertThat(out.toString(), equalTo(""));
+    }
+
+    // Thread state and locks might not be consistent with each other.
+    // Can not assume that, for instance, thread waiting to acquire lock is not runnable
+    @Test
+    public void inconsistentThreadStateAndLockInformation() throws Exception {
+        ProcessThread thread = runtimeFrom("inconsistent-locks-and-state.log").getThreads().onlyThread();
+
+        assertThat(thread.getThreadStatus(), equalTo(ThreadStatus.RUNNABLE));
+        ThreadLock expectedLock = new ThreadLock.WithAddress(
+                1, "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject", 21032260640L
+        );
+        assertThat(thread.getWaitingOnLock(), equalTo(expectedLock));
+        // Based on stacktrace - not thread status
+        assertThat(thread.toString(), containsString("parking to wait for"));
     }
 
     private ProcessRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {
