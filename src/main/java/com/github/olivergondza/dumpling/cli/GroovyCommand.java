@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.github.olivergondza.dumpling.query;
+package com.github.olivergondza.dumpling.cli;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
@@ -37,7 +37,6 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
-import com.github.olivergondza.dumpling.cli.CliCommand;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 
 /**
@@ -45,7 +44,7 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
  *
  * @author ogondza
  */
-public class Groovy implements CliCommand {
+public class GroovyCommand implements CliCommand {
 
     @Option(name = "-i", aliases = {"--in"}, required = true, usage = "Input for process runtime")
     private ProcessRuntime runtime;

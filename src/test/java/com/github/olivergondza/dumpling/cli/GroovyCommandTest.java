@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.github.olivergondza.dumpling.query;
+package com.github.olivergondza.dumpling.cli;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -33,9 +33,8 @@ import java.net.URISyntaxException;
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
-import com.github.olivergondza.dumpling.cli.AbstractCliTest;
 
-public class GroovyTest extends AbstractCliTest {
+public class GroovyCommandTest extends AbstractCliTest {
 
     @Test
     public void executeScript() {
