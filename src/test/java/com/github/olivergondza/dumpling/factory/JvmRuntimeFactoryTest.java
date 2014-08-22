@@ -30,12 +30,17 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.locks.LockSupport;
 
+import org.hamcrest.collection.IsEmptyCollection;
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
+import com.github.olivergondza.dumpling.model.ThreadLock;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 
 public class JvmRuntimeFactoryTest {
@@ -207,6 +212,42 @@ public class JvmRuntimeFactoryTest {
         assertThat(expected.getState(), equalTo(actual.getState()));
         assertThat(expected.getPriority(), equalTo(actual.getPriority()));
         assertThat(expected.getId(), equalTo(actual.getId()));
+    }
+
+    @Test
+    public void monitorOwnerInObjectWait() throws Exception {
+        final Object lock = new Object();
+
+        thread = new Thread("monitorOwnerOnObjectWait") {
+            @Override
+            public void run() {
+                try {
+                    synchronized (lock) {
+                        lock.wait();
+                    }
+                } catch (InterruptedException ex) {
+                }
+            }
+        };
+        thread.start();
+
+        Thread.sleep(100); // Wait until sleeping
+
+        synchronized(lock) {
+
+            // Waiting thread is not supposed to own the thread
+            ProcessRuntime runtime = new JvmRuntimeFactory().currentRuntime();
+            ProcessThread waiting = runtime.getThreads().onlyNamed("monitorOwnerOnObjectWait").onlyThread();
+            assertThat(waiting.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
+            assertThat(waiting.getThreadStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
+
+            // Current thread is
+            ProcessThread current = runtime.getThreads().onlyNamed(Thread.currentThread().getName()).onlyThread();
+            final Set<ThreadLock> expected = new HashSet<ThreadLock>(Arrays.asList(
+                    new ThreadLock.WithHashCode(0, lock.getClass().getCanonicalName(), lock.hashCode())
+            ));
+            assertThat(current.getAcquiredLocks(), equalTo(expected));
+        }
     }
 
     private void assertStatusIs(ThreadStatus expected, Thread thread) {
