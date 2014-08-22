@@ -33,13 +33,16 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
+import org.hamcrest.collection.IsEmptyCollection;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -124,15 +127,12 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                 daemon("Service Thread").setTid(191963136).setNid(18892).setStatus(ThreadStatus.RUNNABLE).setPriority(10),
                 daemon("Finalizer").setTid(191744000).setNid(18888).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
                         .setLock(lock(0, "java.lang.ref.ReferenceQueue$Lock", 33678346384L))
-                        .setAcquiredLocks(lock(1, "java.lang.ref.ReferenceQueue$Lock", 33678346384L))
                 ,
                 daemon("Reference Handler").setTid(191727616).setNid(18887).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
                         .setLock(lock(0, "java.lang.ref.Reference$Lock", 33678167272L))
-                        .setAcquiredLocks(lock(2, "java.lang.ref.Reference$Lock", 33678167272L))
                 ,
                 thread("main").setTid(191326208).setNid(18881).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
                         .setLock(lock(0, "java.lang.UNIXProcess", 33649075520L))
-                        .setAcquiredLocks(lock(2, "java.lang.UNIXProcess", 33649075520L))
         );
 
         ProcessRuntime actual = runtimeFrom("oraclejdk-1.7.log");
@@ -191,15 +191,12 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                 daemon("Service Thread").setTid(1718273024).setNid(8126).setStatus(ThreadStatus.RUNNABLE).setPriority(9),
                 daemon("Finalizer").setTid(1718118400).setNid(8121).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(8)
                         .setLock(lock(0, "java.lang.ref.ReferenceQueue$Lock", 2495908272L))
-                        .setAcquiredLocks(lock(1, "java.lang.ref.ReferenceQueue$Lock", 2495908272L))
                 ,
                 daemon("Reference Handler").setTid(1718108160).setNid(8120).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
                         .setLock(lock(0, "java.lang.ref.Reference$Lock", 2495922552L))
-                        .setAcquiredLocks(lock(2, "java.lang.ref.Reference$Lock", 2495922552L))
                 ,
                 thread("main").setTid(3059771392L).setNid(8114).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(5)
                         .setLock(lock(0, "java.lang.UNIXProcess", 2468857072L))
-                        .setAcquiredLocks(lock(2, "java.lang.UNIXProcess", 2468857072L))
         );
 
         ProcessRuntime actual = runtimeFrom("oraclejdk-1.8.log");
@@ -257,15 +254,12 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                 daemon("Low Memory Detector").setTid(505606144).setNid(28578).setStatus(ThreadStatus.RUNNABLE).setPriority(10),
                 daemon("Finalizer").setTid(505229312).setNid(28574).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
                         .setLock(lock(0, "java.lang.ref.ReferenceQueue$Lock", 3773522592L))
-                        .setAcquiredLocks(lock(1, "java.lang.ref.ReferenceQueue$Lock", 3773522592L))
                 ,
                 daemon("Reference Handler").setTid(505221120).setNid(28573).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
                         .setLock(lock(0, "java.lang.ref.Reference$Lock", 3773521872L))
-                        .setAcquiredLocks(lock(2, "java.lang.ref.Reference$Lock", 3773521872L))
                 ,
                 thread("main").setTid(504590336).setNid(28567).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
                         .setLock(lock(0, "java.lang.UNIXProcess", 3791474536L))
-                        .setAcquiredLocks(lock(2, "java.lang.UNIXProcess", 3791474536L))
         );
 
         ProcessRuntime actual = runtimeFrom("openjdk-1.6.log");
@@ -467,6 +461,22 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertThat(thread.getWaitingOnLock(), equalTo(expectedLock));
         // Based on stacktrace - not thread status
         assertThat(thread.toString(), containsString("parking to wait for"));
+    }
+
+    @Test
+    public void monitorOwnerInObjectWait() throws Exception {
+        ThreadSet threads = runtimeFrom("inObjectWait.log").getThreads();
+        ProcessThread waiting = threads.onlyNamed("monitorOwnerInObjectWait").onlyThread();
+        ProcessThread owning = threads.onlyNamed("main").onlyThread();
+
+        final ThreadLock lock = new ThreadLock.WithAddress(0, "java.lang.Object", 33677473560L);
+        final Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(lock));
+        assertThat(owning.getAcquiredLocks(), equalTo(locks));
+        assertThat(owning.getWaitingOnLock(), equalTo(null));
+
+        assertThat(waiting.getThreadStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
+        assertThat(waiting.getWaitingOnLock(), equalTo(lock));
+        assertThat(waiting.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
     }
 
     private ProcessRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {

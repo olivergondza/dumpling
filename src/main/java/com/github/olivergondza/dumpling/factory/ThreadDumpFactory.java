@@ -133,16 +133,26 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
             depth++;
         }
 
-        builder.setAcquiredLocks(acquired);
-
+        ThreadLock lock = null;
         switch(waitingFor.size()) {
             case 0: // Noop
             break;
             case 1:
-                builder.setLock(waitingFor.get(0));
+                lock = waitingFor.get(0);
             break;
             default: throw new AssertionError("Waiting for locks: " + waitingFor.size());
         }
+
+        // Eliminated self lock that is presented in thread dump when in Object.wait()
+        if (acquired.contains(lock)) {
+            assert acquired.get(0).equals(lock);
+            assert builder.getStatus().isWaiting();
+
+            acquired.remove(lock);
+        }
+
+        builder.setAcquiredLocks(acquired);
+        builder.setLock(lock);
 
         return builder;
     }

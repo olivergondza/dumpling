@@ -251,6 +251,10 @@ public class ProcessThread {
             return this;
         }
 
+        public ThreadStatus getStatus() {
+            return status;
+        }
+
         public @Nonnull Builder setLock(ThreadLock lock) {
             this.waitingOnLock = lock;
             return this;

@@ -69,6 +69,14 @@ public enum ThreadStatus {
         return state;
     }
 
+    public boolean isWaiting() {
+        return this == IN_OBJECT_WAIT || this == IN_OBJECT_WAIT_TIMED;
+    }
+
+    public boolean isParked() {
+        return this == PARKED || this == PARKED_TIMED;
+    }
+
     public static @Nonnull ThreadStatus valueOf(int code) {
         for (ThreadStatus status: values()) {
             if (status.code == code) return status;
