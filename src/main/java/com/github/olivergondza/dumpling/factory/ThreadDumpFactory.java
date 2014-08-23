@@ -170,6 +170,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
             else if (token.startsWith("prio=")) builder.setPriority(Integer.parseInt(token.substring(5)));
             else if (token.startsWith("tid=")) builder.setTid(Long.parseLong(token.substring(6), 16));
             else if (token.startsWith("nid=")) builder.setNid(Long.parseLong(token.substring(6), 16));
+            else if (token.matches("#\\d+")) builder.setId(Integer.parseInt(token.substring(1)));
         }
 
         return builder;
