@@ -46,6 +46,12 @@ import com.github.olivergondza.dumpling.model.ThreadStatus;
 
 public class ThreadDumpFactory implements CliRuntimeFactory {
 
+    private static final Pattern STACK_TRACE_ELEMENT_LINE = Pattern.compile(" *at (\\S+)\\.(\\S+)\\(([^:]+?)(\\:\\d+)?\\)");
+    private static final Pattern THREAD_STATE = Pattern.compile("\\s*java.lang.Thread.State: (.*)");
+    private static final Pattern ACQUIRED_LINE = Pattern.compile("- locked <0x(\\w+)> \\(a ([^\\)]+)\\)");
+    private static final Pattern WAITING_FOR_LINE = Pattern.compile("- (?:waiting on|waiting to lock|parking to wait for ) <0x(\\w+)> \\(a ([^\\)]+)\\)");
+    private static final Pattern OWNABLE_SYNCHRONIZER_LINE = Pattern.compile("- <0x(\\w+)> \\(a ([^\\)]+)\\)");
+
     public @Nonnull String getKind() {
         return "threaddump";
     }
@@ -101,10 +107,6 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
     }
 
     private Builder initLocks(Builder builder, String string) {
-        Pattern acquiredLine = Pattern.compile("- locked <0x(\\w+)> \\(a ([^\\)]+)\\)");
-        Pattern waitingForLine = Pattern.compile("- (?:waiting on|waiting to lock|parking to wait for ) <0x(\\w+)> \\(a ([^\\)]+)\\)");
-        Pattern ownableSynchronizer = Pattern.compile("- <0x(\\w+)> \\(a ([^\\)]+)\\)");
-
         ArrayList<ThreadLock> acquired = new ArrayList<ThreadLock>(2);
         ArrayList<ThreadLock> waitingFor = new ArrayList<ThreadLock>(1);
         int depth = -1;
@@ -113,13 +115,13 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
         while (tokenizer.hasMoreTokens()) {
             String line = tokenizer.nextToken();
 
-            Matcher acquiredMatcher = acquiredLine.matcher(line);
+            Matcher acquiredMatcher = ACQUIRED_LINE.matcher(line);
             if (acquiredMatcher.find()) {
                 acquired.add(createLock(acquiredMatcher, depth));
                 continue;
             }
 
-            Matcher waitingForMatcher = waitingForLine.matcher(line);
+            Matcher waitingForMatcher = WAITING_FOR_LINE.matcher(line);
             if (waitingForMatcher.find()) {
                 waitingFor.add(createLock(waitingForMatcher, depth));
                 continue;
@@ -130,7 +132,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
                     line = tokenizer.nextToken();
 
                     if (line.contains("- None")) break;
-                    Matcher matcher = ownableSynchronizer.matcher(line);
+                    Matcher matcher = OWNABLE_SYNCHRONIZER_LINE.matcher(line);
                     matcher.find();
                     acquired.add(createLock(matcher, -1));
                 }
@@ -190,7 +192,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
     }
 
     private Builder initStatus(Builder builder, String statusLine) {
-        Matcher matcher = Pattern.compile("\\s*java.lang.Thread.State: (.*)").matcher(statusLine);
+        Matcher matcher = THREAD_STATE.matcher(statusLine);
         matcher.find();
 
         final ThreadStatus status = ThreadStatus.fromString(matcher.group(1));
@@ -201,8 +203,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
     }
 
     private Builder initStacktrace(Builder builder, String trace) {
-
-        Matcher match = Pattern.compile(" *at (\\S+)\\.(\\S+)\\(([^:]+?)(\\:\\d+)?\\)").matcher(trace);
+        Matcher match = STACK_TRACE_ELEMENT_LINE.matcher(trace);
         ArrayList<StackTraceElement> traceElements = new ArrayList<StackTraceElement>();
 
         while (match.find()) {
