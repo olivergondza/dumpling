@@ -479,6 +479,24 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertThat(waiting.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
     }
 
+    @Test
+    public void ownableSynchronizers() throws Exception {
+        ThreadSet threads = runtimeFrom("ownable-synchronizers.log").getThreads();
+        ProcessThread waiting = threads.onlyNamed("blockedThread").onlyThread();
+        ProcessThread owning = threads.onlyNamed("main").onlyThread();
+
+        final ThreadLock lock = new ThreadLock.WithAddress(0, "java.util.concurrent.locks.ReentrantLock$NonfairSync", 32296902960L);
+        final Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(lock));
+        assertThat(owning.getAcquiredLocks(), equalTo(locks));
+        assertThat(owning.getWaitingOnLock(), equalTo(null));
+
+        assertThat(waiting.getThreadStatus(), equalTo(ThreadStatus.PARKED));
+        assertThat(waiting.getWaitingOnLock(), equalTo(lock));
+        assertThat(waiting.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
+
+        assertThat(waiting.getBlockingThread(), equalTo(owning));
+    }
+
     private ProcessRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {
         return new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), resource));
     }

@@ -72,7 +72,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
     private @Nonnull Set<Builder> threads(String content) {
         Set<Builder> threads = new LinkedHashSet<Builder>();
 
-        for (String singleThread: content.split("\n\n")) {
+        for (String singleThread: content.split("\n\n(?!\\s)")) {
             ProcessThread.Builder thread = thread(singleThread);
             if (thread == null) continue;
             threads.add(thread);
@@ -103,30 +103,37 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
     private Builder initLocks(Builder builder, String string) {
         Pattern acquiredLine = Pattern.compile("- locked <0x(\\w+)> \\(a ([^\\)]+)\\)");
         Pattern waitingForLine = Pattern.compile("- (?:waiting on|waiting to lock|parking to wait for ) <0x(\\w+)> \\(a ([^\\)]+)\\)");
+        Pattern ownableSynchronizer = Pattern.compile("- <0x(\\w+)> \\(a ([^\\)]+)\\)");
 
         ArrayList<ThreadLock> acquired = new ArrayList<ThreadLock>(2);
         ArrayList<ThreadLock> waitingFor = new ArrayList<ThreadLock>(1);
-        StringTokenizer tokenizer = new StringTokenizer(string, "\n");
         int depth = -1;
+
+        StringTokenizer tokenizer = new StringTokenizer(string, "\n");
         while (tokenizer.hasMoreTokens()) {
             String line = tokenizer.nextToken();
 
             Matcher acquiredMatcher = acquiredLine.matcher(line);
             if (acquiredMatcher.find()) {
-                acquired.add(new ThreadLock.WithAddress(
-                        depth, acquiredMatcher.group(2), Long.parseLong(acquiredMatcher.group(1), 16)
-                ));
-
+                acquired.add(createLock(acquiredMatcher, depth));
                 continue;
             }
 
             Matcher waitingForMatcher = waitingForLine.matcher(line);
             if (waitingForMatcher.find()) {
-                waitingFor.add(new ThreadLock.WithAddress(
-                        depth, waitingForMatcher.group(2), Long.parseLong(waitingForMatcher.group(1), 16)
-                ));
-
+                waitingFor.add(createLock(waitingForMatcher, depth));
                 continue;
+            }
+
+            if (line.contains("Locked ownable synchronizers:")) {
+                while (tokenizer.hasMoreTokens()) {
+                    line = tokenizer.nextToken();
+
+                    if (line.contains("- None")) break;
+                    Matcher matcher = ownableSynchronizer.matcher(line);
+                    matcher.find();
+                    acquired.add(createLock(matcher, -1));
+                }
             }
 
             // Count stack frames - not locks
@@ -155,6 +162,12 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
         builder.setLock(lock);
 
         return builder;
+    }
+
+    private @Nonnull ThreadLock.WithAddress createLock(Matcher matcher, int depth) {
+        return new ThreadLock.WithAddress(
+                depth, matcher.group(2), Long.parseLong(matcher.group(1), 16)
+        );
     }
 
     private Builder initHeader(Builder builder, String headerLine) {

@@ -33,7 +33,9 @@ import static org.junit.Assert.assertNull;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.LockSupport;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.hamcrest.collection.IsEmptyCollection;
 import org.junit.Test;
@@ -247,6 +249,41 @@ public class JvmRuntimeFactoryTest {
                     new ThreadLock.WithHashCode(0, lock.getClass().getCanonicalName(), lock.hashCode())
             ));
             assertThat(current.getAcquiredLocks(), equalTo(expected));
+        }
+    }
+
+    @Test
+    public void ownableSynchronizers() throws Exception {
+        final Lock lock = new ReentrantLock();
+        lock.lockInterruptibly();
+        try {
+
+            thread = new Thread("ownableSynchronizers") {
+                @Override
+                public void run() {
+                    try {
+                        lock.lockInterruptibly(); // Block here
+                    } catch (InterruptedException ex) {
+                    }
+                }
+            };
+            thread.start();
+            Thread.sleep(100); // Wait until blocked
+
+            ProcessRuntime runtime = new JvmRuntimeFactory().currentRuntime();
+            ProcessThread current = runtime.getThreads().onlyNamed(Thread.currentThread().getName()).onlyThread();
+            ProcessThread blocked = runtime.getThreads().onlyNamed("ownableSynchronizers").onlyThread();
+
+            assertThat(current.getThreadStatus(), equalTo(ThreadStatus.RUNNABLE));
+            assertThat(blocked.getThreadStatus(), equalTo(ThreadStatus.PARKED));
+
+            Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(blocked.getWaitingOnLock()));
+            assertThat(current.getAcquiredLocks(), equalTo(locks));
+
+            assertThat(blocked.getBlockingThread(), equalTo(current));
+        } finally {
+            thread.interrupt();
+            lock.unlock();
         }
     }
 
