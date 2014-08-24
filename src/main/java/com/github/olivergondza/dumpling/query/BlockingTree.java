@@ -53,7 +53,9 @@ public class BlockingTree implements SingleRuntimeQuery<Set<BlockingTree.Tree>> 
         @Nonnull Set<Tree> roots = new HashSet<Tree>();
         for (ProcessThread thread: threads.getProcessRuntime().getThreads()) {
             if (thread.getWaitingOnLock() == null && !thread.getAcquiredLocks().isEmpty()) {
-                roots.add(new Tree(thread, buildDown(thread)));
+                if (!thread.getBlockedThreads().isEmpty()) {
+                    roots.add(new Tree(thread, buildDown(thread)));
+                }
             }
         }
 

@@ -39,5 +39,12 @@ Full thread dump OpenJDK 64-Bit Server VM (24.65-b04 mixed mode):
 	- waiting to lock <0x00000007d75115b0> (a com.github.olivergondza.dumpling.query.BlockingTreeTest$5)
 	- locked <0x00000007d75116e8> (a com.github.olivergondza.dumpling.query.BlockingTreeTest$6)
 
+"c" prio=10 tid=0x00007f41602f8001 nid=0x7cd3 waiting on condition [0x00007f414e58f001]
+   java.lang.Thread.State: TIMED_WAITING (sleeping)
+	at java.lang.Thread.sleep(Native Method)
+	at com.github.olivergondza.dumpling.Util.pause(Util.java:48)
+	at com.github.olivergondza.dumpling.query.BlockingTreeTest$1.run(BlockingTreeTest.java:37)
+	- locked <0x00000007d750e1e1> (a com.github.olivergondza.dumpling.query.BlockingTreeTest$1)
+
 JNI global references: 171
 
