@@ -107,7 +107,8 @@ public class ThreadSet implements Iterable<ProcessThread> {
     }
 
     public @Nonnull ThreadSet onlyNamed(@Nonnull final String name) {
-        return filter(new Predicate() {
+        return where(new Predicate() {
+            @Override
             public boolean isValid(ProcessThread thread) {
                 return thread.getName().equals(name);
             }
@@ -115,7 +116,8 @@ public class ThreadSet implements Iterable<ProcessThread> {
     }
 
     public @Nonnull ThreadSet onlyNamed(@Nonnull final Pattern pattern) {
-        return filter(new Predicate() {
+        return where(new Predicate() {
+            @Override
             public boolean isValid(ProcessThread thread) {
                 return pattern.matcher(thread.getName()).find();
             }
@@ -128,7 +130,7 @@ public class ThreadSet implements Iterable<ProcessThread> {
         return derive(newThreads);
     }
 
-    private @Nonnull ThreadSet filter(Predicate pred) {
+    public @Nonnull ThreadSet where(Predicate pred) {
         HashSet<ProcessThread> subset = new HashSet<ProcessThread>(size() / 2);
         for (@Nonnull ProcessThread thread: threads) {
             if (pred.isValid(thread)) subset.add(thread);
@@ -137,7 +139,7 @@ public class ThreadSet implements Iterable<ProcessThread> {
         return new ThreadSet(runtime, subset);
     }
 
-    private static interface Predicate {
+    public static interface Predicate {
         boolean isValid(@Nonnull ProcessThread thread);
     }
 
@@ -188,6 +190,7 @@ public class ThreadSet implements Iterable<ProcessThread> {
         return threads.containsAll(c);
     }
 
+    @Override
     public Iterator<ProcessThread> iterator() {
         return threads.iterator();
     }
