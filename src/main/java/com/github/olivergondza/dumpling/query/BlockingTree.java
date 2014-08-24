@@ -23,6 +23,8 @@
  */
 package com.github.olivergondza.dumpling.query;
 
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -30,6 +32,11 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.Option;
+
+import com.github.olivergondza.dumpling.cli.CliCommand;
+import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
@@ -127,18 +134,16 @@ public class BlockingTree implements SingleRuntimeQuery<Set<BlockingTree.Tree>> 
 
         @Override
         public String toString() {
-            return toString("");
+            StringBuilder sb = new StringBuilder();
+            writeInto("", sb);
+            return sb.toString();
         }
 
-        public String toString(String prefix) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("\n");
-            sb.append(prefix).append(root.getHeader());
+        private void writeInto(String prefix, StringBuilder sb) {
+            sb.append(prefix).append(root.getHeader()).append('\n');
             for (Tree l: leaves) {
-                sb.append(l.toString(prefix + "\t"));
+                l.writeInto(prefix + "\t", sb);
             }
-
-            return sb.toString();
         }
 
         @Override
@@ -160,6 +165,28 @@ public class BlockingTree implements SingleRuntimeQuery<Set<BlockingTree.Tree>> 
 
             Tree other = (Tree) rhs;
             return this.root.equals(other.root) && this.leaves.equals(other.leaves);
+        }
+    }
+
+    public static class Command implements CliCommand {
+
+        @Option(name = "-i", aliases = {"--in"}, required = true, usage = "Input for process runtime")
+        private ProcessRuntime runtime;
+
+        public String getName() {
+            return "blocking-tree";
+        }
+
+        public String getDescription() {
+            return "Print contention trees";
+        }
+
+        public int run(InputStream in, PrintStream out, PrintStream err) throws CmdLineException {
+            for (Tree tree: runtime.query(new BlockingTree())) {
+                out.println(tree);
+            }
+
+            return 0;
         }
     }
 }

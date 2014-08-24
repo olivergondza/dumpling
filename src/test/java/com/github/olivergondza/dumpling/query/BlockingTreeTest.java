@@ -23,9 +23,11 @@
  */
 package com.github.olivergondza.dumpling.query;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -37,19 +39,22 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
+import com.github.olivergondza.dumpling.cli.AbstractCliTest;
 import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.query.BlockingTree.Tree;
 
-public class BlockingTreeTest {
+public class BlockingTreeTest extends AbstractCliTest {
 
     private ProcessRuntime runtime;
     private ProcessThread a, aa, aaa, ab, b, ba;
+    private File blockingTreeLog;
 
     @Before
     public void setUp() throws Exception {
-        runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("blocking-tree.log"));
+        blockingTreeLog = Util.resourceFile("blocking-tree.log");
+        runtime = new ThreadDumpFactory().fromFile(blockingTreeLog);
         a = singleThread("a");
         aa = singleThread("aa");
         aaa = singleThread("aaa");
@@ -115,5 +120,22 @@ public class BlockingTreeTest {
         ));
 
         assertThat(as, equalTo(expected));
+    }
+
+    public void cliQuery() throws Exception {
+        run("top-contenders", "--in", "threaddump", blockingTreeLog.getAbsolutePath());
+        assertThat(err.toString(), equalTo(""));
+
+        // Roots
+        assertThat(out.toString(), containsString("\n\"a\""));
+        assertThat(out.toString(), containsString("\n\"b\""));
+
+        // Blocked by roots
+        assertThat(out.toString(), containsString("\n\t\"aa\""));
+        assertThat(out.toString(), containsString("\n\t\"ab\""));
+        assertThat(out.toString(), containsString("\n\t\"ba\""));
+
+        // Deeply nested
+        assertThat(out.toString(), containsString("\n\t\t\"aaa\""));
     }
 }
