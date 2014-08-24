@@ -1,0 +1,43 @@
+2014-08-24 09:36:21
+Full thread dump OpenJDK 64-Bit Server VM (24.65-b04 mixed mode):
+
+"a" prio=10 tid=0x00007f41602f8000 nid=0x7cd2 waiting on condition [0x00007f414e58f000]
+   java.lang.Thread.State: TIMED_WAITING (sleeping)
+	at java.lang.Thread.sleep(Native Method)
+	at com.github.olivergondza.dumpling.Util.pause(Util.java:48)
+	at com.github.olivergondza.dumpling.query.BlockingTreeTest$1.run(BlockingTreeTest.java:37)
+	- locked <0x00000007d750e1e0> (a com.github.olivergondza.dumpling.query.BlockingTreeTest$1)
+
+"aa" prio=10 tid=0x00007f416030c000 nid=0x7cd3 waiting for monitor entry [0x00007f414e48e000]
+   java.lang.Thread.State: BLOCKED (on object monitor)
+	at com.github.olivergondza.dumpling.query.BlockingTreeTest$2.run(BlockingTreeTest.java:48)
+	- waiting to lock <0x00000007d750e1e0> (a com.github.olivergondza.dumpling.query.BlockingTreeTest$1)
+	- locked <0x00000007d75111d8> (a com.github.olivergondza.dumpling.query.BlockingTreeTest$2)
+
+"aaa" prio=10 tid=0x00007f416030e800 nid=0x7cd5 waiting for monitor entry [0x00007f414e28c000]
+   java.lang.Thread.State: BLOCKED (on object monitor)
+	at com.github.olivergondza.dumpling.query.BlockingTreeTest$4.run(BlockingTreeTest.java:70)
+	- waiting to lock <0x00000007d75111d8> (a com.github.olivergondza.dumpling.query.BlockingTreeTest$2)
+	- locked <0x00000007d7511448> (a com.github.olivergondza.dumpling.query.BlockingTreeTest$4)
+
+"ab" prio=10 tid=0x00007f416030d000 nid=0x7cd4 waiting for monitor entry [0x00007f414e38d000]
+   java.lang.Thread.State: BLOCKED (on object monitor)
+	at com.github.olivergondza.dumpling.query.BlockingTreeTest$3.run(BlockingTreeTest.java:59)
+	- waiting to lock <0x00000007d750e1e0> (a com.github.olivergondza.dumpling.query.BlockingTreeTest$1)
+	- locked <0x00000007d7511310> (a com.github.olivergondza.dumpling.query.BlockingTreeTest$3)
+
+"b" prio=10 tid=0x00007f4160310000 nid=0x7cd6 waiting on condition [0x00007f414e18b000]
+   java.lang.Thread.State: TIMED_WAITING (sleeping)
+	at java.lang.Thread.sleep(Native Method)
+	at com.github.olivergondza.dumpling.Util.pause(Util.java:48)
+	at com.github.olivergondza.dumpling.query.BlockingTreeTest$5.run(BlockingTreeTest.java:79)
+	- locked <0x00000007d75115b0> (a com.github.olivergondza.dumpling.query.BlockingTreeTest$5)
+
+"ba" prio=10 tid=0x00007f4160311800 nid=0x7cd7 waiting for monitor entry [0x00007f414e08a000]
+   java.lang.Thread.State: BLOCKED (on object monitor)
+	at com.github.olivergondza.dumpling.query.BlockingTreeTest$6.run(BlockingTreeTest.java:90)
+	- waiting to lock <0x00000007d75115b0> (a com.github.olivergondza.dumpling.query.BlockingTreeTest$5)
+	- locked <0x00000007d75116e8> (a com.github.olivergondza.dumpling.query.BlockingTreeTest$6)
+
+JNI global references: 171
+
