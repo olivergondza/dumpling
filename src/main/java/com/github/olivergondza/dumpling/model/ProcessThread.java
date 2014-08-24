@@ -26,6 +26,7 @@ package com.github.olivergondza.dumpling.model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -105,7 +106,7 @@ public class ProcessThread {
      * Get threads that are waiting for lock held by this thread.
      */
     public @Nonnull ThreadSet getBlockedThreads() {
-        HashSet<ProcessThread> blocked = new HashSet<ProcessThread>();
+        Set<ProcessThread> blocked = new LinkedHashSet<ProcessThread>();
         for (ProcessThread thread: runtime.getThreads()) {
             if (thread == this) continue;
             if (state.acquiredLocks.contains(thread.state.waitingOnLock)) {

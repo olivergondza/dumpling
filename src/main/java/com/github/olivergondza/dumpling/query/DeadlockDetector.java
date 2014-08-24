@@ -26,6 +26,7 @@ package com.github.olivergondza.dumpling.query;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -49,7 +50,7 @@ public class DeadlockDetector implements SingleRuntimeQuery<Set<ThreadSet>>{
 
         for (ProcessThread thread: threads) {
 
-            Set<ProcessThread> cycleCandidate = new HashSet<ProcessThread>(2);
+            Set<ProcessThread> cycleCandidate = new LinkedHashSet<ProcessThread>(2);
             for (ProcessThread blocking = thread.getBlockingThread(); blocking != null; blocking = blocking.getBlockingThread()) {
                 if (analyzed.contains(thread)) break;
 
