@@ -167,7 +167,7 @@ public class JvmRuntimeFactoryTest {
         };
         thread.start();
 
-        assertStatusIs(ThreadStatus.BLOCKED_ON_MONITOR_ENTER, thread);
+        assertStatusIs(ThreadStatus.BLOCKED, thread);
         assertStateIs(Thread.State.BLOCKED, thread);
         assertVerbIs("waiting to lock", thread);
     }
