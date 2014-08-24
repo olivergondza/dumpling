@@ -64,6 +64,48 @@ public class ThreadSet implements Iterable<ProcessThread> {
         return threads.iterator().next();
     }
 
+    /**
+     * Get threads blocked by any of current threads.
+     */
+    public @Nonnull ThreadSet getBlockedThreads() {
+        Set<ThreadLock> acquired = new HashSet<ThreadLock>();
+        for (ProcessThread thread: threads) {
+            acquired.addAll(thread.getAcquiredLocks());
+        }
+
+        Set<ProcessThread> blocked = new HashSet<ProcessThread>();
+        for (ProcessThread thread: runtime.getThreads()) {
+            if (acquired.contains(thread.getWaitingOnLock())) {
+                blocked.add(thread);
+            }
+        }
+
+        return derive(blocked);
+    }
+
+    /**
+     * Get threads blocking any of current threads.
+     */
+    public @Nonnull ThreadSet getBlockingThreads() {
+        Set<ThreadLock> waitingOn = new HashSet<ThreadLock>();
+        for (ProcessThread thread: threads) {
+            if (thread.getWaitingOnLock() != null) {
+                waitingOn.add(thread.getWaitingOnLock());
+            }
+        }
+
+        Set<ProcessThread> blocking = new HashSet<ProcessThread>();
+        for (ProcessThread thread: runtime.getThreads()) {
+            Set<ThreadLock> threadHolding = thread.getAcquiredLocks();
+            threadHolding.retainAll(waitingOn);
+            if (!threadHolding.isEmpty()) {
+                blocking.add(thread);
+            }
+        }
+
+        return derive(blocking);
+    }
+
     public @Nonnull ThreadSet onlyNamed(@Nonnull final String name) {
         return filter(new Predicate() {
             public boolean isValid(ProcessThread thread) {
