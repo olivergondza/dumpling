@@ -59,7 +59,6 @@ public class JvmRuntimeFactory {
                     .setDaemon(thread.isDaemon())
                     .setPriority(thread.getPriority())
                     .setStacktrace(thread.getStackTrace())
-                    .setState(thread.getState())
                     .setStatus(status(thread))
             ;
 

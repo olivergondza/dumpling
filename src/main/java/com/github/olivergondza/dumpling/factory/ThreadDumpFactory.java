@@ -100,11 +100,9 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
         builder.setName(matcher.group(1));
         builder = initHeader(builder, matcher.group(2));
 
-        String s = matcher.group(3);
-        if (s != null) {
-            ThreadStatus status = ThreadStatus.fromString(s);
-            builder.setStatus(status);
-            builder.setState(status.getState());
+        String status = matcher.group(3);
+        if (status != null) {
+            builder.setStatus(ThreadStatus.fromString(status));
         }
 
         final String trace = matcher.group(4);

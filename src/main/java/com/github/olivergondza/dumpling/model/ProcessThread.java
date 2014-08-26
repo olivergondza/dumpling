@@ -78,7 +78,7 @@ public class ProcessThread {
     }
 
     public Thread.State getState() {
-        return state.state;
+        return state.status.getState();
     }
 
     public Integer getPriority() {
@@ -188,7 +188,6 @@ public class ProcessThread {
         // https://gist.github.com/rednaxelafx/843622
         private Long id, nid, tid;
         private @Nonnull StackTraceElement[] stackTrace = new StackTraceElement[] {};
-        private Thread.State state;
         private ThreadStatus status;
         private @CheckForNull ThreadLock waitingOnLock;
         // Preserve locks as List not to collapse identical entries
@@ -239,11 +238,6 @@ public class ProcessThread {
 
         public @Nonnull Builder setStacktrace(@Nonnull StackTraceElement[] stackTrace) {
             this.stackTrace = stackTrace;
-            return this;
-        }
-
-        public @Nonnull Builder setState(Thread.State state) {
-            this.state = state;
             return this;
         }
 
