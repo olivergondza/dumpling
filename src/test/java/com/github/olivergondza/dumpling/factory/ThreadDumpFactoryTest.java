@@ -497,6 +497,26 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertThat(waiting.getBlockingThread(), equalTo(owning));
     }
 
+    @Test
+    public void threadNameWithQuotes() throws Exception {
+        ProcessThread quotes = runtimeFrom("quoted.log").getThreads().onlyThread();
+        assertThat(quotes.getName(), equalTo("\"o\""));
+        assertThat(quotes.getThreadStatus(), equalTo(ThreadStatus.SLEEPING));
+        assertThat(quotes.getPriority(), equalTo(10));
+        assertThat(quotes.getTid(), equalTo(139651066363904L));
+        assertThat(quotes.getNid(), equalTo(19257L));
+    }
+
+    @Test
+    public void threadNameWithLinebreak() throws Exception {
+        ProcessThread quotes = runtimeFrom("linebreaked.log").getThreads().onlyThread();
+        assertThat(quotes.getName(), equalTo("Thread\nName\nWith\nLinebreaks"));
+        assertThat(quotes.getThreadStatus(), equalTo(ThreadStatus.SLEEPING));
+        assertThat(quotes.getPriority(), equalTo(10));
+        assertThat(quotes.getTid(), equalTo(139680862656512L));
+        assertThat(quotes.getNid(), equalTo(18973L));
+    }
+
     private ProcessRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {
         return new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), resource));
     }
@@ -527,6 +547,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     private TypeSafeMatcher<ProcessRuntime> sameThreadsAs(final ProcessRuntime expectedRuntime) {
         return new TypeSafeMatcher<ProcessRuntime>() {
 
+            @Override
             public void describeTo(Description description) {
                 description.appendText("Runtime with same threads");
             }

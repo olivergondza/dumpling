@@ -1,0 +1,82 @@
+
+===== FULL THREAD DUMP ===============
+Sun Jul 20 17:03:49 2014
+BEA JRockit(R) R27.6.5-32_o-121899-1.5.0_19-20091001-2113-linux-x86_64
+
+"Main Thread" id=1 idx=0x4 tid=11648 prio=5 alive, in native, waiting
+    -- Waiting for notification on: java/lang/UNIXProcess@0x6f28838[fat lock]
+    at jrockit/vm/Threads.waitForNotifySignal(JLjava/lang/Object;)Z(Native Method)
+    at java/lang/Object.wait(J)V(Native Method)
+    at java/lang/Object.wait(Object.java:474)
+    at java/lang/UNIXProcess.waitFor(UNIXProcess.java:165)
+    ^-- Lock released while waiting: java/lang/UNIXProcess@0x6f28838[fat lock]
+    at jrockit/vm/RNI.c2java(JJJJJ)V(Native Method)
+    at jrockit/vm/Reflect.invokeMethod(Ljava/lang/Object;Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;(Native Method)
+    at sun/reflect/NativeMethodAccessorImpl.invoke0(Ljava/lang/reflect/Method;Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;(Native Method)
+    at sun/reflect/NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+    at sun/reflect/DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+    at java/lang/reflect/Method.invoke(Method.java:592)
+    at org/codehaus/groovy/runtime/callsite/PojoMetaMethodSite$PojoCachedMethodSiteNoUnwrapNoCoerce.invoke(PojoMetaMethodSite.java:230)
+    at org/codehaus/groovy/runtime/callsite/PojoMetaMethodSite.call(PojoMetaMethodSite.java:53)
+    at org/codehaus/groovy/runtime/callsite/CallSiteArray.defaultCall(CallSiteArray.java:45)
+    at org/codehaus/groovy/runtime/callsite/AbstractCallSite.call(AbstractCallSite.java:108)
+    at org/codehaus/groovy/runtime/callsite/AbstractCallSite.call(AbstractCallSite.java:112)
+    at hudson1227615641556117282.run(hudson1227615641556117282.groovy:9)
+    at groovy/lang/GroovyShell.runScriptOrMainOrTestOrRunnable(GroovyShell.java:257)
+    at groovy/lang/GroovyShell.run(GroovyShell.java:220)
+    at groovy/lang/GroovyShell.run(GroovyShell.java:150)
+    at groovy/ui/GroovyMain.processOnce(GroovyMain.java:588)
+    at groovy/ui/GroovyMain.run(GroovyMain.java:375)
+    at groovy/ui/GroovyMain.process(GroovyMain.java:361)
+    at groovy/ui/GroovyMain.processArgs(GroovyMain.java:120)
+    at groovy/ui/GroovyMain.main(GroovyMain.java:100)
+    at jrockit/vm/RNI.c2java(JJJJJ)V(Native Method)
+    at jrockit/vm/Reflect.invokeMethod(Ljava/lang/Object;Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;(Native Method)
+    at sun/reflect/NativeMethodAccessorImpl.invoke0(Ljava/lang/reflect/Method;Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;(Native Method)
+    at sun/reflect/NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+    at sun/reflect/DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+    at java/lang/reflect/Method.invoke(Method.java:592)
+    at org/codehaus/groovy/tools/GroovyStarter.rootLoader(GroovyStarter.java:106)
+    at org/codehaus/groovy/tools/GroovyStarter.main(GroovyStarter.java:128)
+    at jrockit/vm/RNI.c2java(JJJJJ)V(Native Method)
+    -- end of trace
+
+"(Signal Handler)" id=2 idx=0x8 tid=11661 prio=5 alive, in native, daemon
+
+"(GC Main Thread)" id=3 idx=0xc tid=11662 prio=5 alive, in native, native_waiting, daemon
+
+"(GC Worker Thread 1)" id=? idx=0x10 tid=11663 prio=5 alive, in native, daemon
+
+"(Code Generation Thread 1)" id=4 idx=0x14 tid=11664 prio=5 alive, in native, native_waiting, daemon
+
+"(Code Optimization Thread 1)" id=5 idx=0x18 tid=11665 prio=5 alive, in native, native_waiting, daemon
+
+"(VM Periodic Task)" id=6 idx=0x1c tid=11666 prio=10 alive, in native, daemon
+
+"Finalizer" id=7 idx=0x20 tid=11667 prio=8 alive, in native, native_waiting, daemon
+    at jrockit/memory/Finalizer.waitForFinalizees([Ljava/lang/Object;)I(Native Method)
+    at jrockit/memory/Finalizer.access$500(Finalizer.java:12)
+    at jrockit/memory/Finalizer$4.run(Finalizer.java:153)
+    at java/lang/Thread.run(Thread.java:595)
+    at jrockit/vm/RNI.c2java(JJJJJ)V(Native Method)
+    -- end of trace
+
+"Reference Handler" id=8 idx=0x24 tid=11668 prio=10 alive, in native, native_waiting, daemon
+    at java/lang/ref/Reference.waitForActivatedQueue()Ljava/lang/ref/Reference;(Native Method)
+    at java/lang/ref/Reference.access$100(Reference.java:11)
+    at java/lang/ref/Reference$ReferenceHandler.run(Reference.java:79)
+    at jrockit/vm/RNI.c2java(JJJJJ)V(Native Method)
+    -- end of trace
+
+"(Sensor Event Thread)" id=9 idx=0x28 tid=11669 prio=5 alive, in native, daemon
+
+"process reaper" id=11 idx=0x2c tid=11670 prio=5 alive, in native, daemon
+    at java/lang/UNIXProcess.waitForProcessExit(I)I(Native Method)
+    at java/lang/UNIXProcess.access$900(UNIXProcess.java:20)
+    at java/lang/UNIXProcess$1$1.run(UNIXProcess.java:132)
+    at jrockit/vm/RNI.c2java(JJJJJ)V(Native Method)
+    -- end of trace
+
+"(Attach Listener)" id=12 idx=0x30 tid=11681 prio=5 alive, in native, daemon
+
+===== END OF THREAD DUMP ===============

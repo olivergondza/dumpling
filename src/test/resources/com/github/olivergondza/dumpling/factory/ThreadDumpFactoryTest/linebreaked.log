@@ -1,0 +1,13 @@
+2014-08-26 16:19:26
+Full thread dump OpenJDK 64-Bit Server VM (24.65-b04 mixed mode):
+
+"Thread
+Name
+With
+Linebreaks" prio=10 tid=0x00007f09fc335800 nid=0x4a1d waiting on condition [0x00007f09f832a000]
+   java.lang.Thread.State: TIMED_WAITING (sleeping)
+        at java.lang.Thread.sleep(Native Method)
+        at com.github.olivergondza.dumpling.Util.pause(Util.java:48)
+        at com.github.olivergondza.dumpling.factory.ThreadDumpFactoryTest$1.run(ThreadDumpFactoryTest.java:505)
+
+JNI global references: 198

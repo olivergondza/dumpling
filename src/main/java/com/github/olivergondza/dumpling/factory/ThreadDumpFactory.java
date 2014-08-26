@@ -47,15 +47,20 @@ import com.github.olivergondza.dumpling.model.ThreadStatus;
 public class ThreadDumpFactory implements CliRuntimeFactory {
 
     private static final Pattern STACK_TRACE_ELEMENT_LINE = Pattern.compile(" *at (\\S+)\\.(\\S+)\\(([^:]+?)(\\:\\d+)?\\)");
-    private static final Pattern THREAD_STATE = Pattern.compile("\\s*java.lang.Thread.State: (.*)");
     private static final Pattern ACQUIRED_LINE = Pattern.compile("- locked <0x(\\w+)> \\(a ([^\\)]+)\\)");
     private static final Pattern WAITING_FOR_LINE = Pattern.compile("- (?:waiting on|waiting to lock|parking to wait for ) <0x(\\w+)> \\(a ([^\\)]+)\\)");
     private static final Pattern OWNABLE_SYNCHRONIZER_LINE = Pattern.compile("- <0x(\\w+)> \\(a ([^\\)]+)\\)");
+    private static final Pattern THREAD_HEADER = Pattern.compile(
+            "^\"(.*)\" ([^\\n]+)(?:\\n\\s+java.lang.Thread.State: ([^\\n]+)(?:\\n(.+))?)?",
+            Pattern.DOTALL
+    );
 
+    @Override
     public @Nonnull String getKind() {
         return "threaddump";
     }
 
+    @Override
     public @Nonnull ProcessRuntime createRuntime(String locator) throws CommandFailedException {
         try {
             return fromFile(new File(locator));
@@ -88,19 +93,24 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
 
     private Builder thread(String singleThread) {
 
-        String[] chunks = singleThread.split("\n", 3);
+        Matcher matcher = THREAD_HEADER.matcher(singleThread);
+        if (!matcher.find()) return null;
 
         Builder builder = ProcessThread.builder();
-        builder = initHeader(builder, chunks[0]);
-        if (builder == null) return null;
+        builder.setName(matcher.group(1));
+        builder = initHeader(builder, matcher.group(2));
 
-        if (chunks.length > 1) {
-            builder = initStatus(builder, chunks[1]);
+        String s = matcher.group(3);
+        if (s != null) {
+            ThreadStatus status = ThreadStatus.fromString(s);
+            builder.setStatus(status);
+            builder.setState(status.getState());
         }
 
-        if (chunks.length > 2) {
-            builder = initStacktrace(builder, chunks[2]);
-            builder = initLocks(builder, chunks[2]);
+        final String trace = matcher.group(4);
+        if (trace != null) {
+            builder = initStacktrace(builder, trace);
+            builder = initLocks(builder, trace);
         }
 
         return builder;
@@ -172,13 +182,9 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
         );
     }
 
-    private Builder initHeader(Builder builder, String headerLine) {
-        if (!headerLine.startsWith("\"")) return null;
+    private Builder initHeader(Builder builder, String attrs) {
 
-        int endOfName = headerLine.indexOf('"', 1);
-        builder.setName(headerLine.substring(1, endOfName));
-
-        StringTokenizer tknzr = new StringTokenizer(headerLine.substring(endOfName + 1), " ");
+        StringTokenizer tknzr = new StringTokenizer(attrs, " ");
         while (tknzr.hasMoreTokens()) {
             String token = tknzr.nextToken();
             if ("daemon".equals(token)) builder.setDaemon(true);
@@ -187,17 +193,6 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
             else if (token.startsWith("nid=")) builder.setNid(Long.parseLong(token.substring(6), 16));
             else if (token.matches("#\\d+")) builder.setId(Integer.parseInt(token.substring(1)));
         }
-
-        return builder;
-    }
-
-    private Builder initStatus(Builder builder, String statusLine) {
-        Matcher matcher = THREAD_STATE.matcher(statusLine);
-        matcher.find();
-
-        final ThreadStatus status = ThreadStatus.fromString(matcher.group(1));
-        builder.setStatus(status);
-        builder.setState(status.getState());
 
         return builder;
     }
