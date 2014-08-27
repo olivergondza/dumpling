@@ -59,7 +59,7 @@ public class JvmRuntimeFactory {
                     .setDaemon(thread.isDaemon())
                     .setPriority(thread.getPriority())
                     .setStacktrace(thread.getStackTrace())
-                    .setStatus(status(thread))
+                    .setThreadStatus(status(thread))
             ;
 
             ThreadInfo info = infos.get(thread.getId());
@@ -68,7 +68,7 @@ public class JvmRuntimeFactory {
 
             builder.setAcquiredLocks(locks(info));
             LockInfo lock = info.getLockInfo();
-            if (lock != null) builder.setLock(lock(lock));
+            if (lock != null) builder.setWaitingOnLock(lock(lock));
 
             state.add(builder);
         }

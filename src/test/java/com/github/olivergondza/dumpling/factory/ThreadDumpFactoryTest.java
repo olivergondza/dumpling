@@ -113,26 +113,26 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     public void oracleJdk7() throws Exception {
 
         ProcessRuntime expected = runtime (
-                daemon("Attach Listener").setTid(194867200).setNid(18909).setStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("Attach Listener").setTid(194867200).setNid(18909).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
                 thread("GC task thread#0 (ParallelGC)").setTid(191416320).setNid(18882).setPriority(10),
                 thread("GC task thread#1 (ParallelGC)").setTid(191424512).setNid(18883).setPriority(10),
                 thread("GC task thread#2 (ParallelGC)").setTid(191430656).setNid(18884).setPriority(10),
                 thread("GC task thread#3 (ParallelGC)").setTid(191438848).setNid(18885).setPriority(10),
                 thread("VM Periodic Task Thread").setTid(192006144).setNid(18893).setPriority(10),
-                daemon("Signal Dispatcher").setTid(191895552).setNid(18889).setStatus(ThreadStatus.RUNNABLE).setPriority(10),
-                daemon("process reaper").setTid(47867348480000L).setNid(18895).setStatus(ThreadStatus.RUNNABLE).setPriority(10),
-                daemon("C2 CompilerThread0").setTid(191905792).setNid(18890).setStatus(ThreadStatus.RUNNABLE).setPriority(10),
-                daemon("C2 CompilerThread1").setTid(191952896).setNid(18891).setStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("Signal Dispatcher").setTid(191895552).setNid(18889).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("process reaper").setTid(47867348480000L).setNid(18895).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("C2 CompilerThread0").setTid(191905792).setNid(18890).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("C2 CompilerThread1").setTid(191952896).setNid(18891).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
                 thread("VM Thread").setTid(191717376).setNid(18886).setPriority(10),
-                daemon("Service Thread").setTid(191963136).setNid(18892).setStatus(ThreadStatus.RUNNABLE).setPriority(10),
-                daemon("Finalizer").setTid(191744000).setNid(18888).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
-                        .setLock(lock(0, "java.lang.ref.ReferenceQueue$Lock", 33678346384L))
+                daemon("Service Thread").setTid(191963136).setNid(18892).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("Finalizer").setTid(191744000).setNid(18888).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
+                        .setWaitingOnLock(lock(0, "java.lang.ref.ReferenceQueue$Lock", 33678346384L))
                 ,
-                daemon("Reference Handler").setTid(191727616).setNid(18887).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
-                        .setLock(lock(0, "java.lang.ref.Reference$Lock", 33678167272L))
+                daemon("Reference Handler").setTid(191727616).setNid(18887).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
+                        .setWaitingOnLock(lock(0, "java.lang.ref.Reference$Lock", 33678167272L))
                 ,
-                thread("main").setTid(191326208).setNid(18881).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
-                        .setLock(lock(0, "java.lang.UNIXProcess", 33649075520L))
+                thread("main").setTid(191326208).setNid(18881).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
+                        .setWaitingOnLock(lock(0, "java.lang.UNIXProcess", 33649075520L))
         );
 
         ProcessRuntime actual = runtimeFrom("oraclejdk-1.7.log");
@@ -176,27 +176,27 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     public void oracleJdk8() throws Exception {
 
         ProcessRuntime expected = runtime (
-                daemon("Attach Listener").setTid(1716535296).setNid(8144).setStatus(ThreadStatus.RUNNABLE).setPriority(9).setId(11),
+                daemon("Attach Listener").setTid(1716535296).setNid(8144).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9).setId(11),
                 thread("GC task thread#0 (ParallelGC)").setTid(3059810304L).setNid(8115),
                 thread("GC task thread#1 (ParallelGC)").setTid(3059815424L).setNid(8116),
                 thread("GC task thread#2 (ParallelGC)").setTid(3059820544L).setNid(8117),
                 thread("GC task thread#3 (ParallelGC)").setTid(3059825664L).setNid(8118),
                 thread("VM Periodic Task Thread").setTid(1718347776).setNid(8127),
-                daemon("Signal Dispatcher").setTid(1718240256).setNid(8122).setStatus(ThreadStatus.RUNNABLE).setPriority(9).setId(4),
-                daemon("process reaper").setTid(1697889280).setNid(8129).setStatus(ThreadStatus.RUNNABLE).setPriority(10).setId(10),
-                daemon("C2 CompilerThread0").setTid(1718247424).setNid(8123).setStatus(ThreadStatus.RUNNABLE).setPriority(9).setId(5),
-                daemon("C2 CompilerThread1").setTid(1718254592).setNid(8124).setStatus(ThreadStatus.RUNNABLE).setPriority(9).setId(6),
-                daemon("C1 CompilerThread2").setTid(1718260736).setNid(8125).setStatus(ThreadStatus.RUNNABLE).setPriority(9).setId(7),
+                daemon("Signal Dispatcher").setTid(1718240256).setNid(8122).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9).setId(4),
+                daemon("process reaper").setTid(1697889280).setNid(8129).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10).setId(10),
+                daemon("C2 CompilerThread0").setTid(1718247424).setNid(8123).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9).setId(5),
+                daemon("C2 CompilerThread1").setTid(1718254592).setNid(8124).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9).setId(6),
+                daemon("C1 CompilerThread2").setTid(1718260736).setNid(8125).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9).setId(7),
                 thread("VM Thread").setTid(1718094848).setNid(8119),
-                daemon("Service Thread").setTid(1718273024).setNid(8126).setStatus(ThreadStatus.RUNNABLE).setPriority(9).setId(8),
-                daemon("Finalizer").setTid(1718118400).setNid(8121).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(8).setId(3)
-                        .setLock(lock(0, "java.lang.ref.ReferenceQueue$Lock", 2495908272L))
+                daemon("Service Thread").setTid(1718273024).setNid(8126).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9).setId(8),
+                daemon("Finalizer").setTid(1718118400).setNid(8121).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(8).setId(3)
+                        .setWaitingOnLock(lock(0, "java.lang.ref.ReferenceQueue$Lock", 2495908272L))
                 ,
-                daemon("Reference Handler").setTid(1718108160).setNid(8120).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10).setId(2)
-                        .setLock(lock(0, "java.lang.ref.Reference$Lock", 2495922552L))
+                daemon("Reference Handler").setTid(1718108160).setNid(8120).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10).setId(2)
+                        .setWaitingOnLock(lock(0, "java.lang.ref.Reference$Lock", 2495922552L))
                 ,
-                thread("main").setTid(3059771392L).setNid(8114).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(5).setId(1)
-                        .setLock(lock(0, "java.lang.UNIXProcess", 2468857072L))
+                thread("main").setTid(3059771392L).setNid(8114).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(5).setId(1)
+                        .setWaitingOnLock(lock(0, "java.lang.UNIXProcess", 2468857072L))
         );
 
         ProcessRuntime actual = runtimeFrom("oraclejdk-1.8.log");
@@ -240,26 +240,26 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     public void openjdk6() throws Exception {
 
         ProcessRuntime expected = runtime (
-                daemon("Attach Listener").setTid(507363328).setNid(28597).setStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("Attach Listener").setTid(507363328).setNid(28597).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
                 thread("GC task thread#0 (ParallelGC)").setTid(504647680).setNid(28568).setPriority(10),
                 thread("GC task thread#1 (ParallelGC)").setTid(504655872).setNid(28569).setPriority(10),
                 thread("GC task thread#2 (ParallelGC)").setTid(504662016).setNid(28570).setPriority(10),
                 thread("GC task thread#3 (ParallelGC)").setTid(504670208).setNid(28571).setPriority(10),
                 thread("VM Periodic Task Thread").setTid(505618432).setNid(28579).setPriority(10),
-                daemon("Signal Dispatcher").setTid(505575424).setNid(28575).setStatus(ThreadStatus.RUNNABLE).setPriority(10),
-                daemon("process reaper").setTid(47702392721408L).setNid(28582).setStatus(ThreadStatus.RUNNABLE).setPriority(10),
-                daemon("C2 CompilerThread0").setTid(505583616).setNid(28576).setStatus(ThreadStatus.RUNNABLE).setPriority(10),
-                daemon("C2 CompilerThread1").setTid(505595904).setNid(28577).setStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("Signal Dispatcher").setTid(505575424).setNid(28575).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("process reaper").setTid(47702392721408L).setNid(28582).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("C2 CompilerThread0").setTid(505583616).setNid(28576).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("C2 CompilerThread1").setTid(505595904).setNid(28577).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
                 thread("VM Thread").setTid(505159680).setNid(28572).setPriority(10),
-                daemon("Low Memory Detector").setTid(505606144).setNid(28578).setStatus(ThreadStatus.RUNNABLE).setPriority(10),
-                daemon("Finalizer").setTid(505229312).setNid(28574).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
-                        .setLock(lock(0, "java.lang.ref.ReferenceQueue$Lock", 3773522592L))
+                daemon("Low Memory Detector").setTid(505606144).setNid(28578).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("Finalizer").setTid(505229312).setNid(28574).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
+                        .setWaitingOnLock(lock(0, "java.lang.ref.ReferenceQueue$Lock", 3773522592L))
                 ,
-                daemon("Reference Handler").setTid(505221120).setNid(28573).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
-                        .setLock(lock(0, "java.lang.ref.Reference$Lock", 3773521872L))
+                daemon("Reference Handler").setTid(505221120).setNid(28573).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
+                        .setWaitingOnLock(lock(0, "java.lang.ref.Reference$Lock", 3773521872L))
                 ,
-                thread("main").setTid(504590336).setNid(28567).setStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
-                        .setLock(lock(0, "java.lang.UNIXProcess", 3791474536L))
+                thread("main").setTid(504590336).setNid(28567).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
+                        .setWaitingOnLock(lock(0, "java.lang.UNIXProcess", 3791474536L))
         );
 
         ProcessRuntime actual = runtimeFrom("openjdk-1.6.log");

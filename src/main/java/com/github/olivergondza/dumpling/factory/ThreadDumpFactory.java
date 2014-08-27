@@ -102,7 +102,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
 
         String status = matcher.group(3);
         if (status != null) {
-            builder.setStatus(ThreadStatus.fromString(status));
+            builder.setThreadStatus(ThreadStatus.fromString(status));
         }
 
         final String trace = matcher.group(4);
@@ -163,13 +163,13 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
         // Eliminated self lock that is presented in thread dump when in Object.wait()
         if (acquired.contains(lock)) {
             assert acquired.get(0).equals(lock);
-            assert builder.getStatus().isWaiting();
+            assert builder.getThreadStatus().isWaiting();
 
             acquired.remove(lock);
         }
 
         builder.setAcquiredLocks(acquired);
-        builder.setLock(lock);
+        builder.setWaitingOnLock(lock);
 
         return builder;
     }

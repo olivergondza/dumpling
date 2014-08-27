@@ -241,16 +241,16 @@ public class ProcessThread {
             return this;
         }
 
-        public @Nonnull Builder setStatus(ThreadStatus status) {
+        public @Nonnull Builder setThreadStatus(ThreadStatus status) {
             this.status = status;
             return this;
         }
 
-        public ThreadStatus getStatus() {
+        public ThreadStatus getThreadStatus() {
             return status;
         }
 
-        public @Nonnull Builder setLock(ThreadLock lock) {
+        public @Nonnull Builder setWaitingOnLock(ThreadLock lock) {
             this.waitingOnLock = lock;
             return this;
         }
@@ -266,7 +266,7 @@ public class ProcessThread {
             return setAcquiredLocks(data);
         }
 
-        public String getHeader() {
+        private String getHeader() {
             return headerBuilder().toString();
         }
 
