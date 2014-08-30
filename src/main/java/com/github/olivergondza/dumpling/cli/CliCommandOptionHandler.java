@@ -93,10 +93,14 @@ public class CliCommandOptionHandler extends OptionHandler<CliCommand> {
                 handlers.add(type.newInstance());
             } catch (InstantiationException ex) {
 
-                throw new AssertionError("Cli handler " + type.getName() + " does not declare default contructor", ex);
+                AssertionError e = new AssertionError("Cli command " + type.getName() + " does not declare default contructor");
+                e.initCause(ex);
+                throw e;
             } catch (IllegalAccessException ex) {
 
-                throw new AssertionError("Cli handler " + type.getName() + " does not declare default contructor", ex);
+                AssertionError e = new AssertionError("Cli command " + type.getName() + " does not declare default contructor");
+                e.initCause(ex);
+                throw e;
             }
         }
 
