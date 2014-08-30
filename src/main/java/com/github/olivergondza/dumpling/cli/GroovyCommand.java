@@ -77,6 +77,10 @@ public class GroovyCommand implements CliCommand {
 
         GroovyShell shell = new GroovyShell(binding, cc);
         Object exitVal = shell.run(script(in), "dumpling-script", Arrays.asList());
+        if (exitVal != null) {
+            out.println(exitVal);
+        }
+
         if (exitVal instanceof Boolean) {
             return Boolean.TRUE.equals(exitVal) ? 0 : -1;
         } else if (exitVal instanceof Integer) {

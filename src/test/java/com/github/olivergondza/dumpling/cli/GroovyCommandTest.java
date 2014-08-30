@@ -46,10 +46,10 @@ public class GroovyCommandTest extends AbstractCliTest {
 
     @Test
     public void filter() {
-        invoke("print runtime.threads.where(nameIs('owning_thread')).collect { it.name }");
+        invoke("runtime.threads.where(nameIs('owning_thread')).collect { it.name }");
         assertThat(err.toString(), equalTo(""));
         assertThat(exitValue, equalTo(0));
-        assertThat(out.toString(), equalTo("[owning_thread]"));
+        assertThat(out.toString(), equalTo("[owning_thread]\n"));
     }
 
     @Test
