@@ -24,6 +24,7 @@
 package com.github.olivergondza.dumpling.factory;
 
 import static com.github.olivergondza.dumpling.Util.pause;
+import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -207,7 +208,7 @@ public class JvmRuntimeFactoryTest {
         Thread expected = Thread.currentThread();
 
         ProcessThread actual = new JvmRuntimeFactory().currentRuntime()
-                .getThreads().onlyNamed(expected.getName()).onlyThread()
+                .getThreads().where(nameIs(expected.getName())).onlyThread()
         ;
 
         assertThat(expected.getName(), equalTo(actual.getName()));
@@ -239,12 +240,12 @@ public class JvmRuntimeFactoryTest {
 
             // Waiting thread is not supposed to own the thread
             ProcessRuntime runtime = new JvmRuntimeFactory().currentRuntime();
-            ProcessThread waiting = runtime.getThreads().onlyNamed("monitorOwnerOnObjectWait").onlyThread();
+            ProcessThread waiting = runtime.getThreads().where(nameIs("monitorOwnerOnObjectWait")).onlyThread();
             assertThat(waiting.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
             assertThat(waiting.getThreadStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
 
             // Current thread is
-            ProcessThread current = runtime.getThreads().onlyNamed(Thread.currentThread().getName()).onlyThread();
+            ProcessThread current = runtime.getThreads().where(nameIs(Thread.currentThread().getName())).onlyThread();
             final Set<ThreadLock> expected = new HashSet<ThreadLock>(Arrays.asList(
                     new ThreadLock.WithHashCode(0, lock.getClass().getCanonicalName(), lock.hashCode())
             ));
@@ -271,8 +272,8 @@ public class JvmRuntimeFactoryTest {
             Thread.sleep(100); // Wait until blocked
 
             ProcessRuntime runtime = new JvmRuntimeFactory().currentRuntime();
-            ProcessThread current = runtime.getThreads().onlyNamed(Thread.currentThread().getName()).onlyThread();
-            ProcessThread blocked = runtime.getThreads().onlyNamed("ownableSynchronizers").onlyThread();
+            ProcessThread current = runtime.getThreads().where(nameIs(Thread.currentThread().getName())).onlyThread();
+            ProcessThread blocked = runtime.getThreads().where(nameIs("ownableSynchronizers")).onlyThread();
 
             assertThat(current.getThreadStatus(), equalTo(ThreadStatus.RUNNABLE));
             assertThat(blocked.getThreadStatus(), equalTo(ThreadStatus.PARKED));

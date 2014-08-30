@@ -49,14 +49,17 @@ public class GroovyCommand implements CliCommand {
     @Option(name = "-i", aliases = {"--in"}, required = true, usage = "Input for process runtime")
     private ProcessRuntime runtime;
 
+    @Override
     public String getName() {
         return "groovy";
     }
 
+    @Override
     public String getDescription() {
         return "Execute groovy script as a query";
     }
 
+    @Override
     public int run(InputStream in, PrintStream out, PrintStream err) throws CmdLineException {
         Binding binding = new Binding();
         binding.setProperty("runtime", runtime);
@@ -67,8 +70,9 @@ public class GroovyCommand implements CliCommand {
         ImportCustomizer imports = new ImportCustomizer();
         imports.addStarImports("com.github.olivergondza.dumpling.cli");
         imports.addStarImports("com.github.olivergondza.dumpling.factory");
-        imports.addStarImports("com.github.olivergondza.dumpling.model");
         imports.addStarImports("com.github.olivergondza.dumpling.query");
+        imports.addStarImports("com.github.olivergondza.dumpling.model");
+        imports.addStaticStars("com.github.olivergondza.dumpling.model.ProcessThread");
         cc.addCompilationCustomizers(imports);
 
         GroovyShell shell = new GroovyShell(binding, cc);

@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
@@ -104,24 +103,6 @@ public class ThreadSet implements Iterable<ProcessThread> {
         }
 
         return derive(blocking);
-    }
-
-    public @Nonnull ThreadSet onlyNamed(@Nonnull final String name) {
-        return where(new ProcessThread.Predicate() {
-            @Override
-            public boolean isValid(ProcessThread thread) {
-                return thread.getName().equals(name);
-            }
-        });
-    }
-
-    public @Nonnull ThreadSet onlyNamed(@Nonnull final Pattern pattern) {
-        return where(new ProcessThread.Predicate() {
-            @Override
-            public boolean isValid(ProcessThread thread) {
-                return pattern.matcher(thread.getName()).find();
-            }
-        });
     }
 
     public @Nonnull ThreadSet ignoring(@Nonnull ThreadSet actualThreads) {

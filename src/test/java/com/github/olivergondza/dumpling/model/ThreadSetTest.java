@@ -23,6 +23,8 @@
  */
 package com.github.olivergondza.dumpling.model;
 
+import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
+import static com.github.olivergondza.dumpling.model.ProcessThread.nameContains;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -38,9 +40,9 @@ public class ThreadSetTest {
     @Test
     public void blockedAndBlocking() throws Exception {
         ProcessRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("blocking-chain.log"));
-        ThreadSet root = runtime.getThreads().onlyNamed("root");
-        ThreadSet blocking = runtime.getThreads().onlyNamed(Pattern.compile("blocking1"));
-        ThreadSet blocked = runtime.getThreads().onlyNamed(Pattern.compile("blocked1"));
+        ThreadSet root = runtime.getThreads().where(nameIs("root"));
+        ThreadSet blocking = runtime.getThreads().where(nameContains(Pattern.compile("blocking1")));
+        ThreadSet blocked = runtime.getThreads().where(nameContains(Pattern.compile("blocked1")));
 
         assertThat(root.getBlockedThreads(), equalTo(blocked));
         assertThat(root.getBlockingThreads(), equalTo(blocking));

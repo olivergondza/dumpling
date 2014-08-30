@@ -23,6 +23,8 @@
  */
 package com.github.olivergondza.dumpling.query;
 
+import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
+import static com.github.olivergondza.dumpling.model.ProcessThread.nameContains;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -50,8 +52,8 @@ public class TopContendersTest extends AbstractCliTest {
 
         Map<ProcessThread, ThreadSet> expected = new HashMap<ProcessThread, ThreadSet>();
         expected.put(
-                runtime.getThreads().onlyNamed("owning_thread").onlyThread(),
-                runtime.getThreads().onlyNamed("blocked_thread")
+                runtime.getThreads().where(nameIs("owning_thread")).onlyThread(),
+                runtime.getThreads().where(nameIs("blocked_thread"))
         );
 
         assertThat(contenders, equalTo(expected));
@@ -65,10 +67,10 @@ public class TopContendersTest extends AbstractCliTest {
 
         ThreadSet ts = runtime.getThreads();
         Map<ProcessThread, ThreadSet> expected = new HashMap<ProcessThread, ThreadSet>();
-        final ProcessThread producerProcessThread = ts.onlyNamed("producer").onlyThread();
+        final ProcessThread producerProcessThread = ts.where(nameIs("producer")).onlyThread();
         expected.put(
                 producerProcessThread,
-                ts.onlyNamed(Pattern.compile("consumer."))
+                ts.where(nameContains(Pattern.compile("consumer.")))
         );
 
         assertThat(contenders, equalTo(expected));

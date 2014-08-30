@@ -23,6 +23,8 @@
  */
 package com.github.olivergondza.dumpling.query;
 
+import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
+import static com.github.olivergondza.dumpling.model.ProcessThread.nameContains;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -64,7 +66,7 @@ public class BlockingTreeTest extends AbstractCliTest {
     }
 
     private ProcessThread singleThread(@Nonnull String name) {
-        return runtime.getThreads().onlyNamed(name).onlyThread();
+        return runtime.getThreads().where(nameIs(name)).onlyThread();
     }
 
     @Test
@@ -83,7 +85,7 @@ public class BlockingTreeTest extends AbstractCliTest {
 
     @Test
     public void oneChainFromBottom() {
-        Set<Tree> as = runtime.getThreads().onlyNamed("aaa").query(new BlockingTree());
+        Set<Tree> as = runtime.getThreads().where(nameIs("aaa")).query(new BlockingTree());
         Set<Tree> expected = new HashSet<Tree>(Arrays.asList(
                 new BlockingTree.Tree(a, new BlockingTree.Tree(aa, new BlockingTree.Tree(aaa)))
         ));
@@ -93,7 +95,7 @@ public class BlockingTreeTest extends AbstractCliTest {
 
     @Test
     public void oneChainFromMiddle() {
-        Set<Tree> as = runtime.getThreads().onlyNamed("aa").query(new BlockingTree());
+        Set<Tree> as = runtime.getThreads().where(nameIs("aa")).query(new BlockingTree());
         Set<Tree> expected = new HashSet<Tree>(Arrays.asList(
                 new BlockingTree.Tree(a, new BlockingTree.Tree(aa, new BlockingTree.Tree(aaa)))
         ));
@@ -103,7 +105,7 @@ public class BlockingTreeTest extends AbstractCliTest {
 
     @Test
     public void fullRoot() {
-        Set<Tree> as = runtime.getThreads().onlyNamed("b").query(new BlockingTree());
+        Set<Tree> as = runtime.getThreads().where(nameIs("b")).query(new BlockingTree());
         Set<Tree> expected = new HashSet<Tree>(Arrays.asList(
                 new BlockingTree.Tree(b, new BlockingTree.Tree(ba))
         ));
@@ -113,7 +115,7 @@ public class BlockingTreeTest extends AbstractCliTest {
 
     @Test
     public void severalChains() {
-        Set<Tree> as = runtime.getThreads().onlyNamed(Pattern.compile("^(aaa|ba)$")).query(new BlockingTree());
+        Set<Tree> as = runtime.getThreads().where(nameContains(Pattern.compile("^(aaa|ba)$"))).query(new BlockingTree());
         Set<Tree> expected = new HashSet<Tree>(Arrays.asList(
                 new BlockingTree.Tree(a, new BlockingTree.Tree(aa, new BlockingTree.Tree(aaa))),
                 new BlockingTree.Tree(b, new BlockingTree.Tree(ba))

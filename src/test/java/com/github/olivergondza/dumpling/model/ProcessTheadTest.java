@@ -23,6 +23,7 @@
  */
 package com.github.olivergondza.dumpling.model;
 
+import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -65,7 +66,7 @@ public class ProcessTheadTest {
         ));
 
         runtime = factory.fromFile(Util.resourceFile(ThreadDumpFactoryTest.class, "oraclejdk-1.7.0_51.log"));
-        assertThat(runtime.getThreads().onlyNamed("MSC service thread 1-2").toString(), containsString(
+        assertThat(runtime.getThreads().where(nameIs("MSC service thread 1-2")).toString(), containsString(
                 "- parking to wait for <0x7007d87c8> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)"
         ));
     }

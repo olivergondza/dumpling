@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -315,5 +316,23 @@ public class ProcessThread {
 
     public static interface Predicate {
         boolean isValid(@Nonnull ProcessThread thread);
+    }
+
+    public static Predicate nameIs(final String name) {
+        return new Predicate() {
+            @Override
+            public boolean isValid(ProcessThread thread) {
+                return thread.getName().equals(name);
+            }
+        };
+    }
+
+    public static Predicate nameContains(final Pattern pattern) {
+        return new Predicate() {
+            @Override
+            public boolean isValid(ProcessThread thread) {
+                return pattern.matcher(thread.getName()).find();
+            }
+        };
     }
 }

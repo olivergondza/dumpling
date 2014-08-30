@@ -23,6 +23,7 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
+import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -64,7 +65,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
         assertEquals(35, threads.size());
 
-        ProcessThread main = threads.onlyNamed("main").onlyThread();
+        ProcessThread main = threads.where(nameIs("main")).onlyThread();
         assertEquals(ThreadStatus.RUNNABLE, main.getThreadStatus());
         assertEquals(Thread.State.RUNNABLE, main.getState());
         assertThat(139675222183936L, equalTo(main.getTid()));
@@ -92,7 +93,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
         assertEquals(143, threads.size());
 
-        ProcessThread thread = threads.onlyNamed("Channel reader thread: jenkins_slave_02").onlyThread();
+        ProcessThread thread = threads.where(nameIs("Channel reader thread: jenkins_slave_02")).onlyThread();
         assertEquals(ThreadStatus.RUNNABLE, thread.getThreadStatus());
         StackTrace trace = thread.getStackTrace();
         assertEquals(13, trace.size());
@@ -138,7 +139,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         ProcessRuntime actual = runtimeFrom("oraclejdk-1.7.log");
         assertThat(actual, sameThreadsAs(expected));
 
-        ProcessThread mainThread = actual.getThreads().onlyNamed("main").onlyThread();
+        ProcessThread mainThread = actual.getThreads().where(nameIs("main")).onlyThread();
         StackTrace expectedStackTrace = new StackTrace(
                 StackTrace.nativeElement("java.lang.Object", "wait"),
                 StackTrace.element("java.lang.Object", "wait", "Object.java", 503),
@@ -202,7 +203,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         ProcessRuntime actual = runtimeFrom("oraclejdk-1.8.log");
         assertThat(actual, sameThreadsAs(expected));
 
-        ProcessThread mainThread = actual.getThreads().onlyNamed("main").onlyThread();
+        ProcessThread mainThread = actual.getThreads().where(nameIs("main")).onlyThread();
         StackTrace expectedStackTrace = new StackTrace(
                 StackTrace.nativeElement("java.lang.Object", "wait"),
                 StackTrace.element("java.lang.Object", "wait", "Object.java", 502),
@@ -265,7 +266,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         ProcessRuntime actual = runtimeFrom("openjdk-1.6.log");
         assertThat(actual, sameThreadsAs(expected));
 
-        ProcessThread mainThread = actual.getThreads().onlyNamed("main").onlyThread();
+        ProcessThread mainThread = actual.getThreads().where(nameIs("main")).onlyThread();
         StackTrace expectedStackTrace = new StackTrace(
                 StackTrace.nativeElement("java.lang.Object", "wait"),
                 StackTrace.element("java.lang.Object", "wait", "Object.java", 502),
@@ -357,13 +358,13 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
         ThreadSet threads = new ThreadDumpFactory().fromFile(Util.resourceFile("producer-consumer.log")).getThreads();
 
-        ProcessThread blocked = threads.onlyNamed("blocked_thread").onlyThread();
-        ProcessThread owning = threads.onlyNamed("owning_thread").onlyThread();
+        ProcessThread blocked = threads.where(nameIs("blocked_thread")).onlyThread();
+        ProcessThread owning = threads.where(nameIs("owning_thread")).onlyThread();
 
         assertTrue(owning.getBlockingThreads().isEmpty());
-        assertEquals(threads.onlyNamed("blocked_thread"), owning.getBlockedThreads());
+        assertEquals(threads.where(nameIs("blocked_thread")), owning.getBlockedThreads());
 
-        assertEquals(threads.onlyNamed("owning_thread"), blocked.getBlockingThreads());
+        assertEquals(threads.where(nameIs("owning_thread")), blocked.getBlockingThreads());
         assertTrue(blocked.getBlockedThreads().isEmpty());
     }
 
@@ -372,8 +373,8 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
         ThreadSet threads = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "self-lock.log")).getThreads();
 
-        ProcessThread handler = threads.onlyNamed("Reference Handler").onlyThread();
-        ProcessThread finalizer = threads.onlyNamed("Finalizer").onlyThread();
+        ProcessThread handler = threads.where(nameIs("Reference Handler")).onlyThread();
+        ProcessThread finalizer = threads.where(nameIs("Finalizer")).onlyThread();
 
         assertTrue(handler.getBlockedThreads().isEmpty());
         assertTrue(handler.getBlockingThreads().isEmpty());
@@ -414,7 +415,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
         ThreadSet threads = runtimeFrom("oraclejdk-1.7.0_51.log").getThreads();
 
-        ProcessThread parking = threads.onlyNamed("ConnectionValidator").onlyThread();
+        ProcessThread parking = threads.where(nameIs("ConnectionValidator")).onlyThread();
 
         assertThat(parking.getThreadStatus(), equalTo(ThreadStatus.PARKED_TIMED));
         assertThat(parking.getWaitingOnLock().getClassName(), equalTo(
@@ -427,7 +428,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
         ThreadSet threads = runtimeFrom("oraclejdk-1.7.0_51.log").getThreads();
 
-        StackTrace actual = threads.onlyNamed("process reaper").iterator().next().getStackTrace();
+        StackTrace actual = threads.where(nameIs("process reaper")).iterator().next().getStackTrace();
         StackTrace expected = new StackTrace(
                 StackTrace.nativeElement("java.lang.UNIXProcess", "waitForProcessExit"),
                 StackTrace.element("java.lang.UNIXProcess", "access$200", "UNIXProcess.java", 54),
@@ -466,8 +467,8 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     @Test
     public void monitorOwnerInObjectWait() throws Exception {
         ThreadSet threads = runtimeFrom("inObjectWait.log").getThreads();
-        ProcessThread waiting = threads.onlyNamed("monitorOwnerInObjectWait").onlyThread();
-        ProcessThread owning = threads.onlyNamed("main").onlyThread();
+        ProcessThread waiting = threads.where(nameIs("monitorOwnerInObjectWait")).onlyThread();
+        ProcessThread owning = threads.where(nameIs("main")).onlyThread();
 
         final ThreadLock lock = new ThreadLock.WithAddress(0, "java.lang.Object", 33677473560L);
         final Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(lock));
@@ -482,8 +483,8 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     @Test
     public void ownableSynchronizers() throws Exception {
         ThreadSet threads = runtimeFrom("ownable-synchronizers.log").getThreads();
-        ProcessThread waiting = threads.onlyNamed("blockedThread").onlyThread();
-        ProcessThread owning = threads.onlyNamed("main").onlyThread();
+        ProcessThread waiting = threads.where(nameIs("blockedThread")).onlyThread();
+        ProcessThread owning = threads.where(nameIs("main")).onlyThread();
 
         final ThreadLock lock = new ThreadLock.WithAddress(0, "java.util.concurrent.locks.ReentrantLock$NonfairSync", 32296902960L);
         final Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(lock));
@@ -557,7 +558,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                 if (expectedRuntime.getThreads().size() != actual.getThreads().size()) return false;
 
                 for (ProcessThread actualThread: actual.getThreads()) {
-                    final ThreadSet matching = expectedRuntime.getThreads().onlyNamed(actualThread.getName());
+                    final ThreadSet matching = expectedRuntime.getThreads().where(nameIs(actualThread.getName()));
                     if (matching.size() != 1) return false;
 
                     ProcessThread expectedThread = matching.onlyThread();
@@ -574,7 +575,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                 final ThreadSet actualThreads = actualRuntime.getThreads();
 
                 for (ProcessThread actual: actualThreads) {
-                    final ThreadSet named = expectedThreads.onlyNamed(actual.getName());
+                    final ThreadSet named = expectedThreads.where(nameIs(actual.getName()));
 
                     if (named.size() > 1) throw new AssertionError("Several threads named: " + actual.getName());
                     if (named.size() == 0) {
