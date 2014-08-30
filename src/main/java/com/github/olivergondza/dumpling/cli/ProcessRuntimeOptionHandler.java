@@ -88,9 +88,12 @@ public class ProcessRuntimeOptionHandler extends OptionHandler<ProcessRuntime> {
         try {
 
             return type.newInstance();
-        } catch (ReflectiveOperationException ex) {
+        } catch (InstantiationException ex) {
 
-            throw new AssertionError("Cli handler " + type.getName() + " does not declare default contructor");
+            throw new AssertionError("Cli handler " + type.getName() + " does not declare default contructor", ex);
+        } catch (IllegalAccessException ex) {
+
+            throw new AssertionError("Cli handler " + type.getName() + " does not declare default contructor", ex);
         }
     }
 }
