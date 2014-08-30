@@ -77,6 +77,10 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
     public @Nonnull ProcessRuntime fromFile(File threadDump) throws IOException {
         String content = IOUtils.toString(threadDump.toURI());
 
+        return fromString(content);
+    }
+
+    /*package*/ @Nonnull ProcessRuntime fromString(String content) {
         return new ProcessRuntime(threads(content));
     }
 
