@@ -312,4 +312,8 @@ public class ProcessThread {
             return sb;
         }
     }
+
+    public static interface Predicate {
+        boolean isValid(@Nonnull ProcessThread thread);
+    }
 }
