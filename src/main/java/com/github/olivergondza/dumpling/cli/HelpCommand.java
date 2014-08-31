@@ -25,6 +25,9 @@ package com.github.olivergondza.dumpling.cli;
 
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Comparator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -35,14 +38,17 @@ public class HelpCommand implements CliCommand {
     @Argument(required = false, usage = "Print detailed usage", metaVar = "Command")
     private String commandName;
 
+    @Override
     public String getName() {
         return "help";
     }
 
+    @Override
     public String getDescription() {
         return "Print dumpling usage";
     }
 
+    @Override
     public int run(InputStream in, PrintStream out, PrintStream err) throws CmdLineException {
         if (commandName == null) {
             printUsage(out);
@@ -68,13 +74,24 @@ public class HelpCommand implements CliCommand {
     /*package*/ static void printUsage(PrintStream out) {
         out.println(usage("<COMMAND> [...]\n"));
         out.println("Available commands:");
-        for (CliCommand handler: CliCommandOptionHandler.getAllHandlers()) {
+        for (CliCommand handler: sortedHandlers()) {
             CmdLineParser parser = new CmdLineParser(handler);
             out.print(handler.getName());
             parser.printSingleLineUsage(out);
             out.print("\n\t");
             out.println(handler.getDescription());
         }
+    }
+
+    private static SortedSet<? extends CliCommand> sortedHandlers() {
+        TreeSet<CliCommand> sorted = new TreeSet<CliCommand>(new Comparator<CliCommand>() {
+            @Override
+            public int compare(CliCommand lhs, CliCommand rhs) {
+                return lhs.getName().compareTo(rhs.getName());
+            }
+        });
+        sorted.addAll(CliCommandOptionHandler.getAllHandlers());
+        return sorted;
     }
 
     private static String usage(String rest) {
