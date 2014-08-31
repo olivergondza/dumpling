@@ -6,6 +6,8 @@ process threads and their lock based dependencies.
 Dumpling is shipped with a collection of predefined queries to cover most common
 situations as well as several factories to create thread model from various sources.
 
+[Dumpling DSL tutorial](DOCS/INTRO.md)
+
 ## Usage
 
 ### Bundle dumpling to your application
@@ -61,8 +63,6 @@ Use dumpling to discover problems in thread dumps.
 ```
 
 - Profit
-
-[Dumpling DSL tutorial](DOCS/INTRO.md)
 
 ## Modules
 
