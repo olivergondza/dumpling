@@ -10,16 +10,20 @@ to obtain the runtime: parsing treaddump or capturing runtime of the current pro
 Let's use [oraclejdk-1.7.0_51.log](https://github.com/olivergondza/dumpling/blob/master/src/test/resources/com/github/olivergondza/dumpling/factory/ThreadDumpFactoryTest/oraclejdk-1.7.0_51.log)
 as nontrivial threaddump example.
 
-    // Create runtime from threaddump
-    new ThreadDumpFactory().fromFile(new File("oraclejdk-1.7.0_51.log"));
-    // Create model from host JVM
-    new JvmRuntimeFactory().currentRuntime();
+```java
+// Create runtime from threaddump
+new ThreadDumpFactory().fromFile(new File("oraclejdk-1.7.0_51.log"));
+// Create model from host JVM
+new JvmRuntimeFactory().currentRuntime();
+```
 
 When using Dumpling CLI `--in` options is conventionally used to choose a *factory
 implementation* and a *locator* (yes, an option with 2 values). To create runtime
 from threaddump file use:
 
-    java -jar dumpling.jar <COMMAND> --in threaddump oraclejdk-1.7.0_51.log
+```bash
+java -jar dumpling.jar <COMMAND> --in threaddump oraclejdk-1.7.0_51.log
+```
 
 Note that capturing runtime from current JVM don not make sense when using
 Dumpling from CLI.
@@ -29,12 +33,16 @@ Dumpling from CLI.
 Predefined queries can be run against `ProcessRuntime` or `ThreadSet` (arbitrary
 subset of process threads) to deliver declared typed result value.
 
-    Map<ProcessThread, ThreadSet> contenders = runtime.query(new TopContenders());
+```java
+Map<ProcessThread, ThreadSet> contenders = runtime.query(new TopContenders());
+```
 
 In case of running queries exposed through CLI, the command itself chooses suitable
 output format for query result.
 
-    java -jar dumpling.jar top-contenders --in threaddump oraclejdk-1.7.0_51.log
+```bash
+java -jar dumpling.jar top-contenders --in threaddump oraclejdk-1.7.0_51.log
+```
 
 ## Run custom queries
 
@@ -44,14 +52,16 @@ format nor read by any tool. It aims for presenting as much information as
 possible in a convenient way while still looking familiar to jstack users.
 Following examples uses groovy for brevity:
 
-    // List all threads in runtime
-    println runtime.getThreads()
+```java
+// List all threads in runtime
+println runtime.getThreads()
 
-    // Count threads
-    println runtime.getThreads().size()
+// Count threads
+println runtime.getThreads().size()
 
-    // List thread names
-    runtime.threads.each { println it.name }
+// List thread names
+runtime.threads.each { println it.name }
 
-    // Filter threads using custom criteria
-    runtime.threads.grep { it.state == Thread.State.RUNNABLE }
+// Filter threads using custom criteria
+runtime.threads.grep { it.state == Thread.State.RUNNABLE }
+```
