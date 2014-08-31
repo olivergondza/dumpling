@@ -16,16 +16,19 @@ Full thread dump OpenJDK 64-Bit Server VM (24.60-b09 mixed mode):
         at hudson.model.Executor.run(Executor.java:236)
         at hudson.model.OneOffExecutor.run(OneOffExecutor.java:66)
 
-"owning_thread" prio=10 tid=0x00002ad3a00ab000 nid=0x43b7 in Object.wait() [0x00002ad379715000]
-   java.lang.Thread.State: BLOCKED (on object monitor)
-        at java.lang.Object.wait(Native Method)
-        at java.lang.Object.wait(Object.java:485)
-        at hudson.util.OneShotEvent.block(OneShotEvent.java:72)
+"owning_thread" prio=10 tid=0x00002b6ff883a800 nid=0x5fb0 runnable [0x00002b6fe4a08000]
+   java.lang.Thread.State: RUNNABLE
+        at hudson.model.Label.toString(Label.java:512)
+        at org.jvnet.localizer.Localizable.<init>(Localizable.java:30)
+        at hudson.model.Messages._Node_LabelMissing(Messages.java:3581)
+        at hudson.model.Node.canTake(Node.java:332)
+        at hudson.model.Queue$JobOffer.canTake(Queue.java:272)
+        at hudson.model.Queue.maintain(Queue.java:1106)
         - locked <0x00000004063a9378> (a hudson.model.Queue)
-        at hudson.model.Queue.pop(Queue.java:816)
+        at hudson.model.Queue.pop(Queue.java:935)
         - locked <0x00000004063a9378> (a hudson.model.Queue)
-        at hudson.model.Executor.grabJob(Executor.java:284)
-        at hudson.model.Executor.run(Executor.java:205)
+        at hudson.model.Executor.grabJob(Executor.java:297)
+        at hudson.model.Executor.run(Executor.java:211)
         - locked <0x00000004063a9378> (a hudson.model.Queue)
 
 "VM Thread" prio=10 tid=0x00007f08ac13b800 nid=0x601e runnable 

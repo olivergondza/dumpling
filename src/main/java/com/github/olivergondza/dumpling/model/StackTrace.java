@@ -24,12 +24,13 @@
 package com.github.olivergondza.dumpling.model;
 
 import java.util.Arrays;
+import java.util.List;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 
 /**
- * Hold thread stacktrace.
+ * Stacktrace of a single thread.
  *
  * @author ogondza
  */
@@ -81,6 +82,10 @@ public class StackTrace {
 
     public @Nonnull StackTraceElement getElement(@Nonnegative int depth) {
         return elements[depth];
+    }
+
+    public @Nonnull List<StackTraceElement> getElemens() {
+        return Arrays.asList(elements);
     }
 
     @Override

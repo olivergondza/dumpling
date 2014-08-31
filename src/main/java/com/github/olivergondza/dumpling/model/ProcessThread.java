@@ -91,7 +91,7 @@ public class ProcessThread {
     }
 
     public @Nonnull StackTrace getStackTrace() {
-        return new StackTrace(state.stackTrace);
+        return state.stackTrace;
     }
 
     public @CheckForNull ThreadLock getWaitingOnLock() {
@@ -188,7 +188,7 @@ public class ProcessThread {
         private Integer priority;
         // https://gist.github.com/rednaxelafx/843622
         private Long id, nid, tid;
-        private @Nonnull StackTraceElement[] stackTrace = new StackTraceElement[] {};
+        private @Nonnull StackTrace stackTrace = new StackTrace();
         private ThreadStatus status;
         private @CheckForNull ThreadLock waitingOnLock;
         // Preserve locks as List not to collapse identical entries
@@ -238,8 +238,12 @@ public class ProcessThread {
         }
 
         public @Nonnull Builder setStacktrace(@Nonnull StackTraceElement[] stackTrace) {
-            this.stackTrace = stackTrace;
+            this.stackTrace = new StackTrace(stackTrace);
             return this;
+        }
+
+        public @Nonnull StackTrace getStacktrace() {
+            return stackTrace;
         }
 
         public @Nonnull Builder setThreadStatus(ThreadStatus status) {
@@ -280,7 +284,7 @@ public class ProcessThread {
             }
 
             int depth = 0;
-            for (StackTraceElement traceLine: stackTrace) {
+            for (StackTraceElement traceLine: stackTrace.getElemens()) {
                 sb.append("\n\tat ").append(traceLine);
 
                 if (waitingOnLock != null && waitingOnLock.getStackDepth() == depth) {

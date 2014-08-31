@@ -26,6 +26,7 @@ package com.github.olivergondza.dumpling.factory;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -41,6 +42,7 @@ import com.github.olivergondza.dumpling.cli.CommandFailedException;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ProcessThread.Builder;
+import com.github.olivergondza.dumpling.model.StackTrace;
 import com.github.olivergondza.dumpling.model.ThreadLock;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 
@@ -164,12 +166,19 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
             default: throw new AssertionError("Waiting for locks: " + waitingFor.size());
         }
 
-        // Eliminated self lock that is presented in thread dump when in Object.wait()
-        if (acquired.contains(lock)) {
-            assert acquired.get(0).equals(lock);
-            assert builder.getThreadStatus().isWaiting();
+        // Eliminate self lock that is presented in threaddumps when in Object.wait()
+        if (
+                (builder.getThreadStatus().isWaiting() || builder.getThreadStatus() == ThreadStatus.BLOCKED) &&
+                builder.getStacktrace().getElemens().get(0).equals(StackTrace.nativeElement("java.lang.Object", "wait"))
+        ) {
+            // Sometimes there are threads that are in Object.wait() and
+            // (TIMED_)WAITING, yet does not declare to wait on self monitor
+            if (lock == null) {
+                ThreadLock.WithAddress data = (ThreadLock.WithAddress) acquired.get(0);
+                lock = new ThreadLock.WithAddress(0, data.getClassName(), data.getAddress());
+            }
 
-            acquired.remove(lock);
+            acquired.removeAll(Collections.singleton(lock));
         }
 
         builder.setAcquiredLocks(acquired);

@@ -466,18 +466,24 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
     @Test
     public void monitorOwnerInObjectWait() throws Exception {
-        ThreadSet threads = runtimeFrom("inObjectWait.log").getThreads();
+        ThreadSet threads = runtimeFrom("in-object-wait.log").getThreads();
         ProcessThread waiting = threads.where(nameIs("monitorOwnerInObjectWait")).onlyThread();
         ProcessThread owning = threads.where(nameIs("main")).onlyThread();
 
         final ThreadLock lock = new ThreadLock.WithAddress(0, "java.lang.Object", 33677473560L);
         final Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(lock));
+        assertThat(owning.getThreadStatus(), equalTo(ThreadStatus.SLEEPING));
         assertThat(owning.getAcquiredLocks(), equalTo(locks));
         assertThat(owning.getWaitingOnLock(), equalTo(null));
 
         assertThat(waiting.getThreadStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
         assertThat(waiting.getWaitingOnLock(), equalTo(lock));
         assertThat(waiting.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
+
+        ProcessThread nested = threads.where(nameIs("waiting_in_nested_synchronized")).onlyThread();
+        assertThat(nested.getThreadStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT_TIMED));
+        assertThat(nested.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
+        //assertThat(nested.getWaitingOnLock(), equalTo(new ThreadLock.WithAddress(0, "java.lang.Object", 33677473560L)));
     }
 
     @Test

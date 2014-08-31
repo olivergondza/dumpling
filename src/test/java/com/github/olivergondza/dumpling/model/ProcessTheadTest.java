@@ -51,12 +51,12 @@ public class ProcessTheadTest {
         )));
 
         assertThat(dump, containsString(slice(
-                "at hudson.util.OneShotEvent.block(OneShotEvent.java:72)",
+                "at hudson.model.Queue.maintain(Queue.java:1106)",
                 "- locked <0x4063a9378> (a hudson.model.Queue)",
-                "at hudson.model.Queue.pop(Queue.java:816)",
+                "at hudson.model.Queue.pop(Queue.java:935)",
                 "- locked <0x4063a9378> (a hudson.model.Queue)",
-                "at hudson.model.Executor.grabJob(Executor.java:284)",
-                "at hudson.model.Executor.run(Executor.java:205)",
+                "at hudson.model.Executor.grabJob(Executor.java:297)",
+                "at hudson.model.Executor.run(Executor.java:211)",
                 "- locked <0x4063a9378> (a hudson.model.Queue)"
         )));
     }
