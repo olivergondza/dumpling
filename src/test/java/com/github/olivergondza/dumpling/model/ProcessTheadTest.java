@@ -23,8 +23,11 @@
  */
 package com.github.olivergondza.dumpling.model;
 
+import static com.github.olivergondza.dumpling.model.ProcessThread.acquiredLock;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
+import static com.github.olivergondza.dumpling.model.ProcessThread.waitingOnLock;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.junit.Test;
@@ -69,6 +72,14 @@ public class ProcessTheadTest {
         assertThat(runtime.getThreads().where(nameIs("MSC service thread 1-2")).toString(), containsString(
                 "- parking to wait for <0x7007d87c8> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)"
         ));
+    }
+
+    @Test
+    public void filterByLocks() throws Exception {
+        ThreadSet threads = factory.fromFile(Util.resourceFile("producer-consumer.log")).getThreads();
+        assertThat(threads.where(nameIs("blocked_thread")), equalTo(threads.where(waitingOnLock("hudson.model.Queue"))));
+        assertThat(threads.where(nameIs("owning_thread")), equalTo(threads.where(acquiredLock("hudson.model.Queue"))));
+
     }
 
     private String slice(String... frames) {

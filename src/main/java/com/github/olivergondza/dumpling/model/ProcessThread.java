@@ -335,4 +335,32 @@ public class ProcessThread {
             }
         };
     }
+
+    /**
+     * Match thread that is waiting on lock identified by <tt>className</tt>.
+     */
+    public static Predicate waitingOnLock(final String className) {
+        return new Predicate() {
+            @Override
+            public boolean isValid(ProcessThread thread) {
+                final ThreadLock lock = thread.getWaitingOnLock();
+                return lock != null && lock.getClassName().equals(className);
+            }
+        };
+    }
+
+    /**
+     * Match thread that has acquired lock identified by <tt>className</tt>.
+     */
+    public static Predicate acquiredLock(final String className) {
+        return new Predicate() {
+            @Override
+            public boolean isValid(ProcessThread thread) {;
+                for (ThreadLock lock: thread.getAcquiredLocks()) {
+                    if (lock.getClassName().equals(className)) return true;
+                }
+                return false;
+            }
+        };
+    }
 }
