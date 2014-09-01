@@ -125,6 +125,23 @@ public class DeadlockDetectorTest extends AbstractCliTest {
         assertThat(exitValue, equalTo(1));
     }
 
+    @Test
+    public void cliQueryTraces() throws Exception {
+        run("detect-deadlocks", "--show-stack-traces", "--in", "threaddump", Util.resourceFile("deadlock.log").getAbsolutePath());
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), containsString("1 deadlocks detected"));
+        assertThat(out.toString(), containsString("- Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24 - Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107"));
+
+        assertThat(out.toString(), containsString(
+                "\n\"Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24\" daemon prio=10 id=null tid=1481750528 nid=27336\n"
+        ));
+        assertThat(out.toString(), containsString(
+                "\n\"Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107\" daemon prio=10 id=null tid=47091108077568 nid=17982\n"
+        ));
+
+        assertThat(exitValue, equalTo(1));
+    }
+
     private Set<ThreadSet> deadlocks(ProcessRuntime runtime) {
         return runtime.getThreads().query(new DeadlockDetector());
     }

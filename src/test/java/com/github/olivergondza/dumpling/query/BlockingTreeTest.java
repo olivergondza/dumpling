@@ -141,4 +141,24 @@ public class BlockingTreeTest extends AbstractCliTest {
         // Deeply nested
         assertThat(out.toString(), containsString("\n\t\t\"aaa\""));
     }
+
+    @Test
+    public void cliQueryTraces() throws Exception {
+        run("blocking-tree", "--show-stack-traces", "--in", "threaddump", blockingTreeLog.getAbsolutePath());
+        assertThat(err.toString(), equalTo(""));
+
+        // Roots
+        assertThat(out.toString(), containsString("\"a\""));
+        assertThat(out.toString(), containsString("\n\"b\""));
+
+        // Blocked by roots
+        assertThat(out.toString(), containsString("\n\t\"aa\""));
+        assertThat(out.toString(), containsString("\n\t\"ab\""));
+        assertThat(out.toString(), containsString("\n\t\"ba\""));
+
+        // Deeply nested
+        assertThat(out.toString(), containsString("\n\t\t\"aaa\""));
+
+        assertThat(out.toString(), containsString("\n\"aaa\" prio=10 id=null tid=139918763419648 nid=31957\n"));
+    }
 }

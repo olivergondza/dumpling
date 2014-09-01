@@ -48,8 +48,10 @@ public class TopContenders implements SingleRuntimeQuery<Map<ProcessThread, Thre
      * @return Mapping between blocking thread and a set of blocked threads.
      * Map is sorted by the number of blocked threads.
      */
+    @Override
     public Map<ProcessThread, ThreadSet> query(ThreadSet threads) {
         Map<ProcessThread, ThreadSet> contenders = new TreeMap<ProcessThread, ThreadSet>(new Comparator<ProcessThread>() {
+            @Override
             public int compare(ProcessThread lhs, ProcessThread rhs) {
                 int lhsSize = lhs.getBlockedThreads().size();
                 int rhsSize = rhs.getBlockedThreads().size();
@@ -75,14 +77,20 @@ public class TopContenders implements SingleRuntimeQuery<Map<ProcessThread, Thre
         @Option(name = "-i", aliases = {"--in"}, required = true, usage = "Input for process runtime")
         private ProcessRuntime runtime;
 
+        @Option(name = "--show-stack-traces", usage = "List stack traces of all threads involved")
+        private boolean showStackTraces = false;
+
+        @Override
         public String getName() {
             return "top-contenders";
         }
 
+        @Override
         public String getDescription() {
             return "Detect top-contenders, threads that block largest number of other threads";
         }
 
+        @Override
         public int run(InputStream in, PrintStream out, PrintStream err) throws CmdLineException {
 
             Map<ProcessThread, ThreadSet> contenders = runtime.query(new TopContenders());
@@ -106,8 +114,10 @@ public class TopContenders implements SingleRuntimeQuery<Map<ProcessThread, Thre
                 }
             }
 
-            out.println();
-            out.print(new ThreadSet(runtime, engagedThreads));
+            if (showStackTraces) {
+                out.println();
+                out.print(new ThreadSet(runtime, engagedThreads));
+            }
 
             return contenders.size();
         }

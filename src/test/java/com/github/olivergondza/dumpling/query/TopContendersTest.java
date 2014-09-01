@@ -23,10 +23,11 @@
  */
 package com.github.olivergondza.dumpling.query;
 
-import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameContains;
+import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.HashMap;
@@ -81,6 +82,28 @@ public class TopContendersTest extends AbstractCliTest {
     @Test
     public void cliQuery() throws Exception {
         run("top-contenders", "--in", "threaddump", Util.resourceFile(getClass(), "contention.log").getAbsolutePath());
+        assertThat(err.toString(), equalTo(""));
+
+        assertThat(out.toString(), containsString("1 blocking thread"));
+
+        // Header
+        assertThat(out.toString(), containsString("\n* \"producer\" prio=10 id=null tid=140692931092480 nid=4567\n"));
+        assertThat(out.toString(), containsString("\n  (1) \"consumerC\" prio=10 id=null tid=140692931145728 nid=4570\n"));
+        assertThat(out.toString(), containsString("\n  (2) \"consumerB\" prio=10 id=null tid=140692931141632 nid=4569\n"));
+        assertThat(out.toString(), containsString("\n  (3) \"consumerA\" prio=10 id=null tid=140692931094528 nid=4568\n"));
+
+        // Thread listing
+        assertThat(out.toString(), not(containsString("\n\"producer\" prio=10 id=null tid=140692931092480 nid=4567\n")));
+        assertThat(out.toString(), not(containsString("\n\"consumerA\" prio=10 id=null tid=140692931094528 nid=4568\n")));
+        assertThat(out.toString(), not(containsString("\n\"consumerB\" prio=10 id=null tid=140692931141632 nid=4569\n")));
+        assertThat(out.toString(), not(containsString("\n\"consumerC\" prio=10 id=null tid=140692931145728 nid=4570\n")));
+
+        assertThat(exitValue, equalTo(1)); // Number of blocking threads
+    }
+
+    @Test
+    public void cliQueryTraces() throws Exception {
+        run("top-contenders", "--show-stack-traces", "--in", "threaddump", Util.resourceFile(getClass(), "contention.log").getAbsolutePath());
         assertThat(err.toString(), equalTo(""));
 
         assertThat(out.toString(), containsString("1 blocking thread"));

@@ -41,6 +41,7 @@ import com.github.olivergondza.dumpling.model.ThreadSet;
 
 public class DeadlockDetector implements SingleRuntimeQuery<Set<ThreadSet>>{
 
+    @Override
     public @Nonnull Set<ThreadSet> query(@Nonnull ThreadSet threads) {
         final ProcessRuntime runtime = threads.getProcessRuntime();
 
@@ -75,26 +76,39 @@ public class DeadlockDetector implements SingleRuntimeQuery<Set<ThreadSet>>{
         @Option(name = "-i", aliases = {"--in"}, required = true, usage = "Input for process runtime")
         private ProcessRuntime runtime;
 
+        @Option(name = "--show-stack-traces", usage = "List stack traces of all threads involved")
+        private boolean showStackTraces = false;
+
+        @Override
         public String getName() {
             return "detect-deadlocks";
         }
 
+        @Override
         public String getDescription() {
             return "Detect cycles of blocked threads";
         }
 
+        @Override
         public int run(InputStream in, PrintStream out, PrintStream err) throws CmdLineException {
 
             Set<ThreadSet> deadlocks = runtime.query(new DeadlockDetector());
             out.println(deadlocks.size() + " deadlocks detected");
 
+            LinkedHashSet<ProcessThread> engagedThreads = new LinkedHashSet<ProcessThread>();
             for(ThreadSet deadlock: deadlocks) {
                 for(ProcessThread thread: deadlock) {
                     out.print(" - ");
                     out.print(thread.getName());
+                    engagedThreads.add(thread);
                 }
 
                 out.println();
+            }
+
+            if (showStackTraces) {
+                out.println();
+                out.print(new ThreadSet(runtime, engagedThreads));
             }
 
             return deadlocks.size();

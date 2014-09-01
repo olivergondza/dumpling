@@ -49,6 +49,7 @@ import com.github.olivergondza.dumpling.model.ThreadSet;
  */
 public class BlockingTree implements SingleRuntimeQuery<Set<BlockingTree.Tree>> {
 
+    @Override
     public @Nonnull Set<Tree> query(ThreadSet threads) {
         @Nonnull Set<Tree> roots = new HashSet<Tree>();
         for (ProcessThread thread: threads.getProcessRuntime().getThreads()) {
@@ -175,20 +176,40 @@ public class BlockingTree implements SingleRuntimeQuery<Set<BlockingTree.Tree>> 
         @Option(name = "-i", aliases = {"--in"}, required = true, usage = "Input for process runtime")
         private ProcessRuntime runtime;
 
+        @Option(name = "--show-stack-traces", usage = "List stack traces of all threads involved")
+        private boolean showStackTraces = false;
+
+        @Override
         public String getName() {
             return "blocking-tree";
         }
 
+        @Override
         public String getDescription() {
             return "Print contention trees";
         }
 
+        @Override
         public int run(InputStream in, PrintStream out, PrintStream err) throws CmdLineException {
-            for (Tree tree: runtime.query(new BlockingTree())) {
+            final Set<Tree> trees = runtime.query(new BlockingTree());
+            for (Tree tree: trees) {
                 out.println(tree);
             }
 
+            if (showStackTraces) {
+                for (Tree tree: trees) {
+                    printThreads(tree, out);
+                }
+            }
+
             return 0;
+        }
+
+        private void printThreads(Tree tree, PrintStream out) {
+            out.println(tree.getRoot());
+            for (Tree leaf: tree.getLeaves()) {
+                printThreads(leaf, out);
+            }
         }
     }
 }
