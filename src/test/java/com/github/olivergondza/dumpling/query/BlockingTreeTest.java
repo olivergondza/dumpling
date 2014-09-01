@@ -23,8 +23,8 @@
  */
 package com.github.olivergondza.dumpling.query;
 
-import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameContains;
+import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -124,12 +124,13 @@ public class BlockingTreeTest extends AbstractCliTest {
         assertThat(as, equalTo(expected));
     }
 
+    @Test
     public void cliQuery() throws Exception {
-        run("top-contenders", "--in", "threaddump", blockingTreeLog.getAbsolutePath());
+        run("blocking-tree", "--in", "threaddump", blockingTreeLog.getAbsolutePath());
         assertThat(err.toString(), equalTo(""));
 
         // Roots
-        assertThat(out.toString(), containsString("\n\"a\""));
+        assertThat(out.toString(), containsString("\"a\""));
         assertThat(out.toString(), containsString("\n\"b\""));
 
         // Blocked by roots
