@@ -33,7 +33,7 @@ import com.github.olivergondza.dumpling.model.ThreadSet;
  *
  * @author ogondza
  */
-public interface SingleRuntimeQuery<T> {
+public interface SingleRuntimeQuery<T extends SingleRuntimeQueryResult> {
 
     /**
      * Get typed result of the query.

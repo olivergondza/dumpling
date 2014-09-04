@@ -25,6 +25,7 @@ package com.github.olivergondza.dumpling.query;
 
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -39,39 +40,21 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
-public class DeadlockDetector implements SingleRuntimeQuery<Set<ThreadSet>>{
+public final class DeadlockDetector implements SingleRuntimeQuery<DeadlockDetector.Result> {
 
-    @Override
-    public @Nonnull Set<ThreadSet> query(@Nonnull ThreadSet threads) {
-        final ProcessRuntime runtime = threads.getProcessRuntime();
+    private boolean showStackTraces = false;
 
-        // No need to revisit threads more than once
-        final Set<ProcessThread> analyzed = new HashSet<ProcessThread>(threads.size());
-        final HashSet<ThreadSet> deadlocks = new HashSet<ThreadSet>(1);
-
-        for (ProcessThread thread: threads) {
-
-            Set<ProcessThread> cycleCandidate = new LinkedHashSet<ProcessThread>(2);
-            for (ProcessThread blocking = thread.getBlockingThread(); blocking != null; blocking = blocking.getBlockingThread()) {
-                if (analyzed.contains(thread)) break;
-
-                if (cycleCandidate.contains(blocking)) {
-                    // Cycle detected - record deadlock and break the cycle traversing.
-                    deadlocks.add(new ThreadSet(runtime, cycleCandidate));
-                    analyzed.addAll(cycleCandidate);
-                    break;
-                }
-
-                cycleCandidate.add(blocking);
-            }
-
-            analyzed.add(thread);
-        }
-
-        return deadlocks;
+    public DeadlockDetector showStackTraces() {
+        this.showStackTraces = true;
+        return this;
     }
 
-    public static class Command implements CliCommand {
+    @Override
+    public @Nonnull Result query(@Nonnull ThreadSet threads) {
+        return new Result(threads, showStackTraces);
+    }
+
+    public final static class Command implements CliCommand {
 
         @Option(name = "-i", aliases = {"--in"}, required = true, usage = "Input for process runtime")
         private ProcessRuntime runtime;
@@ -92,25 +75,84 @@ public class DeadlockDetector implements SingleRuntimeQuery<Set<ThreadSet>>{
         @Override
         public int run(InputStream in, PrintStream out, PrintStream err) throws CmdLineException {
 
-            Set<ThreadSet> deadlocks = runtime.query(new DeadlockDetector());
-            out.println(deadlocks.size() + " deadlocks detected");
+            Result result = new Result(runtime.getThreads(), showStackTraces);
+            result.printInto(out);
+            return result.exitCode();
+        }
+    }
 
-            LinkedHashSet<ProcessThread> engagedThreads = new LinkedHashSet<ProcessThread>();
+    public final static class Result extends SingleRuntimeQueryResult {
+        private final @Nonnull Set<ThreadSet> deadlocks;
+        private final @Nonnull ThreadSet involved;
+
+        private Result(@Nonnull ThreadSet input, boolean showStackTraces) {
+            final ProcessRuntime runtime = input.getProcessRuntime();
+
+            final HashSet<ThreadSet> deadlocks = new HashSet<ThreadSet>(1);
+            final LinkedHashSet<ProcessThread> involved = new LinkedHashSet<ProcessThread>(2);
+            // No need to visit threads more than once
+            final Set<ProcessThread> analyzed = new HashSet<ProcessThread>(input.size());
+
+            for (ProcessThread thread: input) {
+
+                Set<ProcessThread> cycleCandidate = new LinkedHashSet<ProcessThread>(2);
+                for (ProcessThread blocking = thread.getBlockingThread(); blocking != null; blocking = blocking.getBlockingThread()) {
+                    if (analyzed.contains(thread)) break;
+
+                    if (cycleCandidate.contains(blocking)) {
+                        // Cycle detected - record deadlock and break the cycle traversing.
+                        deadlocks.add(new ThreadSet(runtime, cycleCandidate));
+                        involved.addAll(cycleCandidate);
+                        analyzed.addAll(cycleCandidate);
+                        break;
+                    }
+
+                    cycleCandidate.add(blocking);
+                }
+
+                analyzed.add(thread);
+            }
+
+            this.deadlocks = Collections.unmodifiableSet(deadlocks);
+            this.involved = showStackTraces
+                    ? new ThreadSet(runtime, involved)
+                    : runtime.getEmptyThreadSet()
+            ;
+        }
+
+        /**
+         * Get found deadlocks.
+         *
+         * @return {@link Set} of {@link ThreadSet}s representing found deadlocks.
+         */
+        public @Nonnull Set<ThreadSet> getDeadlocks() {
+            return deadlocks;
+        }
+
+        @Override
+        protected void printResult(PrintStream out) {
             for(ThreadSet deadlock: deadlocks) {
                 for(ProcessThread thread: deadlock) {
                     out.print(" - ");
                     out.print(thread.getName());
-                    engagedThreads.add(thread);
                 }
-
-                out.println();
             }
+        }
 
-            if (showStackTraces) {
-                out.println();
-                out.print(new ThreadSet(runtime, engagedThreads));
-            }
+        @Override
+        protected ThreadSet involvedThreads() {
+            return involved;
+        }
 
+        @Override
+        protected void printSummary(PrintStream out) {
+            out.println();
+            out.print(deadlocks.size());
+            out.println(" deadlocks detected");
+        }
+
+        @Override
+        public int exitCode() {
             return deadlocks.size();
         }
     }

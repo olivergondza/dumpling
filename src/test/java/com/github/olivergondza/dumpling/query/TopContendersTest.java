@@ -23,16 +23,11 @@
  */
 package com.github.olivergondza.dumpling.query;
 
-import static com.github.olivergondza.dumpling.model.ProcessThread.nameContains;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.junit.Test;
 
@@ -42,6 +37,7 @@ import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
+import com.github.olivergondza.dumpling.query.TopContenders.Result;
 
 public class TopContendersTest extends AbstractCliTest {
 
@@ -49,77 +45,84 @@ public class TopContendersTest extends AbstractCliTest {
     public void trivial() throws Exception {
         ProcessRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("producer-consumer.log"));
 
-        Map<ProcessThread, ThreadSet> contenders = runtime.query(new TopContenders());
+        Result contenders = runtime.query(new TopContenders());
 
-        Map<ProcessThread, ThreadSet> expected = new HashMap<ProcessThread, ThreadSet>();
-        expected.put(
-                runtime.getThreads().where(nameIs("owning_thread")).onlyThread(),
-                runtime.getThreads().where(nameIs("blocked_thread"))
-        );
+        final ProcessThread owning = runtime.getThreads().where(nameIs("owning_thread")).onlyThread();
 
-        assertThat(contenders, equalTo(expected));
+        assertThat(contenders.getBlockers().size(), equalTo(1));
+        assertThat(contenders.blockedBy(owning), equalTo(runtime.getThreads().where(nameIs("blocked_thread"))));
     }
 
     @Test
     public void contenders() throws Exception {
         ProcessRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "contention.log"));
 
-        Map<ProcessThread, ThreadSet> contenders = runtime.query(new TopContenders());
+        Result contenders = runtime.query(new TopContenders());
 
         ThreadSet ts = runtime.getThreads();
-        Map<ProcessThread, ThreadSet> expected = new HashMap<ProcessThread, ThreadSet>();
         final ProcessThread producerProcessThread = ts.where(nameIs("producer")).onlyThread();
-        expected.put(
-                producerProcessThread,
-                ts.where(nameContains(Pattern.compile("consumer.")))
-        );
 
-        assertThat(contenders, equalTo(expected));
-        assertThat(contenders.size(), equalTo(1));
-        assertThat(contenders.get(producerProcessThread).size(), equalTo(3));
+        assertThat(contenders.getBlockers().size(), equalTo(1));
+        assertThat(contenders.blockedBy(producerProcessThread).size(), equalTo(3));
     }
 
     @Test
     public void cliQuery() throws Exception {
         run("top-contenders", "--in", "threaddump", Util.resourceFile(getClass(), "contention.log").getAbsolutePath());
         assertThat(err.toString(), equalTo(""));
+        assertListing(out.toString());
+        assertThat(exitValue, equalTo(1)); // Number of blocking threads
+    }
 
-        assertThat(out.toString(), containsString("1 blocking thread"));
+    @Test
+    public void toStringNoTraces() throws Exception {
+        ProcessRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "contention.log"));
+        assertListing(runtime.query(new TopContenders()).toString());
+    }
+
+    private void assertListing(String out) {
+        assertThat(out, containsString("\nBlocking threads: 1; Blocked threads: 3\n"));
 
         // Header
-        assertThat(out.toString(), containsString("\n* \"producer\" prio=10 id=null tid=140692931092480 nid=4567\n"));
-        assertThat(out.toString(), containsString("\n  (1) \"consumerC\" prio=10 id=null tid=140692931145728 nid=4570\n"));
-        assertThat(out.toString(), containsString("\n  (2) \"consumerB\" prio=10 id=null tid=140692931141632 nid=4569\n"));
-        assertThat(out.toString(), containsString("\n  (3) \"consumerA\" prio=10 id=null tid=140692931094528 nid=4568\n"));
+        assertThat(out, containsString("* \"producer\" prio=10 id=null tid=140692931092480 nid=4567\n"));
+        assertThat(out, containsString("\n  (1) \"consumerC\" prio=10 id=null tid=140692931145728 nid=4570\n"));
+        assertThat(out, containsString("\n  (2) \"consumerB\" prio=10 id=null tid=140692931141632 nid=4569\n"));
+        assertThat(out, containsString("\n  (3) \"consumerA\" prio=10 id=null tid=140692931094528 nid=4568\n"));
 
-        // Thread listing
-        assertThat(out.toString(), not(containsString("\n\"producer\" prio=10 id=null tid=140692931092480 nid=4567\n")));
-        assertThat(out.toString(), not(containsString("\n\"consumerA\" prio=10 id=null tid=140692931094528 nid=4568\n")));
-        assertThat(out.toString(), not(containsString("\n\"consumerB\" prio=10 id=null tid=140692931141632 nid=4569\n")));
-        assertThat(out.toString(), not(containsString("\n\"consumerC\" prio=10 id=null tid=140692931145728 nid=4570\n")));
-
-        assertThat(exitValue, equalTo(1)); // Number of blocking threads
+        // No tread listing
+        assertThat(out, not(containsString("\n\"producer\" prio=10 id=null tid=140692931092480 nid=4567\n")));
+        assertThat(out, not(containsString("\n\"consumerA\" prio=10 id=null tid=140692931094528 nid=4568\n")));
+        assertThat(out, not(containsString("\n\"consumerB\" prio=10 id=null tid=140692931141632 nid=4569\n")));
+        assertThat(out, not(containsString("\n\"consumerC\" prio=10 id=null tid=140692931145728 nid=4570\n")));
     }
 
     @Test
     public void cliQueryTraces() throws Exception {
         run("top-contenders", "--show-stack-traces", "--in", "threaddump", Util.resourceFile(getClass(), "contention.log").getAbsolutePath());
         assertThat(err.toString(), equalTo(""));
+        assertLongListing(out.toString());
+        assertThat(exitValue, equalTo(1)); // Number of blocking threads
+    }
 
-        assertThat(out.toString(), containsString("1 blocking thread"));
+    @Test
+    public void toStringWithTraces() throws Exception {
+        ProcessRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "contention.log"));
+        assertLongListing(runtime.query(new TopContenders().showStackTraces()).toString());
+    }
+
+    private void assertLongListing(String out) {
+        assertThat(out, containsString("\nBlocking threads: 1; Blocked threads: 3\n"));
 
         // Header
-        assertThat(out.toString(), containsString("\n* \"producer\" prio=10 id=null tid=140692931092480 nid=4567\n"));
-        assertThat(out.toString(), containsString("\n  (1) \"consumerC\" prio=10 id=null tid=140692931145728 nid=4570\n"));
-        assertThat(out.toString(), containsString("\n  (2) \"consumerB\" prio=10 id=null tid=140692931141632 nid=4569\n"));
-        assertThat(out.toString(), containsString("\n  (3) \"consumerA\" prio=10 id=null tid=140692931094528 nid=4568\n"));
+        assertThat(out, containsString("* \"producer\" prio=10 id=null tid=140692931092480 nid=4567\n"));
+        assertThat(out, containsString("\n  (1) \"consumerC\" prio=10 id=null tid=140692931145728 nid=4570\n"));
+        assertThat(out, containsString("\n  (2) \"consumerB\" prio=10 id=null tid=140692931141632 nid=4569\n"));
+        assertThat(out, containsString("\n  (3) \"consumerA\" prio=10 id=null tid=140692931094528 nid=4568\n"));
 
         // Thread listing
-        assertThat(out.toString(), containsString("\n\"producer\" prio=10 id=null tid=140692931092480 nid=4567\n"));
-        assertThat(out.toString(), containsString("\n\"consumerA\" prio=10 id=null tid=140692931094528 nid=4568\n"));
-        assertThat(out.toString(), containsString("\n\"consumerB\" prio=10 id=null tid=140692931141632 nid=4569\n"));
-        assertThat(out.toString(), containsString("\n\"consumerC\" prio=10 id=null tid=140692931145728 nid=4570\n"));
-
-        assertThat(exitValue, equalTo(1)); // Number of blocking threads
+        assertThat(out, containsString("\n\"producer\" prio=10 id=null tid=140692931092480 nid=4567\n"));
+        assertThat(out, containsString("\n\"consumerA\" prio=10 id=null tid=140692931094528 nid=4568\n"));
+        assertThat(out, containsString("\n\"consumerB\" prio=10 id=null tid=140692931141632 nid=4569\n"));
+        assertThat(out, containsString("\n\"consumerC\" prio=10 id=null tid=140692931145728 nid=4570\n"));
     }
 }

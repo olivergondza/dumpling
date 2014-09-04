@@ -28,6 +28,7 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -47,84 +48,145 @@ import com.github.olivergondza.dumpling.model.ThreadSet;
  *
  * @author ogondza
  */
-public class BlockingTree implements SingleRuntimeQuery<Set<BlockingTree.Tree>> {
+public final class BlockingTree implements SingleRuntimeQuery<BlockingTree.Result> {
+
+    private boolean showStackTraces = false;
+
+    public BlockingTree showStackTraces() {
+        this.showStackTraces = true;
+        return this;
+    }
 
     @Override
-    public @Nonnull Set<Tree> query(ThreadSet threads) {
-        @Nonnull Set<Tree> roots = new HashSet<Tree>();
-        for (ProcessThread thread: threads.getProcessRuntime().getThreads()) {
-            if (thread.getWaitingOnLock() == null && !thread.getAcquiredLocks().isEmpty()) {
-                if (!thread.getBlockedThreads().isEmpty()) {
-                    roots.add(new Tree(thread, buildDown(thread)));
+    public @Nonnull Result query(ThreadSet threads) {
+        return new Result(threads, showStackTraces);
+    }
+
+    public final static class Command implements CliCommand {
+
+        @Option(name = "-i", aliases = {"--in"}, required = true, usage = "Input for process runtime")
+        private ProcessRuntime runtime;
+
+        @Option(name = "--show-stack-traces", usage = "List stack traces of all threads involved")
+        private boolean showStackTraces = false;
+
+        @Override
+        public String getName() {
+            return "blocking-tree";
+        }
+
+        @Override
+        public String getDescription() {
+            return "Print contention trees";
+        }
+
+        @Override
+        public int run(InputStream in, PrintStream out, PrintStream err) throws CmdLineException {
+            Result result = new Result(runtime.getThreads(), showStackTraces);
+            result.printInto(out);
+            return result.exitCode();
+        }
+    }
+
+    public static final class Result extends SingleRuntimeQueryResult {
+
+        private final @Nonnull Set<Tree> trees;
+        private final @Nonnull ThreadSet involved;
+        private final boolean showStackTraces;
+
+        private Result(ThreadSet threads, boolean showStackTraces) {
+            @Nonnull Set<Tree> roots = new HashSet<Tree>();
+            for (ProcessThread thread: threads.getProcessRuntime().getThreads()) {
+                if (thread.getWaitingOnLock() == null && !thread.getAcquiredLocks().isEmpty()) {
+                    if (!thread.getBlockedThreads().isEmpty()) {
+                        roots.add(new Tree(thread, buildDown(thread)));
+                    }
                 }
             }
-        }
 
-        return Collections.unmodifiableSet(filter(roots, threads));
-    }
+            this.trees = Collections.unmodifiableSet(filter(roots, threads));
+            this.showStackTraces = showStackTraces;
 
-    private @Nonnull Set<Tree> buildDown(ProcessThread thread) {
-        @Nonnull Set<Tree> newTrees = new HashSet<Tree>();
-        for(ProcessThread t: thread.getBlockedThreads()) {
-            newTrees.add(new Tree(t, buildDown(t)));
-        }
-
-        return newTrees;
-    }
-
-    private @Nonnull Set<Tree> filter(Set<Tree> roots, ThreadSet threads) {
-        Set<Tree> filtered = new HashSet<Tree>();
-        for (Tree r: roots) {
-            // Add whitelisted items including their subtrees
-            if (threads.contains(r.getRoot())) {
-                filtered.add(r);
+            LinkedHashSet<ProcessThread> involved = new LinkedHashSet<ProcessThread>();
+            for (Tree root: trees) {
+                flatten(root, involved);
             }
 
-            // Remove nodes with all children filtered out
-            final Set<Tree> filteredLeaves = filter(r.getLeaves(), threads);
-            if (filteredLeaves.isEmpty()) continue;
-
-            filtered.add(new Tree(r.getRoot(), filteredLeaves));
+            this.involved = threads.derive(involved);
         }
 
-        return filtered;
+        private @Nonnull Set<Tree> buildDown(ProcessThread thread) {
+            @Nonnull Set<Tree> newTrees = new HashSet<Tree>();
+            for(ProcessThread t: thread.getBlockedThreads()) {
+                newTrees.add(new Tree(t, buildDown(t)));
+            }
+
+            return newTrees;
+        }
+
+        private @Nonnull Set<Tree> filter(Set<Tree> roots, ThreadSet threads) {
+            Set<Tree> filtered = new HashSet<Tree>();
+            for (Tree r: roots) {
+                // Add whitelisted items including their subtrees
+                if (threads.contains(r.getRoot())) {
+                    filtered.add(r);
+                }
+
+                // Remove nodes with all children filtered out
+                final Set<Tree> filteredLeaves = filter(r.getLeaves(), threads);
+                if (filteredLeaves.isEmpty()) continue;
+
+                filtered.add(new Tree(r.getRoot(), filteredLeaves));
+            }
+
+            return filtered;
+        }
+
+        private void flatten(Tree tree, Set<ProcessThread> accumulator) {
+            accumulator.add(tree.getRoot());
+            for (Tree leaf: tree.getLeaves()) {
+                flatten(leaf, accumulator);
+            }
+        }
+
+        public @Nonnull Set<Tree> getTrees() {
+            return trees;
+        }
+
+        @Override
+        protected void printResult(PrintStream out) {
+            for (Tree tree: trees) {
+                out.println(tree);
+            }
+        }
+
+        @Override
+        protected ThreadSet involvedThreads() {
+            return showStackTraces ? involved : null;
+        }
     }
 
     /**
-     * Blocking tree.
+     * Blocking tree node.
+     *
+     * A <tt>root</tt> with directly blocked subtrees (<tt>leaves</tt>). If
+     * leave set is empty root thread does not block any other threads.
      *
      * @author ogondza
      */
-    public static class Tree {
+    public final static class Tree {
 
         private final @Nonnull ProcessThread root;
         private final @Nonnull Set<Tree> leaves;
 
-        public Tree(@Nonnull ProcessThread root, @Nonnull Set<Tree> leaves) {
+        private Tree(@Nonnull ProcessThread root, @Nonnull Set<Tree> leaves) {
             this.root = root;
             this.leaves = Collections.unmodifiableSet(leaves);
         }
 
-        private Tree(@Nonnull ProcessThread root, @Nonnull ThreadSet threads) {
-            this.root = root;
-            Set<Tree> leaves = new HashSet<Tree>(threads.size());
-            for (ProcessThread l: threads) {
-                leaves.add(new Tree(l));
-            }
-            this.leaves = Collections.unmodifiableSet(leaves);
-        }
-
-        public Tree(@Nonnull ProcessThread root, @Nonnull Tree... leaves) {
+        /*package*/ Tree(@Nonnull ProcessThread root, @Nonnull Tree... leaves) {
             this.root = root;
             this.leaves = Collections.unmodifiableSet(new HashSet<Tree>(Arrays.asList(leaves)));
-        }
-
-        /**
-         * Create leave.
-         */
-        public Tree(@Nonnull ProcessThread root) {
-            this.root = root;
-            this.leaves = Collections.emptySet();
         }
 
         public @Nonnull ProcessThread getRoot() {
@@ -168,48 +230,6 @@ public class BlockingTree implements SingleRuntimeQuery<Set<BlockingTree.Tree>> 
 
             Tree other = (Tree) rhs;
             return this.root.equals(other.root) && this.leaves.equals(other.leaves);
-        }
-    }
-
-    public static class Command implements CliCommand {
-
-        @Option(name = "-i", aliases = {"--in"}, required = true, usage = "Input for process runtime")
-        private ProcessRuntime runtime;
-
-        @Option(name = "--show-stack-traces", usage = "List stack traces of all threads involved")
-        private boolean showStackTraces = false;
-
-        @Override
-        public String getName() {
-            return "blocking-tree";
-        }
-
-        @Override
-        public String getDescription() {
-            return "Print contention trees";
-        }
-
-        @Override
-        public int run(InputStream in, PrintStream out, PrintStream err) throws CmdLineException {
-            final Set<Tree> trees = runtime.query(new BlockingTree());
-            for (Tree tree: trees) {
-                out.println(tree);
-            }
-
-            if (showStackTraces) {
-                for (Tree tree: trees) {
-                    printThreads(tree, out);
-                }
-            }
-
-            return 0;
-        }
-
-        private void printThreads(Tree tree, PrintStream out) {
-            out.println(tree.getRoot());
-            for (Tree leaf: tree.getLeaves()) {
-                printThreads(leaf, out);
-            }
         }
     }
 }

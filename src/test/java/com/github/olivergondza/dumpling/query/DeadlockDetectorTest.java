@@ -25,6 +25,7 @@ package com.github.olivergondza.dumpling.query;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -36,6 +37,7 @@ import org.junit.Test;
 import com.github.olivergondza.dumpling.Util;
 import com.github.olivergondza.dumpling.cli.AbstractCliTest;
 import com.github.olivergondza.dumpling.factory.JvmRuntimeFactory;
+import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
@@ -120,30 +122,57 @@ public class DeadlockDetectorTest extends AbstractCliTest {
     public void cliQuery() throws Exception {
         run("detect-deadlocks", "--in", "threaddump", Util.resourceFile("deadlock.log").getAbsolutePath());
         assertThat(err.toString(), equalTo(""));
-        assertThat(out.toString(), containsString("1 deadlocks detected"));
-        assertThat(out.toString(), containsString("- Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24 - Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107"));
+        assertListing(out.toString());
+
         assertThat(exitValue, equalTo(1));
+    }
+
+    @Test
+    public void toStringNoTraces() throws Exception {
+        ProcessRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock.log"));
+        assertListing(runtime.query(new DeadlockDetector()).toString());
+    }
+
+    private void assertListing(String out) {
+        assertThat(out, containsString("- Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24 - Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107"));
+        assertThat(out, not(containsString(
+                "\n\"Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24\" daemon prio=10 id=null tid=1481750528 nid=27336\n"
+        )));
+        assertThat(out, not(containsString(
+                "\n\"Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107\" daemon prio=10 id=null tid=47091108077568 nid=17982\n"
+        )));
+        assertThat(out, containsString("\n1 deadlocks detected\n"));
     }
 
     @Test
     public void cliQueryTraces() throws Exception {
         run("detect-deadlocks", "--show-stack-traces", "--in", "threaddump", Util.resourceFile("deadlock.log").getAbsolutePath());
         assertThat(err.toString(), equalTo(""));
-        assertThat(out.toString(), containsString("1 deadlocks detected"));
-        assertThat(out.toString(), containsString("- Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24 - Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107"));
-
-        assertThat(out.toString(), containsString(
-                "\n\"Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24\" daemon prio=10 id=null tid=1481750528 nid=27336\n"
-        ));
-        assertThat(out.toString(), containsString(
-                "\n\"Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107\" daemon prio=10 id=null tid=47091108077568 nid=17982\n"
-        ));
+        assertLongListing(out.toString());
 
         assertThat(exitValue, equalTo(1));
     }
 
+    @Test
+    public void toStringWithTraces() throws Exception {
+        ProcessRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock.log"));
+        assertLongListing(runtime.query(new DeadlockDetector().showStackTraces()).toString());
+    }
+
+    private void assertLongListing(String out) {
+        assertThat(out, containsString("- Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24 - Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107"));
+
+        assertThat(out, containsString(
+                "\n\"Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24\" daemon prio=10 id=null tid=1481750528 nid=27336\n"
+        ));
+        assertThat(out, containsString(
+                "\n\"Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107\" daemon prio=10 id=null tid=47091108077568 nid=17982\n"
+        ));
+        assertThat(out, containsString("\n1 deadlocks detected\n"));
+    }
+
     private Set<ThreadSet> deadlocks(ProcessRuntime runtime) {
-        return runtime.getThreads().query(new DeadlockDetector());
+        return runtime.getThreads().query(new DeadlockDetector()).getDeadlocks();
     }
 
     private ProcessRuntime runtime() {

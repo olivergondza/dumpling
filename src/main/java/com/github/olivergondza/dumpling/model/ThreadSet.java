@@ -35,6 +35,7 @@ import javax.annotation.Nonnull;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import com.github.olivergondza.dumpling.query.SingleRuntimeQuery;
+import com.github.olivergondza.dumpling.query.SingleRuntimeQueryResult;
 
 public class ThreadSet implements Iterable<ProcessThread> {
 
@@ -120,7 +121,7 @@ public class ThreadSet implements Iterable<ProcessThread> {
         return new ThreadSet(runtime, subset);
     }
 
-    public <T> T query(SingleRuntimeQuery<T> query) {
+    public <T extends SingleRuntimeQueryResult> T query(SingleRuntimeQuery<T> query) {
         return query.query(this);
     }
 
@@ -175,9 +176,11 @@ public class ThreadSet implements Iterable<ProcessThread> {
     /**
      * Create derived set from this one.
      *
-     * New set will share runtime, threads will be replaced.
+     * @return New thread collection bound to same runtime.
      */
-    private @Nonnull ThreadSet derive(Collection<ProcessThread> threads) {
+    public @Nonnull ThreadSet derive(Collection<ProcessThread> threads) {
+        if (threads.isEmpty()) return runtime.getEmptyThreadSet();
+
         Set<ProcessThread> threadSet = threads instanceof Set
                 ? (Set<ProcessThread>) threads
                 : new HashSet<ProcessThread>(threads)

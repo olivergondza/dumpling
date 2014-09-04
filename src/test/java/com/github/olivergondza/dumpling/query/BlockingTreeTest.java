@@ -27,6 +27,7 @@ import static com.github.olivergondza.dumpling.model.ProcessThread.nameContains;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.File;
@@ -71,7 +72,7 @@ public class BlockingTreeTest extends AbstractCliTest {
 
     @Test
     public void fullForest() {
-        Set<Tree> full = runtime.query(new BlockingTree());
+        Set<Tree> full = runtime.query(new BlockingTree()).getTrees();
         Set<Tree> expected = new HashSet<Tree>(Arrays.asList(
                 new BlockingTree.Tree(a,
                         new BlockingTree.Tree(aa, new BlockingTree.Tree(aaa)),
@@ -85,7 +86,7 @@ public class BlockingTreeTest extends AbstractCliTest {
 
     @Test
     public void oneChainFromBottom() {
-        Set<Tree> as = runtime.getThreads().where(nameIs("aaa")).query(new BlockingTree());
+        Set<Tree> as = runtime.getThreads().where(nameIs("aaa")).query(new BlockingTree()).getTrees();
         Set<Tree> expected = new HashSet<Tree>(Arrays.asList(
                 new BlockingTree.Tree(a, new BlockingTree.Tree(aa, new BlockingTree.Tree(aaa)))
         ));
@@ -95,7 +96,7 @@ public class BlockingTreeTest extends AbstractCliTest {
 
     @Test
     public void oneChainFromMiddle() {
-        Set<Tree> as = runtime.getThreads().where(nameIs("aa")).query(new BlockingTree());
+        Set<Tree> as = runtime.getThreads().where(nameIs("aa")).query(new BlockingTree()).getTrees();
         Set<Tree> expected = new HashSet<Tree>(Arrays.asList(
                 new BlockingTree.Tree(a, new BlockingTree.Tree(aa, new BlockingTree.Tree(aaa)))
         ));
@@ -105,7 +106,7 @@ public class BlockingTreeTest extends AbstractCliTest {
 
     @Test
     public void fullRoot() {
-        Set<Tree> as = runtime.getThreads().where(nameIs("b")).query(new BlockingTree());
+        Set<Tree> as = runtime.getThreads().where(nameIs("b")).query(new BlockingTree()).getTrees();
         Set<Tree> expected = new HashSet<Tree>(Arrays.asList(
                 new BlockingTree.Tree(b, new BlockingTree.Tree(ba))
         ));
@@ -115,7 +116,7 @@ public class BlockingTreeTest extends AbstractCliTest {
 
     @Test
     public void severalChains() {
-        Set<Tree> as = runtime.getThreads().where(nameContains(Pattern.compile("^(aaa|ba)$"))).query(new BlockingTree());
+        Set<Tree> as = runtime.getThreads().where(nameContains(Pattern.compile("^(aaa|ba)$"))).query(new BlockingTree()).getTrees();
         Set<Tree> expected = new HashSet<Tree>(Arrays.asList(
                 new BlockingTree.Tree(a, new BlockingTree.Tree(aa, new BlockingTree.Tree(aaa))),
                 new BlockingTree.Tree(b, new BlockingTree.Tree(ba))
@@ -125,40 +126,61 @@ public class BlockingTreeTest extends AbstractCliTest {
     }
 
     @Test
-    public void cliQuery() throws Exception {
+    public void cliQuery() {
         run("blocking-tree", "--in", "threaddump", blockingTreeLog.getAbsolutePath());
         assertThat(err.toString(), equalTo(""));
 
-        // Roots
-        assertThat(out.toString(), containsString("\"a\""));
-        assertThat(out.toString(), containsString("\n\"b\""));
-
-        // Blocked by roots
-        assertThat(out.toString(), containsString("\n\t\"aa\""));
-        assertThat(out.toString(), containsString("\n\t\"ab\""));
-        assertThat(out.toString(), containsString("\n\t\"ba\""));
-
-        // Deeply nested
-        assertThat(out.toString(), containsString("\n\t\t\"aaa\""));
+        assertQueryListing(out.toString());
     }
 
     @Test
-    public void cliQueryTraces() throws Exception {
+    public void toStringNoTraces() {
+        assertQueryListing(runtime.query(new BlockingTree()).toString());
+    }
+
+    private void assertQueryListing(String out) {
+        // Roots
+        assertThat(out, containsString("\"a\""));
+        assertThat(out, containsString("\n\"b\""));
+
+        // Blocked by roots
+        assertThat(out, containsString("\n\t\"aa\""));
+        assertThat(out, containsString("\n\t\"ab\""));
+        assertThat(out, containsString("\n\t\"ba\""));
+
+        // Deeply nested
+        assertThat(out, containsString("\n\t\t\"aaa\""));
+
+        assertThat(out, not(containsString("\n\"aaa\" prio=10 id=null tid=139918763419648 nid=31957\n")));
+    }
+
+    @Test
+    public void cliQueryTraces() {
         run("blocking-tree", "--show-stack-traces", "--in", "threaddump", blockingTreeLog.getAbsolutePath());
         assertThat(err.toString(), equalTo(""));
 
+        final String stdout = out.toString();
+        assertLongQueryListing(stdout);
+    }
+
+    @Test
+    public void toStringTraces() {
+        assertLongQueryListing(runtime.query(new BlockingTree().showStackTraces()).toString());
+    }
+
+    private void assertLongQueryListing(final String out) {
         // Roots
-        assertThat(out.toString(), containsString("\"a\""));
-        assertThat(out.toString(), containsString("\n\"b\""));
+        assertThat(out, containsString("\"a\""));
+        assertThat(out, containsString("\n\"b\""));
 
         // Blocked by roots
-        assertThat(out.toString(), containsString("\n\t\"aa\""));
-        assertThat(out.toString(), containsString("\n\t\"ab\""));
-        assertThat(out.toString(), containsString("\n\t\"ba\""));
+        assertThat(out, containsString("\n\t\"aa\""));
+        assertThat(out, containsString("\n\t\"ab\""));
+        assertThat(out, containsString("\n\t\"ba\""));
 
         // Deeply nested
-        assertThat(out.toString(), containsString("\n\t\t\"aaa\""));
+        assertThat(out, containsString("\n\t\t\"aaa\""));
 
-        assertThat(out.toString(), containsString("\n\"aaa\" prio=10 id=null tid=139918763419648 nid=31957\n"));
+        assertThat(out, containsString("\n\"aaa\" prio=10 id=null tid=139918763419648 nid=31957\n"));
     }
 }

@@ -25,12 +25,17 @@ package com.github.olivergondza.dumpling.query;
 
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnegative;
+import javax.annotation.Nonnull;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
@@ -40,39 +45,29 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
-public class TopContenders implements SingleRuntimeQuery<Map<ProcessThread, ThreadSet>> {
+/**
+ * Get threads that block other threads.
+ *
+ * @return Mapping between blocking thread and a set of blocked threads.
+ * Map is sorted by the number of blocked threads.
+ *
+ * @author ogondza
+ */
+public final class TopContenders implements SingleRuntimeQuery<TopContenders.Result> {
 
-    /**
-     * Get threads that block other threads.
-     *
-     * @return Mapping between blocking thread and a set of blocked threads.
-     * Map is sorted by the number of blocked threads.
-     */
-    @Override
-    public Map<ProcessThread, ThreadSet> query(ThreadSet threads) {
-        Map<ProcessThread, ThreadSet> contenders = new TreeMap<ProcessThread, ThreadSet>(new Comparator<ProcessThread>() {
-            @Override
-            public int compare(ProcessThread lhs, ProcessThread rhs) {
-                int lhsSize = lhs.getBlockedThreads().size();
-                int rhsSize = rhs.getBlockedThreads().size();
+    private boolean showStackTraces = false;
 
-                if (lhsSize > rhsSize) return -1;
-                if (lhsSize < rhsSize) return 1;
-
-                return 0;
-            }
-        });
-
-        for (ProcessThread thread: threads) {
-            ThreadSet blocked = thread.getBlockedThreads();
-            if (blocked.isEmpty()) continue;
-
-            contenders.put(thread, blocked);
-        }
-        return contenders;
+    public TopContenders showStackTraces() {
+        this.showStackTraces = true;
+        return this;
     }
 
-    public static class Command implements CliCommand {
+    @Override
+    public Result query(ThreadSet threads) {
+        return new Result(threads, showStackTraces);
+    }
+
+    public final static class Command implements CliCommand {
 
         @Option(name = "-i", aliases = {"--in"}, required = true, usage = "Input for process runtime")
         private ProcessRuntime runtime;
@@ -92,33 +87,94 @@ public class TopContenders implements SingleRuntimeQuery<Map<ProcessThread, Thre
 
         @Override
         public int run(InputStream in, PrintStream out, PrintStream err) throws CmdLineException {
+            Result result = new Result(runtime.getThreads(), showStackTraces);
+            result.printInto(out);
+            return result.exitCode();
+        }
+    }
 
-            Map<ProcessThread, ThreadSet> contenders = runtime.query(new TopContenders());
+    public final static class Result extends SingleRuntimeQueryResult {
 
-            out.print(contenders.size());
-            out.println(" blocking threads");
-            out.println();
+        private final @Nonnull Map<ProcessThread, ThreadSet> contenders;
+        private final @Nonnull ThreadSet involved;
+        private final @Nonnegative int blocked;
 
-            Set<ProcessThread> engagedThreads = new LinkedHashSet<ProcessThread>();
+        private Result(ThreadSet threads, boolean showStacktraces) {
+            final Set<ProcessThread> involved = new LinkedHashSet<ProcessThread>();
+            final Map<ProcessThread, ThreadSet> contenders = new TreeMap<ProcessThread, ThreadSet>(new Comparator<ProcessThread>() {
+                @Override
+                public int compare(ProcessThread lhs, ProcessThread rhs) {
+                    int lhsSize = lhs.getBlockedThreads().size();
+                    int rhsSize = rhs.getBlockedThreads().size();
+
+                    if (lhsSize > rhsSize) return -1;
+                    if (lhsSize < rhsSize) return 1;
+
+                    return 0;
+                }
+            });
+
+            for (ProcessThread thread: threads) {
+                ThreadSet blocked = thread.getBlockedThreads();
+                if (blocked.isEmpty()) continue;
+
+                contenders.put(thread, blocked);
+                involved.add(thread);
+                for (ProcessThread b: blocked) {
+                    involved.add(b);
+                }
+            }
+
+            this.contenders = Collections.unmodifiableMap(contenders);
+            this.involved = showStacktraces
+                    ? new ThreadSet(threads.getProcessRuntime(), involved)
+                    : threads.getProcessRuntime().getEmptyThreadSet()
+            ;
+            this.blocked = involved.size() - contenders.size();
+        }
+
+        public @Nonnull ThreadSet getBlockers() {
+            return new ThreadSet(involved.getProcessRuntime(), contenders.keySet());
+        }
+
+        /**
+         * Get threads blocked by a thread.
+         *
+         * @return null when there is none.
+         */
+        public @CheckForNull ThreadSet blockedBy(ProcessThread thread) {
+            return contenders.get(thread);
+        }
+
+        @Override
+        protected void printResult(PrintStream out) {
             for (Entry<ProcessThread, ThreadSet> contention: contenders.entrySet()) {
 
-                engagedThreads.add(contention.getKey());
                 out.print("* ");
                 out.println(contention.getKey().getHeader());
                 int i = 1;
                 for (ProcessThread blocked: contention.getValue()) {
 
-                    engagedThreads.add(blocked);
                     out.printf("  (%d) ", i++);
                     out.println(blocked.getHeader());
                 }
             }
+        }
 
-            if (showStackTraces) {
-                out.println();
-                out.print(new ThreadSet(runtime, engagedThreads));
-            }
+        @Override
+        protected ThreadSet involvedThreads() {
+            return involved;
+        }
 
+        @Override
+        protected void printSummary(PrintStream out) {
+            int blocking = contenders.size();
+
+            out.printf("Blocking threads: %d; Blocked threads: %d\n", blocking, blocked);
+        }
+
+        @Override
+        public int exitCode() {
             return contenders.size();
         }
     }
