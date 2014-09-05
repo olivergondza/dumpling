@@ -44,7 +44,12 @@ import com.github.olivergondza.dumpling.model.ThreadSet;
 /**
  * Get a forest of all blocking trees.
  *
- * Not-blocked threads are roots.
+ * Non-blocked threads are the roots of tree hierarchies where parent-child
+ * relationship represents blocking-blocked situation. Leaves of such trees
+ * represents blocked but not blocking threads.
+ *
+ * Only such branches are included that contain threads from initial set.
+ * Provide all threads in runtime to analyze all threads.
  *
  * @author ogondza
  */
