@@ -38,7 +38,7 @@ $ ./dumpling.sh help [<command>]
 $ ./dumpling.sh deadlocks --in threaddump jstack-crash.log
 
 # Run custom groovy query
-$ ./dumpling.sh groovy --in threaddump jstack-crash.log <<< "print runtime.threads.grep { runtime.threads.grep { it.threadStatus.waiting } }"
+$ ./dumpling.sh groovy --in threaddump jstack-crash.log <<< "runtime.threads.grep { it.threadStatus.waiting }"
 
 # Run interactive shell for investigation
 $ ./dumpling.sh groovysh
