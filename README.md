@@ -33,36 +33,24 @@ Make dumpling part of your application and inspect threads from within.
 
 ### Invoking dumpling from console
 
-Use dumpling to discover problems in thread dumps.
-
-- Build self-contained `dumpling.jar`
 ```bash
-    $ git clone https://github.com/olivergondza/dumpling.git
-    $ cd dumpling
-    $ mvn package
-    $ cd ..
-    $ mv dumpling/target/dumpling.jar .
-```
-
-- Invoke queries as needed
-```bash
-    $ java -jar dumpling.jar help
-    $ java -jar dumpling.jar help <command>
+    $ ./dumpling.sh help
+    $ ./dumpling.sh help <command>
 
     # Run build-in query (detect-deadlocks)
-    $ java -jar dumpling.jar detect-deadlocks --in threaddump jstack-crash.log
+    $ ./dumpling.sh detect-deadlocks --in threaddump jstack-crash.log
 
     # Run custom groovy query
-    $ java -jar dumpling.jar groovy --in threaddump jstack-crash.log <<< "print runtime.threads.grep { it.threadStatus == ThreadStatus.RUNNABLE }"
+    $ ./dumpling.sh groovy --in threaddump jstack-crash.log <<< "print runtime.threads.grep { it.threadStatus == ThreadStatus.RUNNABLE }"
 
     # Run interactive shell for investigation
-    $ java -jar dumpling.jar groovysh
+    $ ./dumpling.sh groovysh
     groovy:000> rt = load("oraclejdk-1.7.0_51.log")
     ===> com.github.olivergondza.dumpling.model.ProcessRuntime@10745d92
     groovy:000> rt.threads.grep { it.threadStatus == ThreadStatus.RUNNABLE }
 ```
 
-- Profit
+Alternatively, users can build self-contained `./target/dumpling.jar` using `mvn package`.
 
 ## Modules
 
