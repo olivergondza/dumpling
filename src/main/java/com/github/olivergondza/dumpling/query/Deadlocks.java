@@ -101,7 +101,7 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
 
                     if (cycleCandidate.contains(blocking)) {
                         // Cycle detected - record deadlock and break the cycle traversing.
-                        deadlocks.add(new ThreadSet(runtime, cycleCandidate));
+                        deadlocks.add(input.derive(cycleCandidate));
                         involved.addAll(cycleCandidate);
                         analyzed.addAll(cycleCandidate);
                         break;

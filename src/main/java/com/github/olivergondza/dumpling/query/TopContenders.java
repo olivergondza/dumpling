@@ -127,14 +127,14 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
 
             this.contenders = Collections.unmodifiableMap(contenders);
             this.involved = showStacktraces
-                    ? new ThreadSet(threads.getProcessRuntime(), involved)
+                    ? threads.derive(involved)
                     : threads.getProcessRuntime().getEmptyThreadSet()
             ;
             this.blocked = involved.size() - contenders.size();
         }
 
         public @Nonnull ThreadSet getBlockers() {
-            return new ThreadSet(involved.getProcessRuntime(), contenders.keySet());
+            return involved.derive(contenders.keySet());
         }
 
         /**

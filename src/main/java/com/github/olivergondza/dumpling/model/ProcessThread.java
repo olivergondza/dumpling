@@ -114,7 +114,7 @@ public class ProcessThread {
                 blocked.add(thread);
             }
         }
-        return new ThreadSet(runtime, blocked);
+        return runtime.getThreads().derive(blocked);
     }
 
     /**

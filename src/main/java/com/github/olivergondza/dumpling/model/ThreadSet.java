@@ -117,7 +117,7 @@ public class ThreadSet implements Iterable<ProcessThread> {
             if (pred.isValid(thread)) subset.add(thread);
         }
 
-        return new ThreadSet(runtime, subset);
+        return derive(subset);
     }
 
     /**
