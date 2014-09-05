@@ -34,8 +34,8 @@ ProcessRuntime runtime = new JvmRuntimeFactory().currentRuntime();
 ```bash
 $ ./dumpling.sh help [<command>]
 
-# Run build-in query (detect-deadlocks)
-$ ./dumpling.sh detect-deadlocks --in threaddump jstack-crash.log
+# Run build-in query (deadlocks)
+$ ./dumpling.sh deadlocks --in threaddump jstack-crash.log
 
 # Run custom groovy query
 $ ./dumpling.sh groovy --in threaddump jstack-crash.log <<< "print runtime.threads.grep { runtime.threads.grep { it.threadStatus.waiting } }"
