@@ -17,8 +17,8 @@ new ThreadDumpFactory().fromFile(new File("oraclejdk-1.7.0_51.log"));
 new JvmRuntimeFactory().currentRuntime();
 ```
 
-When using Dumpling CLI `--in` options is conventionally used to choose a *factory
-implementation* and a *locator* (yes, an option with 2 values). To create runtime
+When using Dumpling CLI, `--in` option is conventionally used to choose a *factory
+implementation* and a *locator* (yes, an option with 2 values). To examine runtime
 from threaddump file use:
 
 ```bash
@@ -28,19 +28,20 @@ java -jar dumpling.jar <COMMAND> --in threaddump oraclejdk-1.7.0_51.log
 Note that capturing runtime from current JVM don not make sense when using
 Dumpling from CLI.
 
-`groovysh` command does not accept any threaddump on commandline. Instead, it
-provides `load` function to read any number of threaddumps.
+`groovysh` command does not accept `--in` option. Instead, it provides `load`
+function to read any number of threaddumps once shell is started.
 
 ```groovy
-rt = load("oraclejdk-1.7.0_51.log")
+$ ./dumpling.sh groovysh
+> rt = load("oraclejdk-1.7.0_51.log")
 ===> com.github.olivergondza.dumpling.model.ProcessRuntime@10745d92
-rt.threads.grep { it.threadStatus == ThreadStatus.RUNNABLE }
+> rt.threads.grep { it.threadStatus == ThreadStatus.RUNNABLE }
 ```
 
 ## Run predefined queries
 
 Predefined queries can be run against `ProcessRuntime` or `ThreadSet` (arbitrary
-subset of process threads) to deliver declared typed result value.
+subset of process threads) to investigate common problems.
 
 ```java
 TopContenders.Result contenders = runtime.query(new TopContenders());
@@ -53,6 +54,8 @@ output format for query result.
 java -jar dumpling.jar blocking-tree --in threaddump oraclejdk-1.7.0_51.log
 ```
 
+For convenience, command output and `toString()` output of query result are the same.
+
 ## Run custom queries
 
 Custom queries can either be run from java when dumpling is bundled or from console
@@ -60,13 +63,13 @@ using build-in groovy interpreter.
 
 `groovy` command can be used to invoke custom query:
 ```
-./dumpling.sh groovy --in threaddump jstack-crash.log <<< "print runtime.threads.grep { it.threadStatus == ThreadStatus.RUNNABLE }"
+./dumpling.sh groovy --in threaddump jstack-crash.log <<< "runtime.threads.grep { it.threadStatus == ThreadStatus.RUNNABLE }"
 ```
 
 For interactive investigation there is `groovysh` command to open the shell, load
 threaddumps and query its state as necessary.
 
-```
+```groovy
 $ ./dumpling.sh groovysh
 groovy:000> rt = load("oraclejdk-1.7.0_51.log")
 ===> com.github.olivergondza.dumpling.model.ProcessRuntime@6555694
@@ -77,3 +80,5 @@ groovy:000> rt.query(new Deadlocks())
 
 groovy:000>
 ```
+
+See [Dumpling DSL tutorial](INTRO.md) to formulate more sophisticated queries.

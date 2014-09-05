@@ -3,7 +3,7 @@
 Dumpling model objects have convenient `toString()` implementations that mimics
 jstack output. Note that this output is not supposed to be compatible with any
 format nor read by any tool. It aims for presenting as much information as
-possible in a convenient way while still looking familiar to jstack users.
+possible in a convenient way while still looking familiar to `jstack` users.
 
 Central abstraction in dumpling is `ThreadSet`, a subset of all threads in JVM
 runtime. `ProcessRuntime.getThreads()` provides access to all threads that can be
@@ -16,8 +16,8 @@ runtime.getThreads().where(nameIs("MyThread"))
 runtime.getThreads().where(it -> "main".equals(it.getName()))
 ````
 
-`ThreadSet` also overrides groovy collection methods so Dumpling DSL and well
-known groovy methods can by used side by side.
+`ThreadSet` also overrides groovy collection methods so Dumpling DSL and known
+groovy methods can by used side by side.
 
 ```groovy
 // Find RUNNABLE ajp threads
@@ -29,7 +29,8 @@ runtime.threads.grep { it.threadStatus == ThreadStatus.RUNNABLE }.where(nameCont
 Predefined queries can be run against `ThreadSet` or whole runtime simply:
 
 ```groovy
-println runtime.query(new BlockingTree().showStackTraces())
+runtime.query(new BlockingTree().showStackTraces())
 ```
 
-Query transforms thread set into a result object.
+Query transforms thread set into a result object that usually represent the outcome
+as in terms of known Dumpling abstractions.
