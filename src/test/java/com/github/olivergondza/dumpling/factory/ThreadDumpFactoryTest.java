@@ -443,7 +443,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
     @Test
     public void cliNoSuchFile() {
-        run("detect-deadlocks", "--in", "threaddump", "/there_is_no_such_file");
+        run("deadlocks", "--in", "threaddump", "/there_is_no_such_file");
         assertThat(exitValue, equalTo(-1));
         assertThat(err.toString(), containsString("/there_is_no_such_file (No such file or directory)"));
         assertThat(out.toString(), equalTo(""));

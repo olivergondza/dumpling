@@ -42,7 +42,7 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
-public class DeadlockDetectorTest extends AbstractCliTest {
+public class DeadlocksTest extends AbstractCliTest {
 
     volatile boolean running = false;
     @Test
@@ -120,7 +120,7 @@ public class DeadlockDetectorTest extends AbstractCliTest {
 
     @Test
     public void cliQuery() throws Exception {
-        run("detect-deadlocks", "--in", "threaddump", Util.resourceFile("deadlock.log").getAbsolutePath());
+        run("deadlocks", "--in", "threaddump", Util.resourceFile("deadlock.log").getAbsolutePath());
         assertThat(err.toString(), equalTo(""));
         assertListing(out.toString());
 
@@ -130,7 +130,7 @@ public class DeadlockDetectorTest extends AbstractCliTest {
     @Test
     public void toStringNoTraces() throws Exception {
         ProcessRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock.log"));
-        assertListing(runtime.query(new DeadlockDetector()).toString());
+        assertListing(runtime.query(new Deadlocks()).toString());
     }
 
     private void assertListing(String out) {
@@ -146,7 +146,7 @@ public class DeadlockDetectorTest extends AbstractCliTest {
 
     @Test
     public void cliQueryTraces() throws Exception {
-        run("detect-deadlocks", "--show-stack-traces", "--in", "threaddump", Util.resourceFile("deadlock.log").getAbsolutePath());
+        run("deadlocks", "--show-stack-traces", "--in", "threaddump", Util.resourceFile("deadlock.log").getAbsolutePath());
         assertThat(err.toString(), equalTo(""));
         assertLongListing(out.toString());
 
@@ -156,7 +156,7 @@ public class DeadlockDetectorTest extends AbstractCliTest {
     @Test
     public void toStringWithTraces() throws Exception {
         ProcessRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock.log"));
-        assertLongListing(runtime.query(new DeadlockDetector().showStackTraces()).toString());
+        assertLongListing(runtime.query(new Deadlocks().showStackTraces()).toString());
     }
 
     private void assertLongListing(String out) {
@@ -172,7 +172,7 @@ public class DeadlockDetectorTest extends AbstractCliTest {
     }
 
     private Set<ThreadSet> deadlocks(ProcessRuntime runtime) {
-        return runtime.getThreads().query(new DeadlockDetector()).getDeadlocks();
+        return runtime.getThreads().query(new Deadlocks()).getDeadlocks();
     }
 
     private ProcessRuntime runtime() {

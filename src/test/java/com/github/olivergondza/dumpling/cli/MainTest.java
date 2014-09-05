@@ -57,16 +57,16 @@ public class MainTest extends AbstractCliTest {
         assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), containsString("Usage: "));
         assertThat(out.toString(), containsString("Available commands:"));
-        assertThat(out.toString(), containsString("detect-deadlocks"));
+        assertThat(out.toString(), containsString("blocking-tree"));
         assertThat(exitValue, equalTo(0));
     }
 
     @Test
     public void detailedHelp() {
 
-        run("help", "detect-deadlocks");
+        run("help", "deadlocks");
         assertThat(err.toString(), equalTo(""));
-        assertThat(out.toString(), containsString("java -jar dumpling.jar detect-deadlocks"));
+        assertThat(out.toString(), containsString("java -jar dumpling.jar deadlocks"));
         assertThat(out.toString(), containsString("Detect cycles of blocked threads"));
         assertThat(exitValue, equalTo(0));
     }
@@ -74,7 +74,7 @@ public class MainTest extends AbstractCliTest {
     @Test
     public void factoryWithoutKind() {
 
-        run("detect-deadlocks", "--in");
+        run("deadlocks", "--in");
         assertThat(out.toString(), equalTo(""));
         assertThat(exitValue, not(equalTo(0)));
         assertThat(err.toString(), containsString("takes an operand KIND"));
@@ -83,7 +83,7 @@ public class MainTest extends AbstractCliTest {
     @Test
     public void factoryWithoutLocator() {
 
-        run("detect-deadlocks", "--in", "threaddump");
+        run("deadlocks", "--in", "threaddump");
         assertThat(out.toString(), equalTo(""));
         assertThat(exitValue, not(equalTo(0)));
         assertThat(err.toString(), containsString("takes an operand LOCATOR"));

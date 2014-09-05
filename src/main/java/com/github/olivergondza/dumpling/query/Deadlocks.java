@@ -40,11 +40,11 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
-public final class DeadlockDetector implements SingleRuntimeQuery<DeadlockDetector.Result> {
+public final class Deadlocks implements SingleRuntimeQuery<Deadlocks.Result> {
 
     private boolean showStackTraces = false;
 
-    public DeadlockDetector showStackTraces() {
+    public Deadlocks showStackTraces() {
         this.showStackTraces = true;
         return this;
     }
@@ -64,7 +64,7 @@ public final class DeadlockDetector implements SingleRuntimeQuery<DeadlockDetect
 
         @Override
         public String getName() {
-            return "detect-deadlocks";
+            return "deadlocks";
         }
 
         @Override
