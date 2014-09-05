@@ -34,8 +34,7 @@ import javax.annotation.Nonnull;
 
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
-import com.github.olivergondza.dumpling.query.SingleRuntimeQuery;
-import com.github.olivergondza.dumpling.query.SingleRuntimeQueryResult;
+import com.github.olivergondza.dumpling.query.SingleThreadSetQuery;
 
 public class ThreadSet implements Iterable<ProcessThread> {
 
@@ -121,7 +120,10 @@ public class ThreadSet implements Iterable<ProcessThread> {
         return new ThreadSet(runtime, subset);
     }
 
-    public <T extends SingleRuntimeQueryResult> T query(SingleRuntimeQuery<T> query) {
+    /**
+     * Run query using this as an initial thread set.
+     */
+    public <T extends SingleThreadSetQuery.Result> T query(SingleThreadSetQuery<T> query) {
         return query.query(this);
     }
 

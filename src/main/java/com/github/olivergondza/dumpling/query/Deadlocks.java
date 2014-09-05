@@ -40,7 +40,7 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
-public final class Deadlocks implements SingleRuntimeQuery<Deadlocks.Result> {
+public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
 
     private boolean showStackTraces = false;
 
@@ -81,7 +81,7 @@ public final class Deadlocks implements SingleRuntimeQuery<Deadlocks.Result> {
         }
     }
 
-    public final static class Result extends SingleRuntimeQueryResult {
+    public final static class Result extends SingleThreadSetQuery.Result {
         private final @Nonnull Set<ThreadSet> deadlocks;
         private final @Nonnull ThreadSet involved;
 

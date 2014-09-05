@@ -29,8 +29,7 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-import com.github.olivergondza.dumpling.query.SingleRuntimeQuery;
-import com.github.olivergondza.dumpling.query.SingleRuntimeQueryResult;
+import com.github.olivergondza.dumpling.query.SingleThreadSetQuery;
 
 /**
  * Snapshot of threads in JVM at given time.
@@ -71,7 +70,12 @@ public class ProcessRuntime {
         return emptySet;
     }
 
-    public <T extends SingleRuntimeQueryResult> T query(SingleRuntimeQuery<T> query) {
+    /**
+     * Run query against all threads in the runtime.
+     *
+     * @see ThreadSet#query(SingleThreadSetQuery)
+     */
+    public <T extends SingleThreadSetQuery.Result> T query(SingleThreadSetQuery<T> query) {
         return threads.query(query);
     }
 }

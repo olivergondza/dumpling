@@ -53,7 +53,7 @@ import com.github.olivergondza.dumpling.model.ThreadSet;
  *
  * @author ogondza
  */
-public final class BlockingTree implements SingleRuntimeQuery<BlockingTree.Result> {
+public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Result> {
 
     private boolean showStackTraces = false;
 
@@ -93,7 +93,7 @@ public final class BlockingTree implements SingleRuntimeQuery<BlockingTree.Resul
         }
     }
 
-    public static final class Result extends SingleRuntimeQueryResult {
+    public static final class Result extends SingleThreadSetQuery.Result {
 
         private final @Nonnull Set<Tree> trees;
         private final @Nonnull ThreadSet involved;

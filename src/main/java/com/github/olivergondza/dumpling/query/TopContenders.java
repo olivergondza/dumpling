@@ -53,7 +53,7 @@ import com.github.olivergondza.dumpling.model.ThreadSet;
  *
  * @author ogondza
  */
-public final class TopContenders implements SingleRuntimeQuery<TopContenders.Result> {
+public final class TopContenders implements SingleThreadSetQuery<TopContenders.Result> {
 
     private boolean showStackTraces = false;
 
@@ -93,7 +93,7 @@ public final class TopContenders implements SingleRuntimeQuery<TopContenders.Res
         }
     }
 
-    public final static class Result extends SingleRuntimeQueryResult {
+    public final static class Result extends SingleThreadSetQuery.Result {
 
         private final @Nonnull Map<ProcessThread, ThreadSet> contenders;
         private final @Nonnull ThreadSet involved;
