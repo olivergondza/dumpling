@@ -26,6 +26,7 @@ package com.github.olivergondza.dumpling.model;
 import groovy.lang.Closure;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -38,12 +39,12 @@ import com.github.olivergondza.dumpling.query.SingleThreadSetQuery;
 
 public class ThreadSet implements Iterable<ProcessThread> {
 
-    private @Nonnull ProcessRuntime runtime;
-    private @Nonnull Set<ProcessThread> threads;
+    private final @Nonnull ProcessRuntime runtime;
+    private final @Nonnull Set<ProcessThread> threads;
 
     public ThreadSet(@Nonnull ProcessRuntime runtime, @Nonnull Set<ProcessThread> threads) {
         this.runtime = runtime;
-        this.threads = threads;
+        this.threads = Collections.unmodifiableSet(threads);
     }
 
     public @Nonnull ProcessRuntime getProcessRuntime() {
