@@ -1,67 +1,35 @@
 # Dumpling DSL tutorial
 
-## Get runtime
-
-`ProcessRuntime` is Dumpling abstraction to hold all threads running in JVM at
-the time it was captured. It is the single entry point to the domain model.
-
-There are several factory implementations to create it. Currently, there are two ways
-to obtain the runtime: parsing treaddump or capturing runtime of the current process.
-Let's use [oraclejdk-1.7.0_51.log](https://github.com/olivergondza/dumpling/blob/master/src/test/resources/com/github/olivergondza/dumpling/factory/ThreadDumpFactoryTest/oraclejdk-1.7.0_51.log)
-as nontrivial threaddump example.
-
-```java
-// Create runtime from threaddump
-new ThreadDumpFactory().fromFile(new File("oraclejdk-1.7.0_51.log"));
-// Create model from host JVM
-new JvmRuntimeFactory().currentRuntime();
-```
-
-When using Dumpling CLI `--in` options is conventionally used to choose a *factory
-implementation* and a *locator* (yes, an option with 2 values). To create runtime
-from threaddump file use:
-
-```bash
-java -jar dumpling.jar <COMMAND> --in threaddump oraclejdk-1.7.0_51.log
-```
-
-Note that capturing runtime from current JVM don not make sense when using
-Dumpling from CLI.
-
-## Run predefined queries
-
-Predefined queries can be run against `ProcessRuntime` or `ThreadSet` (arbitrary
-subset of process threads) to deliver declared typed result value.
-
-```java
-Map<ProcessThread, ThreadSet> contenders = runtime.query(new TopContenders());
-```
-
-In case of running queries exposed through CLI, the command itself chooses suitable
-output format for query result.
-
-```bash
-java -jar dumpling.jar top-contenders --in threaddump oraclejdk-1.7.0_51.log
-```
-
-## Run custom queries
-
 Dumpling model objects have convenient `toString()` implementations that mimics
 jstack output. Note that this output is not supposed to be compatible with any
 format nor read by any tool. It aims for presenting as much information as
 possible in a convenient way while still looking familiar to jstack users.
-Following examples uses groovy for brevity:
+
+Central abstraction in dumpling is `ThreadSet`, a subset of all threads in JVM
+runtime. `ProcessRuntime.getThreads()` provides access to all threads that can be
+further filtered. `ThreadSet.where(ProcessThread.Predicate)` can narrow the set
+using either one of predefined predicates or Java 8 lambda expression.
 
 ```java
-// List all threads in runtime
-println runtime.getThreads()
+runtime.getThreads().where(nameIs("MyThread"))
+// or since Java 8
+runtime.getThreads().where(it -> "main".equals(it.getName()))
+````
 
-// Count threads
-println runtime.getThreads().size()
+`ThreadSet` also overrides groovy collection methods so Dumpling DSL and well
+known groovy methods can by used side by side.
 
-// List thread names
-runtime.threads.each { println it.name }
-
-// Filter threads using custom criteria
-runtime.threads.grep { it.state == Thread.State.RUNNABLE }
+```groovy
+// Find RUNNABLE ajp threads
+runtime.threads.grep { it.threadStatus == ThreadStatus.RUNNABLE }.where(nameContains(~/ajp-.*/))
 ```
+
+## Predefined queries
+
+Predefined queries can be run against `ThreadSet` or whole runtime simply:
+
+```groovy
+println runtime.query(new BlockingTree().showStackTraces())
+```
+
+Query transforms thread set into a result object.
