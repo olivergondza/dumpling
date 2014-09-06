@@ -48,7 +48,7 @@ import com.github.olivergondza.dumpling.model.ThreadSet;
 /**
  * Get threads that block other threads.
  *
- * @return Mapping between blocking thread and a set of blocked threads.
+ * Mapping between blocking thread and a set of blocked threads.
  * Map is sorted by the number of blocked threads.
  *
  * @author ogondza

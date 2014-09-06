@@ -30,10 +30,10 @@ import javax.annotation.Nonnull;
 /**
  * Thread status.
  *
- * More detailed version of {@link Thread.State}.
+ * More detailed version of {@link java.lang.Thread.State}.
  *
  * @author ogondza
- * @see http://hg.openjdk.java.net/jdk7/jdk7/hotspot/file/167b70ff3abc/src/share/vm/classfile/javaClasses.cpp#l922
+ * @see <a href="http://hg.openjdk.java.net/jdk7/jdk7/hotspot/file/167b70ff3abc/src/share/vm/classfile/javaClasses.cpp#l922">javaClasses.cpp</a>
  */
 public enum ThreadStatus {
     NEW                 ("NEW",                                 0,      State.NEW),

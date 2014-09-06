@@ -61,9 +61,9 @@ public interface SingleThreadSetQuery<T extends SingleThreadSetQuery.Result> {
      * when used from groovy.
      *
      * Result consists of 3 parts:
-     * - query result description ({@link #printResult(StringBuilder)}),
+     * - query result description ({@link #printResult(PrintStream)}),
      * - involved thread listing (optional),
-     * - query result summary ({@link #printSummary(StringBuilder)}).
+     * - query result summary ({@link #printSummary(PrintStream)}).
      *
      * @author ogondza
      * @see SingleThreadSetQuery

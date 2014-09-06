@@ -5,6 +5,14 @@
   <artifactId>dumpling</artifactId>
   <version>0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
+  <name>DSL based threaddump analyzer</name>
+  <url>https://github.com/olivergondza/dumpling</url>
+
+  <scm>
+    <connection>scm:git:git://github.com/olivergondza/dumpling.git</connection>
+    <developerConnection>scm:git:git@github.com:olivergondza/dumpling.git</developerConnection>
+    <url>https://github.com/olivergondza/dumpling</url>
+  </scm>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
