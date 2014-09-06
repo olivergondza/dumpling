@@ -23,12 +23,11 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-
-import org.apache.commons.io.IOUtils;
+import java.io.UnsupportedEncodingException;
 
 public abstract class AbstractCliTest {
 
@@ -43,8 +42,8 @@ public abstract class AbstractCliTest {
 
     protected void stdin(String string) {
         try {
-            in = IOUtils.toInputStream(string, "UTF-8");
-        } catch (IOException ex) {
+            in = new ByteArrayInputStream(string.getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException ex) {
             throw new AssertionError(ex);
         }
     }

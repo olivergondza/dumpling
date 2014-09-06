@@ -24,18 +24,19 @@
 package com.github.olivergondza.dumpling.factory;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
-
-import org.apache.commons.io.IOUtils;
 
 import com.github.olivergondza.dumpling.cli.CliRuntimeFactory;
 import com.github.olivergondza.dumpling.cli.CommandFailedException;
@@ -48,6 +49,7 @@ import com.github.olivergondza.dumpling.model.ThreadStatus;
 
 public class ThreadDumpFactory implements CliRuntimeFactory {
 
+    private static final Pattern THREAD_DELIMITER = Pattern.compile("\n\n(?!\\s)");
     private static final Pattern STACK_TRACE_ELEMENT_LINE = Pattern.compile(" *at (\\S+)\\.(\\S+)\\(([^:]+?)(\\:\\d+)?\\)");
     private static final Pattern ACQUIRED_LINE = Pattern.compile("- locked <0x(\\w+)> \\(a ([^\\)]+)\\)");
     private static final Pattern WAITING_FOR_LINE = Pattern.compile("- (?:waiting on|waiting to lock|parking to wait for ) <0x(\\w+)> \\(a ([^\\)]+)\\)");
@@ -77,23 +79,29 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
      * @throws IOException File could not be loaded.
      */
     public @Nonnull ProcessRuntime fromFile(File threadDump) throws IOException {
-        String content = IOUtils.toString(threadDump.toURI());
-
-        return fromString(content);
+        FileInputStream fis = new FileInputStream(threadDump);
+        try {
+            return fromStream(fis);
+        } finally {
+            fis.close();
+        }
     }
 
-    /*package*/ @Nonnull ProcessRuntime fromString(String content) {
-        return new ProcessRuntime(threads(content));
+    /*package*/ @Nonnull ProcessRuntime fromStream(InputStream stream) {
+        return new ProcessRuntime(threads(stream));
     }
 
-    private @Nonnull Set<Builder> threads(String content) {
+    private @Nonnull Set<Builder> threads(InputStream stream) {
         Set<Builder> threads = new LinkedHashSet<Builder>();
 
-        for (String singleThread: content.split("\n\n(?!\\s)")) {
+        Scanner scanner = new Scanner(stream).useDelimiter(THREAD_DELIMITER);
+        while (scanner.hasNext()) {
+            String singleThread = scanner.next();
             ProcessThread.Builder thread = thread(singleThread);
             if (thread == null) continue;
             threads.add(thread);
         }
+
         return threads;
     }
 

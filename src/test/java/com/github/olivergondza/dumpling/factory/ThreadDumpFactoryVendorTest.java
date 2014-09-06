@@ -31,7 +31,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
@@ -142,7 +141,7 @@ public class ThreadDumpFactoryVendorTest {
 
         try {
             Process jstack = new ProcessBuilder("jstack", "-l", String.valueOf(pid)).start();
-            return new ThreadDumpFactory().fromString(IOUtils.toString(jstack.getInputStream()));
+            return new ThreadDumpFactory().fromStream(jstack.getInputStream());
         } catch (IOException ex) {
             throw new AssertionError(ex);
         }

@@ -26,12 +26,11 @@ package com.github.olivergondza.dumpling.cli;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.Arrays;
 
-import org.apache.commons.io.IOUtils;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.kohsuke.args4j.CmdLineException;
@@ -76,7 +75,7 @@ public class GroovyCommand implements CliCommand {
         cc.addCompilationCustomizers(imports);
 
         GroovyShell shell = new GroovyShell(binding, cc);
-        Object exitVal = shell.run(script(in), "dumpling-script", Arrays.asList());
+        Object exitVal = shell.run(new InputStreamReader(in), "dumpling-script", Arrays.asList());
         if (exitVal != null) {
             out.println(exitVal);
         }
@@ -88,13 +87,5 @@ public class GroovyCommand implements CliCommand {
         }
 
         return 0;
-    }
-
-    private String script(InputStream in) {
-        try {
-            return IOUtils.toString(in);
-        } catch (IOException ex) {
-            throw new AssertionError(ex);
-        }
     }
 }
