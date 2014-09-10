@@ -40,6 +40,7 @@ import javax.annotation.Nonnull;
 
 import com.github.olivergondza.dumpling.cli.CliRuntimeFactory;
 import com.github.olivergondza.dumpling.cli.CommandFailedException;
+import com.github.olivergondza.dumpling.cli.ProcessStream;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ProcessThread.Builder;
@@ -65,7 +66,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
     }
 
     @Override
-    public @Nonnull ProcessRuntime createRuntime(String locator) throws CommandFailedException {
+    public @Nonnull ProcessRuntime createRuntime(@Nonnull String locator, @Nonnull ProcessStream process) throws CommandFailedException {
         try {
             return fromFile(new File(locator));
         } catch (IOException ex) {

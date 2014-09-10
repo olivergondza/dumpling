@@ -23,28 +23,8 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
+public class ProcessRuntimeOptionHandlerTest {
 
-public abstract class AbstractCliTest {
-
-    protected InputStream in = null;
-    protected ByteArrayOutputStream err = new ByteArrayOutputStream();
-    protected ByteArrayOutputStream out = new ByteArrayOutputStream();
-    protected int exitValue;
-
-    protected int run(String... args) {
-        return exitValue = new Main().run(args, new ProcessStream(in, new PrintStream(out), new PrintStream(err)));
-    }
-
-    protected void stdin(String string) {
-        try {
-            in = new ByteArrayInputStream(string.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException ex) {
-            throw new AssertionError(ex);
-        }
+    public ProcessRuntimeOptionHandlerTest() {
     }
 }

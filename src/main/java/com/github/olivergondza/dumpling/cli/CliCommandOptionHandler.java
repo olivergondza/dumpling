@@ -39,9 +39,7 @@ import org.reflections.Reflections;
 
 public class CliCommandOptionHandler extends OptionHandler<CliCommand> {
 
-    public CliCommandOptionHandler(
-            CmdLineParser parser, OptionDef option, Setter<? super CliCommand> setter
-    ) {
+    public CliCommandOptionHandler(CmdLineParser parser, OptionDef option, Setter<? super CliCommand> setter) {
         super(parser, option, setter);
     }
 
@@ -82,7 +80,7 @@ public class CliCommandOptionHandler extends OptionHandler<CliCommand> {
         return null;
     }
 
-    public static @Nonnull Set<? extends CliCommand> getAllHandlers() {
+    /*package*/ static @Nonnull Set<? extends CliCommand> getAllHandlers() {
         Reflections reflections = new Reflections("com.github.olivergondza.dumpling");
         final Set<Class<? extends CliCommand>> types = reflections.getSubTypesOf(CliCommand.class);
 

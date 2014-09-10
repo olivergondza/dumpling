@@ -51,7 +51,7 @@ public class ProcessRuntimeOptionHandler extends OptionHandler<ProcessRuntime> {
         if (factory == null) throw new CmdLineException(owner, "Unknown runtime source kind: " + scheme);
 
         String locator = namedParameter("LOCATOR", params, 1);
-        ProcessRuntime runtime = factory.createRuntime(locator);
+        ProcessRuntime runtime = factory.createRuntime(locator, ProcessStream.system());
         if (runtime == null) throw new AssertionError(factory.getClass() + " failed to create runtime");
 
         setter.addValue(runtime);

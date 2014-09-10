@@ -23,9 +23,6 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
-import java.io.InputStream;
-import java.io.PrintStream;
-
 import javax.annotation.Nonnull;
 
 import org.kohsuke.args4j.CmdLineException;
@@ -52,10 +49,7 @@ public interface CliCommand {
     /**
      * Invoke the command.
      *
-     * @param in Input stream for command.
-     * @param out Stdout for command.
-     * @param err Stderr for command.
      * @return Command return code.
      */
-    int run(@Nonnull InputStream in, @Nonnull PrintStream out, @Nonnull PrintStream err) throws CmdLineException;
+    int run(@Nonnull ProcessStream process) throws CmdLineException;
 }

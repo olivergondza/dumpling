@@ -26,9 +26,7 @@ package com.github.olivergondza.dumpling.cli;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.util.Arrays;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
@@ -59,11 +57,11 @@ public class GroovyCommand implements CliCommand {
     }
 
     @Override
-    public int run(InputStream in, PrintStream out, PrintStream err) throws CmdLineException {
+    public int run(ProcessStream process) throws CmdLineException {
         Binding binding = new Binding();
         binding.setProperty("runtime", runtime);
-        binding.setProperty("out", out);
-        binding.setProperty("err", err);
+        binding.setProperty("out", process.out());
+        binding.setProperty("err", process.err());
 
         CompilerConfiguration cc = new CompilerConfiguration();
         ImportCustomizer imports = new ImportCustomizer();
@@ -75,9 +73,9 @@ public class GroovyCommand implements CliCommand {
         cc.addCompilationCustomizers(imports);
 
         GroovyShell shell = new GroovyShell(binding, cc);
-        Object exitVal = shell.run(new InputStreamReader(in), "dumpling-script", Arrays.asList());
+        Object exitVal = shell.run(new InputStreamReader(process.in()), "dumpling-script", Arrays.asList());
         if (exitVal != null) {
-            out.println(exitVal);
+            process.out().println(exitVal);
         }
 
         if (exitVal instanceof Boolean) {

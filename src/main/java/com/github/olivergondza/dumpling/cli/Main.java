@@ -23,9 +23,6 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
-import java.io.InputStream;
-import java.io.PrintStream;
-
 import javax.annotation.Nonnull;
 
 import org.kohsuke.args4j.Argument;
@@ -46,38 +43,36 @@ public class Main {
     private CliCommand handler;
 
     public static void main(@Nonnull String[] args) {
-        int exitCode = new Main().run(args, System.in, System.out, System.err);
+        int exitCode = new Main().run(args, ProcessStream.system());
         System.exit(exitCode);
     }
 
-    /*package*/ int run(@Nonnull String[] args, @Nonnull InputStream in, @Nonnull PrintStream out, @Nonnull PrintStream err) {
+    /*package*/ int run(@Nonnull String[] args, @Nonnull ProcessStream system) {
+        CmdLineParser.registerHandler(CliCommand.class, CliCommandOptionHandler.class);
+        CmdLineParser.registerHandler(ProcessRuntime.class, ProcessRuntimeOptionHandler.class);
+
         CmdLineParser parser = new CmdLineParser(this);
 
         try {
             parser.parseArgument(args);
 
-            return handler.run(in, out, err);
+            return handler.run(system);
         } catch (CmdLineException ex) {
 
-            err.println(ex.getMessage());
+            system.err().println(ex.getMessage());
             if (handler == null) {
-                HelpCommand.printUsage(err);
+                HelpCommand.printUsage(system.err());
             } else {
-                HelpCommand.printUsage(handler, err);
+                HelpCommand.printUsage(handler, system.err());
             }
         } catch (CommandFailedException ex) {
 
-            err.println(ex.getMessage());
+            system.err().println(ex.getMessage());
         } catch (RuntimeException ex) {
 
-            ex.printStackTrace(err);
+            ex.printStackTrace(system.err());
         }
 
         return -1;
-    }
-
-    static {
-        CmdLineParser.registerHandler(CliCommand.class, CliCommandOptionHandler.class);
-        CmdLineParser.registerHandler(ProcessRuntime.class, ProcessRuntimeOptionHandler.class);
     }
 }

@@ -23,7 +23,6 @@
  */
 package com.github.olivergondza.dumpling.query;
 
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Collections;
 import java.util.Comparator;
@@ -41,6 +40,7 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
 import com.github.olivergondza.dumpling.cli.CliCommand;
+import com.github.olivergondza.dumpling.cli.ProcessStream;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
@@ -86,9 +86,9 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
         }
 
         @Override
-        public int run(InputStream in, PrintStream out, PrintStream err) throws CmdLineException {
+        public int run(@Nonnull ProcessStream process) throws CmdLineException {
             Result result = new Result(runtime.getThreads(), showStackTraces);
-            result.printInto(out);
+            result.printInto(process.out());
             return result.exitCode();
         }
     }

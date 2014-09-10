@@ -23,11 +23,12 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import javax.annotation.Nonnull;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -49,14 +50,14 @@ public class HelpCommand implements CliCommand {
     }
 
     @Override
-    public int run(InputStream in, PrintStream out, PrintStream err) throws CmdLineException {
+    public int run(@Nonnull ProcessStream process) throws CmdLineException {
         if (commandName == null) {
-            printUsage(out);
+            printUsage(process.out());
         } else {
             CliCommand command = CliCommandOptionHandler.getHandler(commandName);
             if (command == null) throw new CmdLineException(null, "No such command " + commandName);
 
-            printUsage(command, out);
+            printUsage(command, process.out());
         }
 
         return 0;

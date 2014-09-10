@@ -48,5 +48,5 @@ public interface CliRuntimeFactory {
      *
      * @param locator Factory specific resource locator.
      */
-    @Nonnull ProcessRuntime createRuntime(@Nonnull String locator) throws CommandFailedException;
+    @Nonnull ProcessRuntime createRuntime(@Nonnull String locator, @Nonnull ProcessStream process) throws CommandFailedException;
 }

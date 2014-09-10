@@ -23,28 +23,41 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 
-public abstract class AbstractCliTest {
+import javax.annotation.Nonnull;
 
-    protected InputStream in = null;
-    protected ByteArrayOutputStream err = new ByteArrayOutputStream();
-    protected ByteArrayOutputStream out = new ByteArrayOutputStream();
-    protected int exitValue;
+/**
+ * Input/output stream aggregator.
+ *
+ * @author ogondza
+ */
+public final class ProcessStream {
 
-    protected int run(String... args) {
-        return exitValue = new Main().run(args, new ProcessStream(in, new PrintStream(out), new PrintStream(err)));
+    private final @Nonnull InputStream in;
+    private final @Nonnull PrintStream out;
+    private final @Nonnull PrintStream err;
+
+    /*package*/ static @Nonnull ProcessStream system() {
+        return new ProcessStream(System.in, System.out, System.err);
     }
 
-    protected void stdin(String string) {
-        try {
-            in = new ByteArrayInputStream(string.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException ex) {
-            throw new AssertionError(ex);
-        }
+    /*package*/ ProcessStream(@Nonnull InputStream in, @Nonnull PrintStream out, @Nonnull PrintStream err) {
+        this.in = in;
+        this.out = out;
+        this.err = err;
+    }
+
+    public @Nonnull InputStream in() {
+        return in;
+    }
+
+    public @Nonnull PrintStream out() {
+        return out;
+    }
+
+    public @Nonnull PrintStream err() {
+        return err;
     }
 }

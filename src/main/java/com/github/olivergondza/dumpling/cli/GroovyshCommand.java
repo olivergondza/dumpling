@@ -27,9 +27,9 @@ import groovy.lang.Binding;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.InputStream;
-import java.io.PrintStream;
 import java.util.Arrays;
+
+import javax.annotation.Nonnull;
 
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
@@ -47,17 +47,20 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
  */
 public class GroovyshCommand implements CliCommand {
 
+    @Override
     public String getName() {
         return "groovysh";
     }
 
+    @Override
     public String getDescription() {
         return "Open Groovy shell to inspect runtime";
     }
 
-    public int run(final InputStream in, final PrintStream out, final PrintStream err) throws CmdLineException {
+    @Override
+    public int run(@Nonnull ProcessStream process) throws CmdLineException {
 
-        IO io = new IO(new BufferedInputStream(in), out, err);
+        IO io = new IO(new BufferedInputStream(process.in()), process.out(), process.err());
         final Binding binding = new Binding();
         registerCommands(binding);
 
