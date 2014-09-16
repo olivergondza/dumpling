@@ -23,11 +23,19 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
+import java.util.Set;
+
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.OptionDef;
+import org.kohsuke.args4j.spi.OptionHandler;
+import org.kohsuke.args4j.spi.Parameters;
+import org.kohsuke.args4j.spi.Setter;
+import org.reflections.Reflections;
 
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 
@@ -50,6 +58,7 @@ public class Main {
     /*package*/ int run(@Nonnull String[] args, @Nonnull ProcessStream system) {
         CmdLineParser.registerHandler(CliCommand.class, CliCommandOptionHandler.class);
         CmdLineParser.registerHandler(ProcessRuntime.class, ProcessRuntimeOptionHandler.class);
+        ProcessRuntimeOptionHandler.system = system;
 
         CmdLineParser parser = new CmdLineParser(this);
 
@@ -74,5 +83,72 @@ public class Main {
         }
 
         return -1;
+    }
+
+    public static class ProcessRuntimeOptionHandler extends OptionHandler<ProcessRuntime> {
+
+        // TODO: this is awfull but I found no better way
+        private static ProcessStream system;
+
+        public ProcessRuntimeOptionHandler(CmdLineParser parser, OptionDef option, Setter<? super ProcessRuntime> setter) {
+            super(parser, option, setter);
+        }
+
+        @Override
+        public int parseArguments(Parameters params) throws CmdLineException {
+            String scheme = namedParameter("KIND", params, 0);
+            CliRuntimeFactory factory = getFactory(scheme);
+            if (factory == null) throw new CmdLineException(owner, "Unknown runtime source kind: " + scheme);
+
+            String locator = namedParameter("LOCATOR", params, 1);
+            ProcessRuntime runtime = factory.createRuntime(locator, system);
+            if (runtime == null) throw new AssertionError(factory.getClass() + " failed to create runtime");
+
+            setter.addValue(runtime);
+
+            return 2;
+        }
+
+        private @Nonnull String namedParameter(String name, Parameters params, int index) throws CmdLineException {
+            try {
+                return params.getParameter(index);
+            } catch (CmdLineException ex) {
+                throw new CmdLineException(owner, ex.getMessage() + " " + name);
+            }
+        }
+
+        @Override
+        public String getDefaultMetaVariable() {
+            return "KIND LOCATOR";
+        }
+
+        public static @CheckForNull CliRuntimeFactory getFactory(String name) {
+            Reflections reflections = new Reflections("com.github.olivergondza.dumpling");
+            final Set<Class<? extends CliRuntimeFactory>> types = reflections.getSubTypesOf(CliRuntimeFactory.class);
+
+            for (Class<? extends CliRuntimeFactory> type: types) {
+                CliRuntimeFactory factory = instantiateFactory(type);
+                if (name.equals(factory.getKind())) return factory;
+            }
+
+            return null;
+        }
+
+        private static CliRuntimeFactory instantiateFactory(Class<? extends CliRuntimeFactory> type) {
+            try {
+
+                return type.newInstance();
+            } catch (InstantiationException ex) {
+
+                AssertionError e = new AssertionError("Cli handler " + type.getName() + " does not declare default contructor");
+                e.initCause(ex);
+                throw e;
+            } catch (IllegalAccessException ex) {
+
+                AssertionError e = new AssertionError("Cli handler " + type.getName() + " does not declare default contructor");
+                e.initCause(ex);
+                throw e;
+            }
+        }
     }
 }

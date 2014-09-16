@@ -25,9 +25,14 @@ package com.github.olivergondza.dumpling.cli;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+
+import javax.annotation.Nonnull;
 
 public abstract class AbstractCliTest {
 
@@ -36,7 +41,7 @@ public abstract class AbstractCliTest {
     protected ByteArrayOutputStream out = new ByteArrayOutputStream();
     protected int exitValue;
 
-    protected int run(String... args) {
+    protected int run(@Nonnull String... args) {
         return exitValue = new Main().run(args, new ProcessStream(in, new PrintStream(out), new PrintStream(err)));
     }
 
@@ -44,6 +49,14 @@ public abstract class AbstractCliTest {
         try {
             in = new ByteArrayInputStream(string.getBytes("UTF-8"));
         } catch (UnsupportedEncodingException ex) {
+            throw new AssertionError(ex);
+        }
+    }
+
+    protected void stdin(File file){
+        try {
+            in = new FileInputStream(file.getAbsolutePath());
+        } catch (FileNotFoundException ex) {
             throw new AssertionError(ex);
         }
     }

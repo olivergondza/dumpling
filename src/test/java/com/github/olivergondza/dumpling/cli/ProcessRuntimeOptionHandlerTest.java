@@ -23,8 +23,20 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
-public class ProcessRuntimeOptionHandlerTest {
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 
-    public ProcessRuntimeOptionHandlerTest() {
+import org.junit.Test;
+
+import com.github.olivergondza.dumpling.Util;
+
+public class ProcessRuntimeOptionHandlerTest extends AbstractCliTest {
+
+    @Test
+    public void read() throws Exception {
+        stdin(Util.resourceFile("deadlock.log"));
+        exitValue = run("deadlocks", "--in", "threaddump", "-");
+
+        assertThat(exitValue, equalTo(1));
     }
 }
