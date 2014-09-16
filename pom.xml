@@ -11,7 +11,7 @@
     <connection>scm:git:git://github.com/olivergondza/dumpling.git</connection>
     <developerConnection>scm:git:git@github.com:olivergondza/dumpling.git</developerConnection>
     <url>https://github.com/olivergondza/dumpling</url>
-    <tag>dumpling-0.1-SNAPSHOT</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <properties>
