@@ -6,6 +6,7 @@
   <packaging>jar</packaging>
   <name>DSL based threaddump analyzer</name>
   <url>https://github.com/olivergondza/dumpling</url>
+  <description>Dumpling is an object model and domain specific language to represent and query the state of process threads and their lock based dependencies</description>
 
   <scm>
     <connection>scm:git:git://github.com/olivergondza/dumpling.git</connection>
@@ -13,6 +14,21 @@
     <url>https://github.com/olivergondza/dumpling</url>
     <tag>HEAD</tag>
   </scm>
+
+  <licenses>
+    <license>
+      <name>MIT license</name>
+      <url>http://www.opensource.org/licenses/mit-license.php</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>ogondza</id>
+      <name>Oliver Gondža</name>
+      <email>ogondza@gmail.com</email>
+    </developer>
+  </developers>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
