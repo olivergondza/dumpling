@@ -15,7 +15,7 @@ Make dumpling part of your application and inspect threads from within.
 - Include following maven dependency
 ```xml
 <dependency>
-  <groupId>com.github.olivergondza.dumpling</groupId>
+  <groupId>com.github.olivergondza</groupId>
   <artifactId>dumpling</artifactId>
   <version>...</version>
 </dependency>
