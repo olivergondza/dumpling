@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.olivergondza</groupId>
   <artifactId>dumpling</artifactId>
-  <version>0.1</version>
+  <version>0.2-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>DSL based threaddump analyzer</name>
   <url>https://github.com/olivergondza/dumpling</url>
@@ -12,7 +12,7 @@
     <connection>scm:git:git://github.com/olivergondza/dumpling.git</connection>
     <developerConnection>scm:git:git@github.com:olivergondza/dumpling.git</developerConnection>
     <url>https://github.com/olivergondza/dumpling</url>
-    <tag>dumpling-0.1</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <licenses>
