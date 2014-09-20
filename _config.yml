@@ -5,7 +5,6 @@ baseurl: "/dumpling"
 url: "http://username.github.io/dumpling/"
 github_repo: "dumpling"
 github_username:  olivergondza
-layout: "project"
 
 # Build settings
 markdown: kramdown
