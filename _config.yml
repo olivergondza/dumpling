@@ -4,7 +4,7 @@ description: "DSL based threaddump analyzer"
 baseurl: "/dumpling"
 url: "http://username.github.io/dumpling/"
 github_repo: "dumpling"
-github_username:  olivergondza
+github_username: olivergondza
 
 # Build settings
-markdown: kramdown
+markdown: redcarpet
