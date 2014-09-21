@@ -1,7 +1,6 @@
 #!/bin/sh
 
 refdoc="refdoc"
-rm -rf refdoc
 
 refdocs="refdoc.md"
 rm $refdocs
@@ -16,15 +15,20 @@ EOF
 for tag in `git tag | grep dumpling- | grep -v '\-SNAPSHOT'`; do
     target="$refdoc/$tag"
     last_tag=$tag
-    mkdir -p $target
+    if [ -d $target ]; then
+        echo "Skipping $target as $target already exists"
+        echo "[$tag]($target/)" >> $refdocs
+        continue
+    fi
 
-    git checkout $tag src/main/ pom.xml
+    mkdir -p $target
+    git checkout $tag src/main/
     mvn clean javadoc:javadoc
     mv target/site/apidocs $target/
 
-    echo "[$tag]($target/)" >> $refdocs
     sed "s/TITLE/Reference documentation for $tag/" _includes/refdoc.index > $target/index.md
 done
+unlink $refdoc/latest
 ln -s $last_tag $refdoc/latest
 echo "[Latest]($refdoc/latest/)" >> $refdocs
 
