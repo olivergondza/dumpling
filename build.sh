@@ -8,6 +8,7 @@ cat > $refdocs <<EOF
 ---
 layout: default
 title: Reference documentation
+prio: 90
 ---
 # {{page.title}}
 EOF
