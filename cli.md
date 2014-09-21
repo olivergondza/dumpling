@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Dumpling as CLI tool
+prio: 20
 ---
 
 # {{page.title}}

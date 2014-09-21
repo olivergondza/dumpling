@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Dumpling DSL tutorial
+prio: 30
 ---
 # {{page.title}}
 
