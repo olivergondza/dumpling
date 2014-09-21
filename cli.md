@@ -41,3 +41,5 @@ groovy:000>
 
 Note that capturing runtime from current JVM don not make sense when using
 Dumpling from CLI.
+
+Continue to [Dumpling DSL Tutorial](./tutorial.html).
