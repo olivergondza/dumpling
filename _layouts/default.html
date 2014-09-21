@@ -9,7 +9,14 @@
 
     <div class="page-content">
       <div class="wrapper">
-        {{ content }}
+        <div class="menu">
+          &nbsp;
+          {% include menu.html %}
+        </div>
+
+        <div class="content">
+          {{ content }}
+        </div>
       </div>
     </div>
 

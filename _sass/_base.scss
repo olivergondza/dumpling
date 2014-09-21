@@ -13,7 +13,7 @@ dl, dd, ol, ul, figure {
  */
 body {
   margin: 0 auto;
-  width: 1000px;
+  max-width: 1200px;
 }
 
 /**
@@ -154,7 +154,25 @@ pre {
     }
 }
 
+.menu {
+    display: table-cell;
+    padding-right: $spacing-unit;
+    min-width: 280px;
 
+    ol {
+        list-style-type: none;
+        margin-left: 0;
+
+        li {
+            line-height: 30px;
+        }
+    }
+}
+
+.content {
+    display: table-cell;
+    /*max-width: 700px;*/
+}
 
 /**
  * Wrapper
@@ -163,7 +181,6 @@ pre {
     max-width: -webkit-calc(800px - (#{$spacing-unit} * 2));
     max-width:         calc(800px - (#{$spacing-unit} * 2));
     margin-right: auto;
-    margin-left: auto;
     padding-right: $spacing-unit;
     padding-left: $spacing-unit;
     @extend %clearfix;

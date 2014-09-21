@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Bundle dumpling to your application
+title: Built-in Dumpling
 ---
 
 # {{page.title}}
