@@ -46,6 +46,7 @@ import com.github.olivergondza.dumpling.cli.AbstractCliTest;
 import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
+import com.github.olivergondza.dumpling.model.ThreadSet;
 import com.github.olivergondza.dumpling.query.BlockingTree.Tree;
 
 public class BlockingTreeTest extends AbstractCliTest {
@@ -121,6 +122,14 @@ public class BlockingTreeTest extends AbstractCliTest {
                 new BlockingTree.Tree(a, new BlockingTree.Tree(aa, new BlockingTree.Tree(aaa))),
                 new BlockingTree.Tree(b, new BlockingTree.Tree(ba))
         ));
+
+        assertThat(as, equalTo(expected));
+    }
+
+    @Test
+    public void roots() {
+        ThreadSet as = runtime.query(new BlockingTree()).getRoots();
+        ThreadSet expected = runtime.getThreads().where(nameContains(Pattern.compile("^[ab]$")));
 
         assertThat(as, equalTo(expected));
     }

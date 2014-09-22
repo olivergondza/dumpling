@@ -158,6 +158,20 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
             return trees;
         }
 
+        /**
+         * Get tree roots, blocking threads that are not blocked.
+         *
+         * @since 0.2
+         */
+        public @Nonnull ThreadSet getRoots() {
+            Set<ProcessThread> roots = new LinkedHashSet<ProcessThread>(trees.size());
+            for (Tree tree: trees) {
+                roots.add(tree.getRoot());
+            }
+
+            return involved.derive(roots);
+        }
+
         @Override
         protected void printResult(PrintStream out) {
             for (Tree tree: trees) {
