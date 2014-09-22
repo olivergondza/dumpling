@@ -16,14 +16,18 @@ EOF
 for tag in `git tag | grep dumpling- | grep -v '\-SNAPSHOT'`; do
     target="$refdoc/$tag"
     last_tag=$tag
+    echo "[$tag]($target/)" >> $refdocs
     if [ -d $target ]; then
         echo "Skipping $target as $target already exists"
-        echo "[$tag]($target/)" >> $refdocs
         continue
     fi
 
     mkdir -p $target
-    git checkout $tag src/main/
+    git checkout $tag src/main/ pom.xml
+
+    # Insert generic javadoc configuration
+    sed -i -e "/<plugins>/r javadoc-pom.xml" pom.xml
+
     mvn clean javadoc:javadoc
     mv target/site/apidocs $target/
 
@@ -34,4 +38,4 @@ ln -s $last_tag $refdoc/latest
 echo "[Latest]($refdoc/latest/)" >> $refdocs
 
 git checkout gh-pages
-git rm -rf src/main/ pom.xml
+git rm -rf --ignore-unmatch src/main/ pom.xml
