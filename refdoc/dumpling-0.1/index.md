@@ -7,4 +7,30 @@ category: "refdoc"
 
 # {{page.title}}
 
-[Javadoc](apidocs/)
+## [CLI Commands](cliCommands.html)
+
+Predefined commands available from command line interface.
+
+## [Runtime factories](factories.html)
+
+`ProcessRuntime` factory implementations available from groovy.
+
+## [Predefined queries](queries.html)
+
+Predefined queries avaialbe from groovy. To be used with `ThreadSet.query` method:
+
+```groovy
+threads.query(new BlockingTree().showStackTraces())
+```
+
+## [Thread Predicates](threadPredicates.html)
+
+Predicates to filter threads available from groovy. To be used with `ThreadSet.where` method:
+
+```groovy
+threads.where(nameIs('a_thread'))
+```
+
+## [Javadoc](apidocs/)
+
+Detailed javadoc of Dumpling.

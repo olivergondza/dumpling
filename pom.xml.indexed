@@ -14,17 +14,26 @@
               <report>javadoc</report>
             </reports>
             <configuration>
-              <doclet>com.github.olivergondza.indexeddoclet.IndexedDoclet</doclet>
-
-              <docletPath>/home/ogondza/.m2/repository/com/github/olivergondza/indexed-doclet/0.1-SNAPSHOT/indexed-doclet-0.1-SNAPSHOT.jar</docletPath>
+              <doclet>com.github.olivergondza.dumpling.DumplingDoclet</doclet>
 <!--
-              <docletArtifact>
-                <groupId>com.github.olivergondza</groupId>
-                <artifactId>indexed-doclet</artifactId>
-                <version>0.1-SNAPSHOT</version>
-              </docletArtifact>
-              -->
+              <docletPath>/home/ogondza/.m2/repository/com/github/olivergondza/indexed-doclet/0.1-SNAPSHOT/indexed-doclet-0.1-SNAPSHOT.jar</docletPath>
+-->
+              <docletArtifacts>
+                <docletArtifact>
+                  <groupId>com.github.olivergondza</groupId>
+                  <artifactId>dumpling-doclet</artifactId>
+                  <version>0.1-SNAPSHOT</version>
+                </docletArtifact>
+              </docletArtifacts>
               <useStandardDocletOptions>false</useStandardDocletOptions>
+
+              <additionnalDependencies>
+                <additionnalDependency>
+                  <groupId>com.github.olivergondza</groupId>
+                  <artifactId>dumpling</artifactId>
+                  <version>${project.version}</version>
+                </additionnalDependency>
+              </additionnalDependencies>
             </configuration>
           </reportSet>
           
