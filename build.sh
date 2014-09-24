@@ -33,9 +33,7 @@ for tag in `git tag | grep dumpling- | grep -v '\-SNAPSHOT'`; do
     git checkout $tag pom.xml
     sed -i -e "/<.build>/r pom.xml.indexed" pom.xml
     perl -0 -pi -e "s|<build>.*</build>||gs" pom.xml
-    mvn clean package
-    echo "target/${tag}.jar"
-    CLASSPATH="target/${tag}.jar" mvn -e site
+    mvn -e site
     mv target/site/apidocs/*.md $target/
 
     sed "s/TITLE/Reference documentation for $tag/" _includes/refdoc.index > $target/index.md
