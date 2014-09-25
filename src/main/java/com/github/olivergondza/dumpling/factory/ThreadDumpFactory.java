@@ -50,13 +50,15 @@ import com.github.olivergondza.dumpling.model.ThreadStatus;
 
 public class ThreadDumpFactory implements CliRuntimeFactory {
 
-    private static final Pattern THREAD_DELIMITER = Pattern.compile("\n\n(?!\\s)");
+    private static final String NL = "(?:\\r\\n|\\n)";
+
+    private static final Pattern THREAD_DELIMITER = Pattern.compile(NL + NL + "(?!\\s)");
     private static final Pattern STACK_TRACE_ELEMENT_LINE = Pattern.compile(" *at (\\S+)\\.(\\S+)\\(([^:]+?)(\\:\\d+)?\\)");
     private static final Pattern ACQUIRED_LINE = Pattern.compile("- locked <0x(\\w+)> \\(a ([^\\)]+)\\)");
     private static final Pattern WAITING_FOR_LINE = Pattern.compile("- (?:waiting on|waiting to lock|parking to wait for ) <0x(\\w+)> \\(a ([^\\)]+)\\)");
     private static final Pattern OWNABLE_SYNCHRONIZER_LINE = Pattern.compile("- <0x(\\w+)> \\(a ([^\\)]+)\\)");
     private static final Pattern THREAD_HEADER = Pattern.compile(
-            "^\"(.*)\" ([^\\n]+)(?:\\n\\s+java.lang.Thread.State: ([^\\n]+)(?:\\n(.+))?)?",
+            "^\"(.*)\" ([^\\n\\r]+)(?:" + NL + "\\s+java.lang.Thread.State: ([^\\n\\r]+)(?:" + NL + "(.+))?)?",
             Pattern.DOTALL
     );
 

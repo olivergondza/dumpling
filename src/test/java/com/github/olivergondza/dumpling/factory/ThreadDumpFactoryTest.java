@@ -524,6 +524,12 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertThat(quotes.getNid(), equalTo(18973L));
     }
 
+    @Test
+    public void crlf() throws Exception {
+        ThreadSet threads = runtimeFrom("crlf.log").getThreads();
+        assertThat(threads.size(), equalTo(2));
+    }
+
     private ProcessRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {
         return new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), resource));
     }
