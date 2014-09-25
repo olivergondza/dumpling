@@ -40,6 +40,10 @@
         }
     }
 
+    .refdoc-link {
+        padding-left: 2em;
+    }
+
     @include media-query($on-palm) {
         position: absolute;
         top: 9px;

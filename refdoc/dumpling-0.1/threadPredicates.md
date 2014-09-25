@@ -1,7 +1,8 @@
 ---
-title: Thread Predicates
+title: Thread predicates
 layout: default
 ---
+[Reference documentation for dumpling-0.1](.)
 # {{page.title}}
 ### [nameIs](./apidocs/com/github/olivergondza/dumpling/model/ProcessThread.html#nameIs(java.lang.String))
 

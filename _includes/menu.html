@@ -17,5 +17,12 @@
       </li>
       {% endif %}
     {% endfor %}
+    <li>Reference:</li>
+    {% assign pages = site.pages | where: "category", "refdoc" %}
+    {% for page in pages %}
+      <li>
+        <a class="page-link refdoc-link" href="{{ page.url | prepend: site.baseurl }}">{{ page.tag }}</a>
+      </li>
+    {% endfor %}
   </ol>
 </nav>

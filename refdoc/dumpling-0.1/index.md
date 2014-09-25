@@ -1,5 +1,6 @@
 ---
 layout: "default"
+tag: "dumpling-0.1"
 title: "Reference documentation for dumpling-0.1"
 category: "refdoc"
 # used to generate version specific refdoc
@@ -23,7 +24,7 @@ Predefined queries avaialbe from groovy. To be used with `ThreadSet.query` metho
 threads.query(new BlockingTree().showStackTraces())
 ```
 
-## [Thread Predicates](threadPredicates.html)
+## [Thread predicates](threadPredicates.html)
 
 Predicates to filter threads available from groovy. To be used with `ThreadSet.where` method:
 
