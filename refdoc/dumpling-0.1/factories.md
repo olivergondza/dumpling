@@ -3,7 +3,7 @@ title: Runtime factories
 layout: default
 ---
 # {{page.title}}
-### com.github.olivergondza.dumpling.factory.JvmRuntimeFactory
+### [JvmRuntimeFactory](./apidocs/com/github/olivergondza/dumpling/factory/JvmRuntimeFactory.html)
 
-### com.github.olivergondza.dumpling.factory.ThreadDumpFactory
+### [ThreadDumpFactory](./apidocs/com/github/olivergondza/dumpling/factory/ThreadDumpFactory.html)
 

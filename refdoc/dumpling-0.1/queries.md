@@ -3,14 +3,14 @@ title: Queries
 layout: default
 ---
 # {{page.title}}
-### com.github.olivergondza.dumpling.query.TopContenders
+### [TopContenders](./apidocs/com/github/olivergondza/dumpling/query/TopContenders.html)
 Get threads that block other threads.
 
  Mapping between blocking thread and a set of blocked threads.
  Map is sorted by the number of blocked threads.
-### com.github.olivergondza.dumpling.query.Deadlocks
+### [Deadlocks](./apidocs/com/github/olivergondza/dumpling/query/Deadlocks.html)
 
-### com.github.olivergondza.dumpling.query.BlockingTree
+### [BlockingTree](./apidocs/com/github/olivergondza/dumpling/query/BlockingTree.html)
 Get a forest of all blocking trees.
 
  Non-blocked threads are the roots of tree hierarchies where parent-child
