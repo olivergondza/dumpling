@@ -44,6 +44,11 @@ import com.github.olivergondza.dumpling.model.ProcessThread.Builder;
 import com.github.olivergondza.dumpling.model.ThreadLock;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 
+/**
+ * Create {@link ProcessRuntime} from state of current process.
+ *
+ * @author ogondza
+ */
 public class JvmRuntimeFactory {
 
     public @Nonnull ProcessRuntime currentRuntime() {

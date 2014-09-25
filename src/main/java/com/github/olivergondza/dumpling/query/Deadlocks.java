@@ -40,6 +40,11 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
+/**
+ * Detect deadlocks in thread set.
+ *
+ * @author ogondza
+ */
 public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
 
     private boolean showStackTraces = false;

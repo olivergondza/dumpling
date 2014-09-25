@@ -34,6 +34,11 @@ import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
+/**
+ * Immutable representation of a thread.
+ *
+ * @author ogondza
+ */
 public class ProcessThread {
 
     private @Nonnull final ProcessRuntime runtime;
@@ -318,10 +323,19 @@ public class ProcessThread {
         }
     }
 
+    /**
+     * {@link ProcessThread} predicate.
+     *
+     * @author ogondza
+     * @see ThreadSet#where(Predicate)
+     */
     public static interface Predicate {
         boolean isValid(@Nonnull ProcessThread thread);
     }
 
+    /**
+     * Match thread by name.
+     */
     public static Predicate nameIs(final String name) {
         return new Predicate() {
             @Override
@@ -331,6 +345,9 @@ public class ProcessThread {
         };
     }
 
+    /**
+     * Match thread its name contains pattern.
+     */
     public static Predicate nameContains(final Pattern pattern) {
         return new Predicate() {
             @Override

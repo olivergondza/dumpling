@@ -48,6 +48,11 @@ import com.github.olivergondza.dumpling.model.StackTrace;
 import com.github.olivergondza.dumpling.model.ThreadLock;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 
+/**
+ * Instantiate {@link ProcessRuntime} from threaddump produced by <tt>jstack</tt> or similar tool.
+ *
+ * @author ogondza
+ */
 public class ThreadDumpFactory implements CliRuntimeFactory {
 
     private static final String NL = "(?:\\r\\n|\\n)";

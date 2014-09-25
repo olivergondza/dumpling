@@ -37,6 +37,12 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import com.github.olivergondza.dumpling.query.SingleThreadSetQuery;
 
+/**
+ * Collection of threads in certain {@link ProcessRuntime}.
+ *
+ * @author ogondza
+ * @see ProcessRuntime#getThreads()
+ */
 public class ThreadSet implements Iterable<ProcessThread> {
 
     private final @Nonnull ProcessRuntime runtime;
@@ -47,6 +53,9 @@ public class ThreadSet implements Iterable<ProcessThread> {
         this.threads = Collections.unmodifiableSet(threads);
     }
 
+    /**
+     * Enclosing runtime.
+     */
     public @Nonnull ProcessRuntime getProcessRuntime() {
         return runtime;
     }
@@ -112,6 +121,12 @@ public class ThreadSet implements Iterable<ProcessThread> {
         return derive(newThreads);
     }
 
+    /**
+     * Get subset of current threads.
+     *
+     * @param pred Predicate to match.
+     * @return {@link ThreadSet} scoped to current runtime containing subset of threads that match the predicate.
+     */
     public @Nonnull ThreadSet where(ProcessThread.Predicate pred) {
         HashSet<ProcessThread> subset = new HashSet<ProcessThread>(size() / 2);
         for (@Nonnull ProcessThread thread: threads) {
