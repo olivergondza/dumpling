@@ -6,7 +6,9 @@ prio: 20
 
 # {{page.title}}
 
-Dumpling exposes its features in form of CLI from self-contained `dumpling.jar`. Use `mvn package` to build it and `java -jar ./target/dumpling.jar` to run. Alternatively, you can use `./dumpling.sh` as a convenient wrapper. Run `./dumpling.sh help [<command>]` to see what it offers.
+Dumpling provides convenient wrapper `./dumpling.sh` to run dumpling (and build it if not built already). Run `./dumpling.sh help [<command>]` to see what it offers.
+
+Alternatively, use `mvn package` to build uber jar in `target/dumpling-<version>-shaded.jar` to be invoked using `java -jar <shaded_jar_path>`.
 
 Run one of Dumpling predefined queries against threaddump:
 
