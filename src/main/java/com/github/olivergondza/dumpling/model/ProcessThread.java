@@ -327,7 +327,7 @@ public class ProcessThread {
      * {@link ProcessThread} predicate.
      *
      * @author ogondza
-     * @see ThreadSet#where(Predicate)
+     * @see ThreadSet#where(ProcessThread.Predicate)
      */
     public static interface Predicate {
         boolean isValid(@Nonnull ProcessThread thread);
