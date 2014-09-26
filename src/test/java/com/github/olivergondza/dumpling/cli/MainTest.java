@@ -66,7 +66,7 @@ public class MainTest extends AbstractCliTest {
 
         run("help", "deadlocks");
         assertThat(err.toString(), equalTo(""));
-        assertThat(out.toString(), containsString("java -jar dumpling.jar deadlocks"));
+        assertThat(out.toString(), containsString("dumpling.sh deadlocks"));
         assertThat(out.toString(), containsString("Detect cycles of blocked threads"));
         assertThat(exitValue, equalTo(0));
     }

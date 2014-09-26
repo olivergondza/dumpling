@@ -96,6 +96,6 @@ public class HelpCommand implements CliCommand {
     }
 
     private static String usage(String rest) {
-        return "Usage: java -jar dumpling.jar " + rest;
+        return "Usage: ./dumpling.sh " + rest;
     }
 }
