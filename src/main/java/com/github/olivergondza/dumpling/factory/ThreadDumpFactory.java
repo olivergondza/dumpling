@@ -215,18 +215,24 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
     }
 
     private Builder initHeader(Builder builder, String attrs) {
-
         StringTokenizer tknzr = new StringTokenizer(attrs, " ");
         while (tknzr.hasMoreTokens()) {
             String token = tknzr.nextToken();
             if ("daemon".equals(token)) builder.setDaemon(true);
             else if (token.startsWith("prio=")) builder.setPriority(Integer.parseInt(token.substring(5)));
-            else if (token.startsWith("tid=")) builder.setTid(Long.parseLong(token.substring(6), 16));
-            else if (token.startsWith("nid=")) builder.setNid(Long.parseLong(token.substring(6), 16));
+            else if (token.startsWith("tid=")) builder.setTid(parseLong(token.substring(4)));
+            else if (token.startsWith("nid=")) builder.setNid(parseLong(token.substring(4)));
             else if (token.matches("#\\d+")) builder.setId(Integer.parseInt(token.substring(1)));
         }
 
         return builder;
+    }
+
+    private long parseLong(String value) {
+        return value.startsWith("0x")
+                ? Long.parseLong(value.substring(2), 16)
+                : Long.parseLong(value, 10)
+        ;
     }
 
     private Builder initStacktrace(Builder builder, String trace) {

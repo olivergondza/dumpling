@@ -30,8 +30,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -139,7 +141,6 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         ProcessRuntime actual = runtimeFrom("oraclejdk-1.7.log");
         assertThat(actual, sameThreadsAs(expected));
 
-        ProcessThread mainThread = actual.getThreads().where(nameIs("main")).onlyThread();
         StackTrace expectedStackTrace = new StackTrace(
                 StackTrace.nativeElement("java.lang.Object", "wait"),
                 StackTrace.element("java.lang.Object", "wait", "Object.java", 503),
@@ -170,7 +171,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                 StackTrace.element("org.codehaus.groovy.tools.GroovyStarter", "main", "GroovyStarter.java", 128)
         );
 
-        assertEquals(expectedStackTrace, mainThread.getStackTrace());
+        assertThat(actual, stacktraceEquals(expectedStackTrace, "main"));
     }
 
     @Test
@@ -203,7 +204,6 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         ProcessRuntime actual = runtimeFrom("oraclejdk-1.8.log");
         assertThat(actual, sameThreadsAs(expected));
 
-        ProcessThread mainThread = actual.getThreads().where(nameIs("main")).onlyThread();
         StackTrace expectedStackTrace = new StackTrace(
                 StackTrace.nativeElement("java.lang.Object", "wait"),
                 StackTrace.element("java.lang.Object", "wait", "Object.java", 502),
@@ -234,7 +234,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                 StackTrace.element("org.codehaus.groovy.tools.GroovyStarter", "main", "GroovyStarter.java", 128)
         );
 
-        assertEquals(expectedStackTrace, mainThread.getStackTrace());
+        assertThat(actual, stacktraceEquals(expectedStackTrace, "main"));
     }
 
     @Test
@@ -266,7 +266,6 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         ProcessRuntime actual = runtimeFrom("openjdk-1.6.log");
         assertThat(actual, sameThreadsAs(expected));
 
-        ProcessThread mainThread = actual.getThreads().where(nameIs("main")).onlyThread();
         StackTrace expectedStackTrace = new StackTrace(
                 StackTrace.nativeElement("java.lang.Object", "wait"),
                 StackTrace.element("java.lang.Object", "wait", "Object.java", 502),
@@ -329,7 +328,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                 StackTrace.element("org.codehaus.groovy.tools.GroovyStarter", "main", "GroovyStarter.java", 130)
         );
 
-        assertEquals(expectedStackTrace, mainThread.getStackTrace());
+        assertThat(actual, stacktraceEquals(expectedStackTrace, "main"));
     }
 
     @Test @Ignore
@@ -557,6 +556,53 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         return new ThreadLock.WithAddress(depth, classname, address);
     }
 
+    private TypeSafeMatcher<ProcessRuntime> stacktraceEquals(final StackTrace expected, final String threadName) {
+        return new TypeSafeMatcher<ProcessRuntime>() {
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("Runtime with same threads");
+            }
+
+            @Override
+            protected boolean matchesSafely(ProcessRuntime actual) {
+                if (!doesMatch(expected, trace(actual, threadName))) return false;
+
+                return doesMatch(expected, trace(reparse(actual), threadName));
+            }
+
+            @Override
+            protected void describeMismatchSafely(ProcessRuntime actual, Description mismatch) {
+                doDescribe(expected, trace(actual, threadName), mismatch);
+                doDescribe(expected, trace(reparse(actual), threadName), mismatch);
+            }
+
+            private boolean doesMatch(StackTrace expected, StackTrace actual) {
+                return expected.equals(actual);
+            }
+
+            private void doDescribe(StackTrace expected, StackTrace actual, Description mismatch) {
+                int length = expected.size();
+                if (actual.size() != length) mismatch.appendText(String.format(
+                        "Stack depth differes, %d != %d", length, actual.size()
+                ));
+
+                for (int i = 0; i < length; i++) {
+                    StackTraceElement exp = expected.getElement(i);
+                    StackTraceElement act = actual.getElement(i);
+
+                    if (!exp.equals(act)) {
+                        mismatch.appendText(String.format("%s != %s", exp, act));
+                        return;
+                    }
+                }
+            }
+
+            private StackTrace trace(ProcessRuntime runtime, String threadName) {
+                return runtime.getThreads().where(nameIs(threadName)).onlyThread().getStackTrace();
+            }
+        };
+    }
+
     private TypeSafeMatcher<ProcessRuntime> sameThreadsAs(final ProcessRuntime expectedRuntime) {
         return new TypeSafeMatcher<ProcessRuntime>() {
 
@@ -567,6 +613,12 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
             @Override
             protected boolean matchesSafely(ProcessRuntime actual) {
+                if (!doesMatch(expectedRuntime, actual)) return false;
+
+                return doesMatch(expectedRuntime, reparse(actual));
+            }
+
+            private boolean doesMatch(ProcessRuntime expectedRuntime, ProcessRuntime actual) {
                 if (expectedRuntime.getThreads().size() != actual.getThreads().size()) return false;
 
                 for (ProcessThread actualThread: actual.getThreads()) {
@@ -583,6 +635,13 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
             @Override
             protected void describeMismatchSafely(ProcessRuntime actualRuntime, Description mismatch) {
+                doDescribe(expectedRuntime, actualRuntime, mismatch);
+                doDescribe(expectedRuntime, reparse(actualRuntime), mismatch);
+            }
+
+            private void doDescribe(
+                    ProcessRuntime expectedRuntime, ProcessRuntime actualRuntime, Description mismatch
+            ) throws AssertionError {
                 final ThreadSet expectedThreads = expectedRuntime.getThreads();
                 final ThreadSet actualThreads = actualRuntime.getThreads();
 
@@ -612,6 +671,13 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                 mismatch.appendText("Missing Threads:\n").appendText(missing.toString());
             }
         };
+    }
+
+    private ProcessRuntime reparse(ProcessRuntime actual) {
+        String output = actual.getThreads().toString();
+        ByteArrayInputStream stream = new ByteArrayInputStream(output.getBytes(StandardCharsets.UTF_8));
+        ProcessRuntime reparsed = new ThreadDumpFactory().fromStream(stream);
+        return reparsed;
     }
 
     // Deep equality for test purposes

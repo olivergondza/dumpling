@@ -190,6 +190,7 @@ public class ProcessThread {
 
         private String name;
         private boolean daemon;
+        // priority might not be present in threaddump
         private Integer priority;
         // https://gist.github.com/rednaxelafx/843622
         private Long id, nid, tid;
@@ -314,11 +315,11 @@ public class ProcessThread {
         private StringBuilder headerBuilder() {
             StringBuilder sb = new StringBuilder();
             sb.append('"').append(name).append('"');
+            if (id != null) sb.append(" #").append(id);
             if (daemon) sb.append(" daemon");
-            sb.append(" prio=").append(priority);
-            sb.append(" id=").append(id);
-            sb.append(" tid=").append(tid);
-            sb.append(" nid=").append(nid);
+            if (priority != null) sb.append(" prio=").append(priority);
+            if (tid != null) sb.append(" tid=").append(tid);
+            if (nid != null) sb.append(" nid=").append(nid);
             return sb;
         }
     }

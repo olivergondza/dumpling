@@ -136,10 +136,10 @@ public class DeadlocksTest extends AbstractCliTest {
     private void assertListing(String out) {
         assertThat(out, containsString("- Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24 - Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107"));
         assertThat(out, not(containsString(
-                "\n\"Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24\" daemon prio=10 id=null tid=1481750528 nid=27336\n"
+                "\n\"Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24\" daemon prio=10 tid=1481750528 nid=27336\n"
         )));
         assertThat(out, not(containsString(
-                "\n\"Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107\" daemon prio=10 id=null tid=47091108077568 nid=17982\n"
+                "\n\"Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107\" daemon prio=10 tid=47091108077568 nid=17982\n"
         )));
         assertThat(out, containsString("\n1 deadlocks detected\n"));
     }
@@ -163,10 +163,10 @@ public class DeadlocksTest extends AbstractCliTest {
         assertThat(out, containsString("- Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24 - Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107"));
 
         assertThat(out, containsString(
-                "\n\"Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24\" daemon prio=10 id=null tid=1481750528 nid=27336\n"
+                "\n\"Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24\" daemon prio=10 tid=1481750528 nid=27336\n"
         ));
         assertThat(out, containsString(
-                "\n\"Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107\" daemon prio=10 id=null tid=47091108077568 nid=17982\n"
+                "\n\"Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107\" daemon prio=10 tid=47091108077568 nid=17982\n"
         ));
         assertThat(out, containsString("\n1 deadlocks detected\n"));
     }

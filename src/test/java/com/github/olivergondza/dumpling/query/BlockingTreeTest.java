@@ -160,7 +160,7 @@ public class BlockingTreeTest extends AbstractCliTest {
         // Deeply nested
         assertThat(out, containsString("\n\t\t\"aaa\""));
 
-        assertThat(out, not(containsString("\n\"aaa\" prio=10 id=null tid=139918763419648 nid=31957\n")));
+        assertThat(out, not(containsString("\n\"aaa\" prio=10 tid=139918763419648 nid=31957\n")));
     }
 
     @Test
@@ -190,6 +190,6 @@ public class BlockingTreeTest extends AbstractCliTest {
         // Deeply nested
         assertThat(out, containsString("\n\t\t\"aaa\""));
 
-        assertThat(out, containsString("\n\"aaa\" prio=10 id=null tid=139918763419648 nid=31957\n"));
+        assertThat(out, containsString("\n\"aaa\" prio=10 tid=139918763419648 nid=31957\n"));
     }
 }
