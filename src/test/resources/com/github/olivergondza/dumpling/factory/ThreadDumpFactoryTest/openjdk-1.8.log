@@ -1,0 +1,125 @@
+2014-08-10 04:08:44
+Full thread dump OpenJDK Server VM (25.11-b02 mixed mode):
+
+"Attach Listener" #11 daemon prio=9 os_prio=0 tid=0x67504000 nid=0x1e95 waiting on condition [0x00000000]
+   java.lang.Thread.State: RUNNABLE
+
+"process reaper" #10 daemon prio=10 os_prio=0 tid=0x66cf4000 nid=0x1e85 runnable [0x6a62c000]
+   java.lang.Thread.State: RUNNABLE
+	at java.lang.UNIXProcess.waitForProcessExit(Native Method)
+	at java.lang.UNIXProcess.access$500(UNIXProcess.java:55)
+	at java.lang.UNIXProcess$4.run(UNIXProcess.java:228)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+	at java.lang.Thread.run(Thread.java:745)
+
+"Service Thread" #8 daemon prio=9 os_prio=0 tid=0x676ac400 nid=0x1e82 runnable [0x00000000]
+   java.lang.Thread.State: RUNNABLE
+
+"C1 CompilerThread2" #7 daemon prio=9 os_prio=0 tid=0x676a9000 nid=0x1e81 waiting on condition [0x00000000]
+   java.lang.Thread.State: RUNNABLE
+
+"C2 CompilerThread1" #6 daemon prio=9 os_prio=0 tid=0x676a7c00 nid=0x1e80 waiting on condition [0x00000000]
+   java.lang.Thread.State: RUNNABLE
+
+"C2 CompilerThread0" #5 daemon prio=9 os_prio=0 tid=0x676a5c00 nid=0x1e7f waiting on condition [0x00000000]
+   java.lang.Thread.State: RUNNABLE
+
+"Signal Dispatcher" #4 daemon prio=9 os_prio=0 tid=0x676a4400 nid=0x1e7e runnable [0x00000000]
+   java.lang.Thread.State: RUNNABLE
+
+"Finalizer" #3 daemon prio=8 os_prio=0 tid=0x67686400 nid=0x1e7c in Object.wait() [0x6a47d000]
+   java.lang.Thread.State: WAITING (on object monitor)
+	at java.lang.Object.wait(Native Method)
+	- waiting on <0x94a40f00> (a java.lang.ref.ReferenceQueue$Lock)
+	at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:142)
+	- locked <0x94a40f00> (a java.lang.ref.ReferenceQueue$Lock)
+	at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:158)
+	at java.lang.ref.Finalizer$FinalizerThread.run(Finalizer.java:209)
+
+"Reference Handler" #2 daemon prio=10 os_prio=0 tid=0x67683c00 nid=0x1e7b in Object.wait() [0x6a67d000]
+   java.lang.Thread.State: WAITING (on object monitor)
+	at java.lang.Object.wait(Native Method)
+	- waiting on <0x94a410a0> (a java.lang.ref.Reference$Lock)
+	at java.lang.Object.wait(Object.java:502)
+	at java.lang.ref.Reference$ReferenceHandler.run(Reference.java:157)
+	- locked <0x94a410a0> (a java.lang.ref.Reference$Lock)
+
+"main" #1 prio=5 os_prio=0 tid=0xb7606800 nid=0x1e75 in Object.wait() [0xb77ea000]
+   java.lang.Thread.State: WAITING (on object monitor)
+	at java.lang.Object.wait(Native Method)
+	- waiting on <0x942a6390> (a java.lang.UNIXProcess)
+	at java.lang.Object.wait(Object.java:502)
+	at java.lang.UNIXProcess.waitFor(UNIXProcess.java:264)
+	- locked <0x942a6390> (a java.lang.UNIXProcess)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:483)
+	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:86)
+	at groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:226)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:899)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:740)
+	at org.codehaus.groovy.runtime.InvokerHelper.invokePojoMethod(InvokerHelper.java:765)
+	at org.codehaus.groovy.runtime.InvokerHelper.invokeMethod(InvokerHelper.java:753)
+	at org.codehaus.groovy.runtime.ScriptBytecodeAdapter.invokeMethodN(ScriptBytecodeAdapter.java:167)
+	at org.codehaus.groovy.runtime.ScriptBytecodeAdapter.invokeMethod0(ScriptBytecodeAdapter.java:195)
+	at hudson2530543046334227738.run(hudson2530543046334227738.groovy:11)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:483)
+	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:86)
+	at groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:226)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:899)
+	at groovy.lang.MetaClassImpl.invokeMethod(MetaClassImpl.java:740)
+	at org.codehaus.groovy.runtime.InvokerHelper.invokePogoMethod(InvokerHelper.java:777)
+	at org.codehaus.groovy.runtime.InvokerHelper.invokeMethod(InvokerHelper.java:757)
+	at org.codehaus.groovy.runtime.InvokerHelper.runScript(InvokerHelper.java:402)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:483)
+	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:86)
+	at groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:226)
+	at groovy.lang.MetaClassImpl.invokeStaticMethod(MetaClassImpl.java:1094)
+	at org.codehaus.groovy.runtime.InvokerHelper.invokeMethod(InvokerHelper.java:748)
+	at org.codehaus.groovy.runtime.ScriptBytecodeAdapter.invokeMethodN(ScriptBytecodeAdapter.java:167)
+	at hudson2530543046334227738.main(hudson2530543046334227738.groovy)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:483)
+	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:86)
+	at groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:226)
+	at groovy.lang.MetaClassImpl.invokeStaticMethod(MetaClassImpl.java:1094)
+	at org.codehaus.groovy.runtime.InvokerHelper.invokeMethod(InvokerHelper.java:748)
+	at groovy.lang.GroovyShell.runMainOrTestOrRunnable(GroovyShell.java:244)
+	at groovy.lang.GroovyShell.run(GroovyShell.java:218)
+	at groovy.lang.GroovyShell.run(GroovyShell.java:147)
+	at groovy.ui.GroovyMain.processOnce(GroovyMain.java:493)
+	at groovy.ui.GroovyMain.run(GroovyMain.java:308)
+	at groovy.ui.GroovyMain.process(GroovyMain.java:294)
+	at groovy.ui.GroovyMain.processArgs(GroovyMain.java:111)
+	at groovy.ui.GroovyMain.main(GroovyMain.java:92)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:483)
+	at org.codehaus.groovy.tools.GroovyStarter.rootLoader(GroovyStarter.java:101)
+	at org.codehaus.groovy.tools.GroovyStarter.main(GroovyStarter.java:130)
+
+"VM Thread" os_prio=0 tid=0x67680c00 nid=0x1e7a runnable 
+
+"GC task thread#0 (ParallelGC)" os_prio=0 tid=0xb7610000 nid=0x1e76 runnable 
+
+"GC task thread#1 (ParallelGC)" os_prio=0 tid=0xb7611400 nid=0x1e77 runnable 
+
+"GC task thread#2 (ParallelGC)" os_prio=0 tid=0xb7612800 nid=0x1e78 runnable 
+
+"GC task thread#3 (ParallelGC)" os_prio=0 tid=0xb7613c00 nid=0x1e79 runnable 
+
+"VM Periodic Task Thread" os_prio=0 tid=0x676c6400 nid=0x1e83 waiting on condition 
+
+JNI global references: 91
+
