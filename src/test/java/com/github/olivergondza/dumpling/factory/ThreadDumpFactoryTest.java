@@ -112,6 +112,13 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertEquals(48, lastTrace.getLineNumber());
     }
 
+    @Test @Ignore
+    public void oracleJdk6() throws Exception {
+
+        ThreadSet threads = runtimeFrom("oraclejdk-1.6.log").getThreads();
+        assertEquals(15, threads.size());
+    }
+
     @Test
     public void oracleJdk7() throws Exception {
 
@@ -331,10 +338,108 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertThat(actual, stacktraceEquals(expectedStackTrace, "main"));
     }
 
-    @Test @Ignore
+    @Test
     public void openjdk7() throws Exception {
 
-        ThreadSet threads = runtimeFrom("openjdk-1.7.log").getThreads();
+        ProcessRuntime expected = runtime (
+                daemon("Attach Listener").setTid(1740638208).setNid(32404).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                thread("GC task thread#0 (ParallelGC)").setTid(3075542016L).setNid(32366).setPriority(10),
+                thread("GC task thread#1 (ParallelGC)").setTid(3075547136L).setNid(32367).setPriority(10),
+                thread("GC task thread#2 (ParallelGC)").setTid(3075553280L).setNid(32368).setPriority(10),
+                thread("GC task thread#3 (ParallelGC)").setTid(3075559424L).setNid(32369).setPriority(10),
+                thread("GC task thread#4 (ParallelGC)").setTid(3075564544L).setNid(32370).setPriority(10),
+                thread("GC task thread#5 (ParallelGC)").setTid(3075570688L).setNid(32371).setPriority(10),
+                thread("GC task thread#6 (ParallelGC)").setTid(3075576832L).setNid(32372).setPriority(10),
+                thread("GC task thread#7 (ParallelGC)").setTid(3075581952L).setNid(32373).setPriority(10),
+                thread("VM Periodic Task Thread").setTid(1748556800).setNid(32381).setPriority(10),
+                daemon("Signal Dispatcher").setTid(1748527104).setNid(32377).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("process reaper").setTid(1734433792).setNid(32385).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("C2 CompilerThread0").setTid(1748534272).setNid(32378).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("C2 CompilerThread1").setTid(1748542464).setNid(32379).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                thread("VM Thread").setTid(1748436992).setNid(32374).setPriority(10),
+                daemon("Service Thread").setTid(1748549632).setNid(32380).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("Finalizer").setTid(1748454400).setNid(32376).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
+                        .setWaitingOnLock(lock(0, "java.lang.ref.ReferenceQueue$Lock", 2683571272L))
+                ,
+                daemon("Reference Handler").setTid(1748448256).setNid(32375).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
+                        .setWaitingOnLock(lock(0, "java.lang.ref.Reference$Lock", 2683601000L))
+                ,
+                thread("main").setTid(3075500032L).setNid(32365).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
+                        .setWaitingOnLock(lock(0, "java.lang.UNIXProcess", 2672107728L))
+        );
+
+        ProcessRuntime actual = runtimeFrom("openjdk-1.7.log");
+        assertThat(actual, sameThreadsAs(expected));
+
+        StackTrace expectedStackTrace = new StackTrace(
+                StackTrace.nativeElement("java.lang.Object", "wait"),
+                StackTrace.element("java.lang.Object", "wait", "Object.java", 503),
+                StackTrace.element("java.lang.UNIXProcess", "waitFor", "UNIXProcess.java", 210),
+                StackTrace.nativeElement("sun.reflect.NativeMethodAccessorImpl", "invoke0"),
+                StackTrace.element("sun.reflect.NativeMethodAccessorImpl", "invoke", "NativeMethodAccessorImpl.java", 57),
+                StackTrace.element("sun.reflect.DelegatingMethodAccessorImpl", "invoke", "DelegatingMethodAccessorImpl.java", 43),
+                StackTrace.element("java.lang.reflect.Method", "invoke", "Method.java", 606),
+                StackTrace.element("org.codehaus.groovy.reflection.CachedMethod", "invoke", "CachedMethod.java", 86),
+                StackTrace.element("groovy.lang.MetaMethod", "doMethodInvoke", "MetaMethod.java", 226),
+                StackTrace.element("groovy.lang.MetaClassImpl", "invokeMethod", "MetaClassImpl.java", 899),
+                StackTrace.element("groovy.lang.MetaClassImpl", "invokeMethod", "MetaClassImpl.java", 740),
+                StackTrace.element("org.codehaus.groovy.runtime.InvokerHelper", "invokePojoMethod", "InvokerHelper.java", 765),
+                StackTrace.element("org.codehaus.groovy.runtime.InvokerHelper", "invokeMethod", "InvokerHelper.java", 753),
+                StackTrace.element("org.codehaus.groovy.runtime.ScriptBytecodeAdapter", "invokeMethodN", "ScriptBytecodeAdapter.java", 167),
+                StackTrace.element("org.codehaus.groovy.runtime.ScriptBytecodeAdapter", "invokeMethod0", "ScriptBytecodeAdapter.java", 195),
+                StackTrace.element("hudson3357812930655452714", "run", "hudson3357812930655452714.groovy", 11),
+                StackTrace.nativeElement("sun.reflect.NativeMethodAccessorImpl", "invoke0"),
+                StackTrace.element("sun.reflect.NativeMethodAccessorImpl", "invoke", "NativeMethodAccessorImpl.java", 57),
+                StackTrace.element("sun.reflect.DelegatingMethodAccessorImpl", "invoke", "DelegatingMethodAccessorImpl.java", 43),
+                StackTrace.element("java.lang.reflect.Method", "invoke", "Method.java", 606),
+                StackTrace.element("org.codehaus.groovy.reflection.CachedMethod", "invoke", "CachedMethod.java", 86),
+                StackTrace.element("groovy.lang.MetaMethod", "doMethodInvoke", "MetaMethod.java", 226),
+                StackTrace.element("groovy.lang.MetaClassImpl", "invokeMethod", "MetaClassImpl.java", 899),
+                StackTrace.element("groovy.lang.MetaClassImpl", "invokeMethod", "MetaClassImpl.java", 740),
+                StackTrace.element("org.codehaus.groovy.runtime.InvokerHelper", "invokePogoMethod", "InvokerHelper.java", 777),
+                StackTrace.element("org.codehaus.groovy.runtime.InvokerHelper", "invokeMethod", "InvokerHelper.java", 757),
+                StackTrace.element("org.codehaus.groovy.runtime.InvokerHelper", "runScript", "InvokerHelper.java", 402),
+                StackTrace.nativeElement("sun.reflect.NativeMethodAccessorImpl", "invoke0"),
+                StackTrace.element("sun.reflect.NativeMethodAccessorImpl", "invoke", "NativeMethodAccessorImpl.java", 57),
+                StackTrace.element("sun.reflect.DelegatingMethodAccessorImpl", "invoke", "DelegatingMethodAccessorImpl.java", 43),
+                StackTrace.element("java.lang.reflect.Method", "invoke", "Method.java", 606),
+                StackTrace.element("org.codehaus.groovy.reflection.CachedMethod", "invoke", "CachedMethod.java", 86),
+                StackTrace.element("groovy.lang.MetaMethod", "doMethodInvoke", "MetaMethod.java", 226),
+                StackTrace.element("groovy.lang.MetaClassImpl", "invokeStaticMethod", "MetaClassImpl.java", 1094),
+                StackTrace.element("org.codehaus.groovy.runtime.InvokerHelper", "invokeMethod", "InvokerHelper.java", 748),
+                StackTrace.element("org.codehaus.groovy.runtime.ScriptBytecodeAdapter", "invokeMethodN", "ScriptBytecodeAdapter.java", 167),
+                StackTrace.element("hudson3357812930655452714", "main", "hudson3357812930655452714.groovy"),
+                StackTrace.nativeElement("sun.reflect.NativeMethodAccessorImpl", "invoke0"),
+                StackTrace.element("sun.reflect.NativeMethodAccessorImpl", "invoke", "NativeMethodAccessorImpl.java", 57),
+                StackTrace.element("sun.reflect.DelegatingMethodAccessorImpl", "invoke", "DelegatingMethodAccessorImpl.java", 43),
+                StackTrace.element("java.lang.reflect.Method", "invoke", "Method.java", 606),
+                StackTrace.element("org.codehaus.groovy.reflection.CachedMethod", "invoke", "CachedMethod.java", 86),
+                StackTrace.element("groovy.lang.MetaMethod", "doMethodInvoke", "MetaMethod.java", 226),
+                StackTrace.element("groovy.lang.MetaClassImpl", "invokeStaticMethod", "MetaClassImpl.java", 1094),
+                StackTrace.element("org.codehaus.groovy.runtime.InvokerHelper", "invokeMethod", "InvokerHelper.java", 748),
+                StackTrace.element("groovy.lang.GroovyShell", "runMainOrTestOrRunnable", "GroovyShell.java", 244),
+                StackTrace.element("groovy.lang.GroovyShell", "run", "GroovyShell.java", 218),
+                StackTrace.element("groovy.lang.GroovyShell", "run", "GroovyShell.java", 147),
+                StackTrace.element("groovy.ui.GroovyMain", "processOnce", "GroovyMain.java", 493),
+                StackTrace.element("groovy.ui.GroovyMain", "run", "GroovyMain.java", 308),
+                StackTrace.element("groovy.ui.GroovyMain", "process", "GroovyMain.java", 294),
+                StackTrace.element("groovy.ui.GroovyMain", "processArgs", "GroovyMain.java", 111),
+                StackTrace.element("groovy.ui.GroovyMain", "main", "GroovyMain.java", 92),
+                StackTrace.nativeElement("sun.reflect.NativeMethodAccessorImpl", "invoke0"),
+                StackTrace.element("sun.reflect.NativeMethodAccessorImpl", "invoke", "NativeMethodAccessorImpl.java", 57),
+                StackTrace.element("sun.reflect.DelegatingMethodAccessorImpl", "invoke", "DelegatingMethodAccessorImpl.java", 43),
+                StackTrace.element("java.lang.reflect.Method", "invoke", "Method.java", 606),
+                StackTrace.element("org.codehaus.groovy.tools.GroovyStarter", "rootLoader", "GroovyStarter.java", 101),
+                StackTrace.element("org.codehaus.groovy.tools.GroovyStarter", "main", "GroovyStarter.java", 130)
+        );
+
+        assertThat(actual, stacktraceEquals(expectedStackTrace, "main"));
+    }
+
+    @Test @Ignore
+    public void openjdk8() throws Exception {
+
+        ThreadSet threads = runtimeFrom("openjdk-1.8.log").getThreads();
         assertEquals(15, threads.size());
     }
 
@@ -572,8 +677,14 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
             @Override
             protected void describeMismatchSafely(ProcessRuntime actual, Description mismatch) {
-                doDescribe(expected, trace(actual, threadName), mismatch);
-                doDescribe(expected, trace(reparse(actual), threadName), mismatch);
+                final StackTrace originalTrace = trace(actual, threadName);
+
+                // report only the first failure
+                if (!doesMatch(expected, originalTrace)) {
+                    doDescribe(expected, originalTrace, mismatch);
+                } else {
+                    doDescribe(expected, trace(reparse(actual), threadName), mismatch);
+                }
             }
 
             private boolean doesMatch(StackTrace expected, StackTrace actual) {
@@ -635,8 +746,12 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
             @Override
             protected void describeMismatchSafely(ProcessRuntime actualRuntime, Description mismatch) {
-                doDescribe(expectedRuntime, actualRuntime, mismatch);
-                doDescribe(expectedRuntime, reparse(actualRuntime), mismatch);
+                // report only first problem
+                if (!doesMatch(expectedRuntime, actualRuntime)) {
+                    doDescribe(expectedRuntime, actualRuntime, mismatch);
+                } else {
+                    doDescribe(expectedRuntime, reparse(actualRuntime), mismatch);
+                }
             }
 
             private void doDescribe(
