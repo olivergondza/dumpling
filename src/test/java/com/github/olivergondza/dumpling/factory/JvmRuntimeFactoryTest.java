@@ -247,7 +247,7 @@ public class JvmRuntimeFactoryTest {
             // Current thread is
             ProcessThread current = runtime.getThreads().where(nameIs(Thread.currentThread().getName())).onlyThread();
             final Set<ThreadLock> expected = new HashSet<ThreadLock>(Arrays.asList(
-                    new ThreadLock.WithHashCode(0, lock.getClass().getCanonicalName(), lock.hashCode())
+                    new ThreadLock.WithHashCode(lock.getClass().getCanonicalName(), lock.hashCode())
             ));
             assertThat(current.getAcquiredLocks(), equalTo(expected));
         }

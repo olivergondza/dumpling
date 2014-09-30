@@ -136,13 +136,13 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                 thread("VM Thread").setTid(191717376).setNid(18886).setPriority(10),
                 daemon("Service Thread").setTid(191963136).setNid(18892).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
                 daemon("Finalizer").setTid(191744000).setNid(18888).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
-                        .setWaitingOnLock(lock(0, "java.lang.ref.ReferenceQueue$Lock", 33678346384L))
+                        .setWaitingOnLock(lock("java.lang.ref.ReferenceQueue$Lock", 33678346384L))
                 ,
                 daemon("Reference Handler").setTid(191727616).setNid(18887).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
-                        .setWaitingOnLock(lock(0, "java.lang.ref.Reference$Lock", 33678167272L))
+                        .setWaitingOnLock(lock("java.lang.ref.Reference$Lock", 33678167272L))
                 ,
                 thread("main").setTid(191326208).setNid(18881).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
-                        .setWaitingOnLock(lock(0, "java.lang.UNIXProcess", 33649075520L))
+                        .setWaitingOnLock(lock("java.lang.UNIXProcess", 33649075520L))
         );
 
         ProcessRuntime actual = runtimeFrom("oraclejdk-1.7.log");
@@ -199,13 +199,13 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                 thread("VM Thread").setTid(1718094848).setNid(8119),
                 daemon("Service Thread").setTid(1718273024).setNid(8126).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9).setId(8),
                 daemon("Finalizer").setTid(1718118400).setNid(8121).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(8).setId(3)
-                        .setWaitingOnLock(lock(0, "java.lang.ref.ReferenceQueue$Lock", 2495908272L))
+                        .setWaitingOnLock(lock("java.lang.ref.ReferenceQueue$Lock", 2495908272L))
                 ,
                 daemon("Reference Handler").setTid(1718108160).setNid(8120).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10).setId(2)
-                        .setWaitingOnLock(lock(0, "java.lang.ref.Reference$Lock", 2495922552L))
+                        .setWaitingOnLock(lock("java.lang.ref.Reference$Lock", 2495922552L))
                 ,
                 thread("main").setTid(3059771392L).setNid(8114).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(5).setId(1)
-                        .setWaitingOnLock(lock(0, "java.lang.UNIXProcess", 2468857072L))
+                        .setWaitingOnLock(lock("java.lang.UNIXProcess", 2468857072L))
         );
 
         ProcessRuntime actual = runtimeFrom("oraclejdk-1.8.log");
@@ -261,13 +261,13 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                 thread("VM Thread").setTid(505159680).setNid(28572).setPriority(10),
                 daemon("Low Memory Detector").setTid(505606144).setNid(28578).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
                 daemon("Finalizer").setTid(505229312).setNid(28574).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
-                        .setWaitingOnLock(lock(0, "java.lang.ref.ReferenceQueue$Lock", 3773522592L))
+                        .setWaitingOnLock(lock("java.lang.ref.ReferenceQueue$Lock", 3773522592L))
                 ,
                 daemon("Reference Handler").setTid(505221120).setNid(28573).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
-                        .setWaitingOnLock(lock(0, "java.lang.ref.Reference$Lock", 3773521872L))
+                        .setWaitingOnLock(lock("java.lang.ref.Reference$Lock", 3773521872L))
                 ,
                 thread("main").setTid(504590336).setNid(28567).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
-                        .setWaitingOnLock(lock(0, "java.lang.UNIXProcess", 3791474536L))
+                        .setWaitingOnLock(lock("java.lang.UNIXProcess", 3791474536L))
         );
 
         ProcessRuntime actual = runtimeFrom("openjdk-1.6.log");
@@ -359,13 +359,13 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                 thread("VM Thread").setTid(1748436992).setNid(32374).setPriority(10),
                 daemon("Service Thread").setTid(1748549632).setNid(32380).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
                 daemon("Finalizer").setTid(1748454400).setNid(32376).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
-                        .setWaitingOnLock(lock(0, "java.lang.ref.ReferenceQueue$Lock", 2683571272L))
+                        .setWaitingOnLock(lock("java.lang.ref.ReferenceQueue$Lock", 2683571272L))
                 ,
                 daemon("Reference Handler").setTid(1748448256).setNid(32375).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
-                        .setWaitingOnLock(lock(0, "java.lang.ref.Reference$Lock", 2683601000L))
+                        .setWaitingOnLock(lock("java.lang.ref.Reference$Lock", 2683601000L))
                 ,
                 thread("main").setTid(3075500032L).setNid(32365).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
-                        .setWaitingOnLock(lock(0, "java.lang.UNIXProcess", 2672107728L))
+                        .setWaitingOnLock(lock("java.lang.UNIXProcess", 2672107728L))
         );
 
         ProcessRuntime actual = runtimeFrom("openjdk-1.7.log");
@@ -454,13 +454,13 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                 thread("VM Thread").setTid(1734872064).setNid(7802),
                 daemon("Service Thread").setTid(1735050240).setNid(7810).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9).setId(8),
                 daemon("Finalizer").setTid(1734894592).setNid(7804).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(8).setId(3)
-                        .setWaitingOnLock(lock(0, "java.lang.ref.ReferenceQueue$Lock", 2493779712L))
+                        .setWaitingOnLock(lock("java.lang.ref.ReferenceQueue$Lock", 2493779712L))
                 ,
                 daemon("Reference Handler").setTid(1734884352).setNid(7803).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10).setId(2)
-                        .setWaitingOnLock(lock(0, "java.lang.ref.Reference$Lock", 2493780128L))
+                        .setWaitingOnLock(lock("java.lang.ref.Reference$Lock", 2493780128L))
                 ,
                 thread("main").setTid(3076548608L).setNid(7797).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(5).setId(1)
-                        .setWaitingOnLock(lock(0, "java.lang.UNIXProcess", 2485805968L))
+                        .setWaitingOnLock(lock("java.lang.UNIXProcess", 2485805968L))
         );
 
         ProcessRuntime actual = runtimeFrom("openjdk-1.8.log");
@@ -649,7 +649,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
         assertThat(thread.getThreadStatus(), equalTo(ThreadStatus.RUNNABLE));
         ThreadLock expectedLock = new ThreadLock.WithAddress(
-                1, "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject", 21032260640L
+                "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject", 21032260640L
         );
         assertThat(thread.getWaitingOnLock(), equalTo(expectedLock));
         // Based on stacktrace - not thread status
@@ -662,7 +662,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         ProcessThread waiting = threads.where(nameIs("monitorOwnerInObjectWait")).onlyThread();
         ProcessThread owning = threads.where(nameIs("main")).onlyThread();
 
-        final ThreadLock lock = new ThreadLock.WithAddress(0, "java.lang.Object", 33677473560L);
+        final ThreadLock lock = new ThreadLock.WithAddress("java.lang.Object", 33677473560L);
         final Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(lock));
         assertThat(owning.getThreadStatus(), equalTo(ThreadStatus.SLEEPING));
         assertThat(owning.getAcquiredLocks(), equalTo(locks));
@@ -684,7 +684,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         ProcessThread waiting = threads.where(nameIs("blockedThread")).onlyThread();
         ProcessThread owning = threads.where(nameIs("main")).onlyThread();
 
-        final ThreadLock lock = new ThreadLock.WithAddress(0, "java.util.concurrent.locks.ReentrantLock$NonfairSync", 32296902960L);
+        final ThreadLock lock = new ThreadLock.WithAddress("java.util.concurrent.locks.ReentrantLock$NonfairSync", 32296902960L);
         final Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(lock));
         assertThat(owning.getAcquiredLocks(), equalTo(locks));
         assertThat(owning.getWaitingOnLock(), equalTo(null));
@@ -745,8 +745,8 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         return thread(name).setDaemon(true);
     }
 
-    private ThreadLock lock(int depth, @Nonnull String classname, long address) {
-        return new ThreadLock.WithAddress(depth, classname, address);
+    private ThreadLock lock(@Nonnull String classname, long address) {
+        return new ThreadLock.WithAddress(classname, address);
     }
 
     private TypeSafeMatcher<ProcessRuntime> stacktraceEquals(final StackTrace expected, final String threadName) {

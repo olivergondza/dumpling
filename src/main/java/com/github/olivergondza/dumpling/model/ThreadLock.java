@@ -25,6 +25,7 @@ package com.github.olivergondza.dumpling.model;
 
 import java.lang.management.MonitorInfo;
 
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 
 /**
@@ -35,22 +36,16 @@ import javax.annotation.Nonnull;
 public abstract class ThreadLock {
 
     protected final @Nonnull String className;
-    protected final int stackDepth;
 
     /**
      * @param stackDepth Position of lock in stacktrace. See {@link MonitorInfo#getLockedStackDepth()}.
      */
-    protected ThreadLock(int stackDepth, @Nonnull String className) {
-        this.stackDepth = stackDepth;
+    protected ThreadLock(@Nonnull String className) {
         this.className = className;
     }
 
     public @Nonnull String getClassName() {
         return className;
-    }
-
-    public int getStackDepth() {
-        return stackDepth;
     }
 
     /**
@@ -62,8 +57,8 @@ public abstract class ThreadLock {
 
         private final int identityHashCode;
 
-        public WithHashCode(int stackDepth, @Nonnull String className, int identityHashCode) {
-            super(stackDepth, className);
+        public WithHashCode(@Nonnull String className, int identityHashCode) {
+            super(className);
             this.identityHashCode = identityHashCode;
         }
 
@@ -100,8 +95,8 @@ public abstract class ThreadLock {
 
         private final long address;
 
-        public WithAddress(int stackDepth, @Nonnull String className, long address) {
-            super(stackDepth, className);
+        public WithAddress(@Nonnull String className, long address) {
+            super(className);
             this.address = address;
         }
 
@@ -126,6 +121,49 @@ public abstract class ThreadLock {
         @Override
         public String toString() {
             return String.format("<0x%x> (a %s)", address, className);
+        }
+    }
+
+    /**
+     * Monitor with stack trace position.
+     *
+     * @author ogondza
+     */
+    public static final class Monitor {
+
+        private final @Nonnegative int depth;
+        private final @Nonnull ThreadLock lock;
+
+        public Monitor(@Nonnull ThreadLock lock, @Nonnegative int depth) {
+            this.depth = depth;
+            this.lock = lock;
+        }
+
+        public @Nonnegative int getDepth() {
+            return depth;
+        }
+
+        public @Nonnull ThreadLock getLock() {
+            return lock;
+        }
+
+        @Override
+        public boolean equals(Object lhs) {
+            if (lhs == null) return false;
+            if (!lhs.getClass().equals(this.getClass())) return false;
+
+            Monitor other = (Monitor) lhs;
+            return depth == other.depth && lock.equals(other.lock);
+        }
+
+        @Override
+        public int hashCode() {
+            return lock.hashCode() + depth;
+        }
+
+        @Override
+        public String toString() {
+            return lock.toString();
         }
     }
 }

@@ -71,7 +71,8 @@ public class JvmRuntimeFactory {
             // The thread was terminated between Thread.getAllStackTraces() and ThreadMXBean.getThreadInfo()
             if (info == null) continue;
 
-            builder.setAcquiredLocks(locks(info));
+            builder.setAcquiredMonitors(monitors(info));
+            builder.setAcquiredSynchronizers(locks(info));
             LockInfo lock = info.getLockInfo();
             if (lock != null) builder.setWaitingOnLock(lock(lock));
 
@@ -91,14 +92,22 @@ public class JvmRuntimeFactory {
         return infos;
     }
 
-    private List<ThreadLock> locks(ThreadInfo threadInfo) {
-        MonitorInfo[] monitors = threadInfo.getLockedMonitors();
-        LockInfo[] synchronizers = threadInfo.getLockedSynchronizers();
+    private List<ThreadLock.Monitor> monitors(final ThreadInfo threadInfo) {
+        final MonitorInfo[] monitors = threadInfo.getLockedMonitors();
 
-        List<ThreadLock> locks = new ArrayList<ThreadLock>(monitors.length + synchronizers.length);
-        for (LockInfo info: monitors) {
-            locks.add(lock(info));
+        final List<ThreadLock.Monitor> locks = new ArrayList<ThreadLock.Monitor>(monitors.length);
+
+        for (MonitorInfo info: monitors) {
+            locks.add(monitor(info));
         }
+
+        return locks;
+    }
+
+    private List<ThreadLock> locks(final ThreadInfo threadInfo) {
+        final LockInfo[] synchronizers = threadInfo.getLockedSynchronizers();
+
+        final List<ThreadLock> locks = new ArrayList<ThreadLock>(synchronizers.length);
 
         for (LockInfo info: synchronizers) {
             locks.add(lock(info));
@@ -107,12 +116,12 @@ public class JvmRuntimeFactory {
         return locks;
     }
 
-    private ThreadLock lock(LockInfo info) {
-        int depth = info instanceof MonitorInfo
-                ? ((MonitorInfo) info).getLockedStackDepth() : 0
-        ;
+    private ThreadLock.Monitor monitor(final MonitorInfo info) {
+        return new ThreadLock.Monitor(lock(info), info.getLockedStackDepth());
+    }
 
-        return new ThreadLock.WithHashCode(depth, info.getClassName(), info.getIdentityHashCode());
+    private @Nonnull ThreadLock lock(final LockInfo info) {
+        return new ThreadLock.WithHashCode(info.getClassName(), info.getIdentityHashCode());
     }
 
     private ThreadStatus status(Thread thread) {

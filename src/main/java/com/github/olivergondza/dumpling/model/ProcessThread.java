@@ -25,7 +25,6 @@ package com.github.olivergondza.dumpling.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,6 +32,8 @@ import java.util.regex.Pattern;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+
+import com.github.olivergondza.dumpling.model.ThreadLock.Monitor;
 
 /**
  * Immutable representation of a thread.
@@ -105,7 +106,14 @@ public class ProcessThread {
 
     public @Nonnull Set<ThreadLock> getAcquiredLocks() {
         // Convert to Set not to expose duplicates
-        return new HashSet<ThreadLock>(state.acquiredLocks);
+        LinkedHashSet<ThreadLock> locks = new LinkedHashSet<ThreadLock>(
+                state.acquiredMonitors.size() + state.acquiredSynchronizers.size()
+        );
+        for (Monitor m: state.acquiredMonitors) {
+            locks.add(m.getLock());
+        }
+        locks.addAll(state.acquiredSynchronizers);
+        return locks;
     }
 
     /**
@@ -115,7 +123,7 @@ public class ProcessThread {
         Set<ProcessThread> blocked = new LinkedHashSet<ProcessThread>();
         for (ProcessThread thread: runtime.getThreads()) {
             if (thread == this) continue;
-            if (state.acquiredLocks.contains(thread.state.waitingOnLock)) {
+            if (getAcquiredLocks().contains(thread.state.waitingOnLock)) {
                 blocked.add(thread);
             }
         }
@@ -141,7 +149,7 @@ public class ProcessThread {
     public @CheckForNull ProcessThread getBlockingThread() {
         for (ProcessThread thread: runtime.getThreads()) {
             if (thread == this) continue;
-            if (thread.state.acquiredLocks.contains(state.waitingOnLock)) {
+            if (thread.getAcquiredLocks().contains(state.waitingOnLock)) {
                 return thread;
             }
         }
@@ -197,8 +205,8 @@ public class ProcessThread {
         private @Nonnull StackTrace stackTrace = new StackTrace();
         private ThreadStatus status;
         private @CheckForNull ThreadLock waitingOnLock;
-        // Preserve locks as List not to collapse identical entries
-        private @Nonnull List<ThreadLock> acquiredLocks = Collections.emptyList();
+        private @Nonnull List<ThreadLock.Monitor> acquiredMonitors = Collections.emptyList();
+        private @Nonnull List<ThreadLock> acquiredSynchronizers = Collections.emptyList();
 
         public ProcessThread build(@Nonnull ProcessRuntime runtime) {
             return new ProcessThread(runtime, this);
@@ -266,19 +274,36 @@ public class ProcessThread {
             return this;
         }
 
-        public @Nonnull Builder setAcquiredLocks(List<ThreadLock> locks) {
-            this.acquiredLocks = Collections.unmodifiableList(locks);
+        public @Nonnull Builder setAcquiredSynchronizers(List<ThreadLock> synchronizers) {
+            this.acquiredSynchronizers = Collections.unmodifiableList(synchronizers);
             return this;
         }
 
-        public @Nonnull Builder setAcquiredLocks(ThreadLock... locks) {
-            List<ThreadLock> data = new ArrayList<ThreadLock>(locks.length);
-            Collections.addAll(data, locks);
-            return setAcquiredLocks(data);
+        public @Nonnull Builder setAcquiredSynchronizers(ThreadLock... synchronizers) {
+            List<ThreadLock> data = new ArrayList<ThreadLock>(synchronizers.length);
+            Collections.addAll(data, synchronizers);
+            return setAcquiredSynchronizers(data);
+        }
+
+        public @Nonnull Builder setAcquiredMonitors(List<ThreadLock.Monitor> monitors) {
+            this.acquiredMonitors = Collections.unmodifiableList(monitors);
+            return this;
         }
 
         private String getHeader() {
             return headerBuilder().toString();
+        }
+
+        private List<ThreadLock> getMonitorsByDepth(int depth) {
+            List<ThreadLock> monitors = new ArrayList<ThreadLock>();
+
+            for (Monitor monitor: acquiredMonitors) {
+                if (monitor.getDepth() == depth) {
+                    monitors.add(monitor.getLock());
+                }
+            }
+
+            return monitors;
         }
 
         @Override
@@ -289,21 +314,25 @@ public class ProcessThread {
                 sb.append("\n   java.lang.Thread.State: ").append(status.getName());
             }
 
+            if (!acquiredSynchronizers.isEmpty()) {
+                for (ThreadLock synchronizer: acquiredSynchronizers) {
+                    if (!synchronizer.equals(waitingOnLock)) {
+                        sb.append("\n\t- synchronized ").append(synchronizer.toString());
+                    }
+                }
+            }
+
             int depth = 0;
             for (StackTraceElement traceLine: stackTrace.getElemens()) {
                 sb.append("\n\tat ").append(traceLine);
 
-                if (waitingOnLock != null && waitingOnLock.getStackDepth() == depth) {
-                    assert depth == 0: "Waiting on lock should always relate to the innermost stack frame";
-
+                if (waitingOnLock != null && depth == 0) {
                     String verb = StackTrace.waitingVerb(traceLine);
                     sb.append("\n\t- ").append(verb).append(' ').append(waitingOnLock);
                 }
 
-                for (ThreadLock lock: acquiredLocks) {
-                    if (lock.getStackDepth() == depth) {
-                        sb.append("\n\t- locked " + lock);
-                    }
+                for (ThreadLock monitor: getMonitorsByDepth(depth)) {
+                    sb.append("\n\t- locked ").append(monitor.toString());
                 }
 
                 depth++;
@@ -377,7 +406,7 @@ public class ProcessThread {
     public static Predicate acquiredLock(final String className) {
         return new Predicate() {
             @Override
-            public boolean isValid(ProcessThread thread) {;
+            public boolean isValid(@Nonnull ProcessThread thread) {
                 for (ThreadLock lock: thread.getAcquiredLocks()) {
                     if (lock.getClassName().equals(className)) return true;
                 }

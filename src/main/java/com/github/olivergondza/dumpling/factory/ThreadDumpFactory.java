@@ -28,8 +28,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -46,6 +47,7 @@ import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ProcessThread.Builder;
 import com.github.olivergondza.dumpling.model.StackTrace;
 import com.github.olivergondza.dumpling.model.ThreadLock;
+import com.github.olivergondza.dumpling.model.ThreadLock.Monitor;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 
 /**
@@ -142,8 +144,9 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
     }
 
     private Builder initLocks(Builder builder, String string) {
-        ArrayList<ThreadLock> acquired = new ArrayList<ThreadLock>(2);
-        ArrayList<ThreadLock> waitingFor = new ArrayList<ThreadLock>(1);
+        List<ThreadLock.Monitor> monitors = new ArrayList<ThreadLock.Monitor>();
+        List<ThreadLock> synchronizers = new ArrayList<ThreadLock>();
+        List<ThreadLock> waitingFor = new ArrayList<ThreadLock>(1);
         int depth = -1;
 
         StringTokenizer tokenizer = new StringTokenizer(string, "\n");
@@ -152,13 +155,13 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
 
             Matcher acquiredMatcher = ACQUIRED_LINE.matcher(line);
             if (acquiredMatcher.find()) {
-                acquired.add(createLock(acquiredMatcher, depth));
+                monitors.add(new ThreadLock.Monitor(createLock(acquiredMatcher), depth));
                 continue;
             }
 
             Matcher waitingForMatcher = WAITING_FOR_LINE.matcher(line);
             if (waitingForMatcher.find()) {
-                waitingFor.add(createLock(waitingForMatcher, depth));
+                waitingFor.add(createLock(waitingForMatcher));
                 continue;
             }
 
@@ -169,7 +172,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
                     if (line.contains("- None")) break;
                     Matcher matcher = OWNABLE_SYNCHRONIZER_LINE.matcher(line);
                     matcher.find();
-                    acquired.add(createLock(matcher, -1));
+                    synchronizers.add(createLock(matcher));
                 }
             }
 
@@ -184,7 +187,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
             case 1:
                 lock = waitingFor.get(0);
             break;
-            default: throw new AssertionError("Waiting for locks: " + waitingFor.size());
+            default: throw new AssertionError(String.format("Waiting for %d locks is not possible.", waitingFor.size()));
         }
 
         // Eliminate self lock that is presented in threaddumps when in Object.wait()
@@ -195,23 +198,28 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
             // Sometimes there are threads that are in Object.wait() and
             // (TIMED_)WAITING, yet does not declare to wait on self monitor
             if (lock == null) {
-                ThreadLock.WithAddress data = (ThreadLock.WithAddress) acquired.get(0);
-                lock = new ThreadLock.WithAddress(0, data.getClassName(), data.getAddress());
+                ThreadLock.WithAddress data = (ThreadLock.WithAddress) monitors.get(0).getLock();
+                lock = new ThreadLock.WithAddress(data.getClassName(), data.getAddress());
             }
 
-            acquired.removeAll(Collections.singleton(lock));
+            for (Iterator<Monitor> it = monitors.iterator(); it.hasNext();) {
+                Monitor m = it.next();
+
+                if (m.getLock().equals(lock)) {
+                    it.remove();
+                }
+            }
         }
 
-        builder.setAcquiredLocks(acquired);
+        builder.setAcquiredMonitors(monitors);
+        builder.setAcquiredSynchronizers(synchronizers);
         builder.setWaitingOnLock(lock);
 
         return builder;
     }
 
-    private @Nonnull ThreadLock.WithAddress createLock(Matcher matcher, int depth) {
-        return new ThreadLock.WithAddress(
-                depth, matcher.group(2), Long.parseLong(matcher.group(1), 16)
-        );
+    private @Nonnull ThreadLock.WithAddress createLock(Matcher matcher) {
+        return new ThreadLock.WithAddress(matcher.group(2), Long.parseLong(matcher.group(1), 16));
     }
 
     private Builder initHeader(Builder builder, String attrs) {

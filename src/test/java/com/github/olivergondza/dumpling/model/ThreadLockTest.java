@@ -33,42 +33,42 @@ public class ThreadLockTest {
     @Test
     public void equalsWithAddress() {
         assertEquals(
-                new ThreadLock.WithAddress(0, "my.class.Name", 42),
-                new ThreadLock.WithAddress(0, "my.class.Name", 42)
+                new ThreadLock.WithAddress("my.class.Name", 42),
+                new ThreadLock.WithAddress("my.class.Name", 42)
         );
 
         assertNotEquals(
-                new ThreadLock.WithAddress(0, "my.class.Name", 42),
-                new ThreadLock.WithAddress(0, "my.class.Name", 43)
+                new ThreadLock.WithAddress("my.class.Name", 42),
+                new ThreadLock.WithAddress("my.class.Name", 43)
         );
         assertNotEquals(
-                new ThreadLock.WithAddress(0, "my.other.class.Name", 42),
-                new ThreadLock.WithAddress(0, "my.class.Name", 43)
+                new ThreadLock.WithAddress("my.other.class.Name", 42),
+                new ThreadLock.WithAddress("my.class.Name", 43)
         );
     }
 
     @Test
     public void equalsWithHashCode() {
         assertEquals(
-                new ThreadLock.WithHashCode(0, "my.class.Name", 42),
-                new ThreadLock.WithHashCode(0, "my.class.Name", 42)
+                new ThreadLock.WithHashCode("my.class.Name", 42),
+                new ThreadLock.WithHashCode("my.class.Name", 42)
         );
 
         assertNotEquals(
-                new ThreadLock.WithHashCode(0, "my.class.Name", 42),
-                new ThreadLock.WithHashCode(0, "my.class.Name", 43)
+                new ThreadLock.WithHashCode("my.class.Name", 42),
+                new ThreadLock.WithHashCode("my.class.Name", 43)
         );
         assertNotEquals(
-                new ThreadLock.WithHashCode(0, "my.other.class.Name", 42),
-                new ThreadLock.WithHashCode(0, "my.class.Name", 43)
+                new ThreadLock.WithHashCode("my.other.class.Name", 42),
+                new ThreadLock.WithHashCode("my.class.Name", 43)
         );
     }
 
     @Test
     public void notEquals() {
         assertNotEquals(
-                new ThreadLock.WithHashCode(0, "my.class.Name", 42),
-                new ThreadLock.WithAddress(0, "my.class.Name", 42)
+                new ThreadLock.WithHashCode("my.class.Name", 42),
+                new ThreadLock.WithAddress("my.class.Name", 42)
         );
     }
 }
