@@ -24,7 +24,9 @@
 package com.github.olivergondza.dumpling.model;
 
 import java.lang.Thread.State;
+import java.util.concurrent.locks.LockSupport;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
@@ -37,13 +39,38 @@ import javax.annotation.Nonnull;
  */
 public enum ThreadStatus {
     NEW                 ("NEW",                                 0,      State.NEW),
-    RUNNABLE            ("RUNNABLE",                            5,      State.RUNNABLE), // runnable / running
-    SLEEPING            ("TIMED_WAITING (sleeping)",            225,    State.TIMED_WAITING), // Thread.sleep()
-    IN_OBJECT_WAIT      ("WAITING (on object monitor)",         401,    State.WAITING), // Object.wait()
-    IN_OBJECT_WAIT_TIMED("TIMED_WAITING (on object monitor)",   417,    State.TIMED_WAITING), // Object.wait(long)
-    PARKED              ("WAITING (parking)",                   657,    State.WAITING), // LockSupport.park()
-    PARKED_TIMED        ("TIMED_WAITING (parking)",             673,    State.TIMED_WAITING), // LockSupport.park(long)
-    BLOCKED             ("BLOCKED (on object monitor)",         1025,   State.BLOCKED), // (re-)entering a synchronization block
+    RUNNABLE            ("RUNNABLE",                            5,      State.RUNNABLE),
+    SLEEPING            ("TIMED_WAITING (sleeping)",            225,    State.TIMED_WAITING),
+
+    /**
+     * Thread in {@link Object#wait()}.
+     *
+     * @see {@link Thread.State#WAITING}
+     */
+    IN_OBJECT_WAIT      ("WAITING (on object monitor)",         401,    State.WAITING),
+
+    /**
+     * Thread in {@link Object#wait(long)}.
+     *
+     * @see {@link Thread.State#TIMED_WAITING}
+     */
+    IN_OBJECT_WAIT_TIMED("TIMED_WAITING (on object monitor)",   417,    State.TIMED_WAITING),
+
+    /**
+     * Thread in {@link LockSupport#park()}.
+     *
+     * @see {@link Thread.State#WAITING}
+     */
+    PARKED              ("WAITING (parking)",                   657,    State.WAITING),
+
+    /**
+     * Thread in {@link LockSupport#parkNanos}.
+     *
+     * @see {@link Thread.State#TIMED_WAITING}
+     */
+    PARKED_TIMED        ("TIMED_WAITING (parking)",             673,    State.TIMED_WAITING),
+
+    BLOCKED             ("BLOCKED (on object monitor)",         1025,   State.BLOCKED),
     TERMINATED          ("TERMINATED",                          2,      State.TERMINATED),
 
     /**
@@ -71,16 +98,71 @@ public enum ThreadStatus {
         return code;
     }
 
-    public State getState() {
+    public @CheckForNull State getState() {
         return state;
     }
 
+    /**
+     * Newly create thread
+     *
+     * @see {@link Thread.State#NEW}
+     */
+    public boolean isNew() {
+        return this == NEW;
+    }
+
+    /**
+     * Thread that is runnable / running.
+     *
+     * @see {@link Thread.State#RUNNABLE}
+     */
+    public boolean isRunnable() {
+        return this == RUNNABLE;
+    }
+
+    /**
+     * Thread in {@link Thread#sleep(long)} or {@link Thread#sleep(long, int)} waiting to be notified.
+     *
+     * @see {@link Thread.State#TIMED_WAITING}
+     */
+    public boolean isSleeping() {
+        return this == SLEEPING;
+    }
+
+    /**
+     * Thread in {@link Object#wait()} or {@link Object#wait(long)}.
+     *
+     * @see {@link Thread.State#WAITING}, {@link Thread.State#TIMED_WAITING}
+     */
     public boolean isWaiting() {
         return this == IN_OBJECT_WAIT || this == IN_OBJECT_WAIT_TIMED;
     }
 
+    /**
+     * Thread in {@link LockSupport#park()} or {@link LockSupport#parkNanos}.
+     *
+     * @see {@link Thread.State#WAITING}, {@link Thread.State#TIMED_WAITING}
+     */
     public boolean isParked() {
         return this == PARKED || this == PARKED_TIMED;
+    }
+
+    /**
+     * Thread (re-)entering a synchronization block.
+     *
+     * @see {@link Thread.State#BLOCKED}
+     */
+    public boolean isBlocked() {
+        return this == BLOCKED;
+    }
+
+    /**
+     * Thread that terminated execution.
+     *
+     * @see {@link Thread.State#TERMINATED}
+     */
+    public boolean isTerminated() {
+        return this == TERMINATED;
     }
 
     public static @Nonnull ThreadStatus valueOf(int code) {

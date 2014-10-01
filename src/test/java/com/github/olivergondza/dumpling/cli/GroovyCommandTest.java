@@ -131,6 +131,15 @@ public class GroovyCommandTest extends AbstractCliTest {
         assertThat(exitValue, equalTo(0));
     }
 
+    @Test
+    public void stateFilter() {
+        String choices = "it.status.new || it.status.runnable || it.status.sleeping || it.status.waiting || it.status.parked || it.status.blocked || it.status.terminated";
+        invoke("print runtime.threads.grep { " + choices + " }.empty");
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), equalTo("false"));
+        assertThat(exitValue, equalTo(0));
+    }
+
     private void invoke(String script) {
         stdin(script);
         try {
