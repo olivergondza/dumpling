@@ -687,7 +687,6 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
     private void checkOwnableSynchronizers(ProcessRuntime runtime) {
         ThreadSet threads = runtime.getThreads();
-        System.out.println(threads);
         ProcessThread waiting = threads.where(nameIs("blockedThread")).onlyThread();
         ProcessThread owning = threads.where(nameIs("main")).onlyThread();
 
