@@ -41,9 +41,11 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.hamcrest.collection.IsEmptyCollection;
 import org.junit.Test;
 
+import com.github.olivergondza.dumpling.Util;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadLock;
+import com.github.olivergondza.dumpling.model.ThreadSet;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 
 public class JvmRuntimeFactoryTest {
@@ -286,6 +288,44 @@ public class JvmRuntimeFactoryTest {
             thread.interrupt();
             lock.unlock();
         }
+    }
+
+    @Test
+    public void multipleMonitorsOnSameStackFrame() throws Exception {
+        final Lock lock = new ReentrantLock();
+        final Object obj = new Object();
+        final String str = new String();
+        new Thread("multipleMonitors") {
+            @Override
+            public void run() {
+                synchronized (lock) {
+                    synchronized (obj) {
+                        synchronized (str) {
+                            synchronized (str) {
+                                pause(1000);
+                            }
+                        }
+                    }
+                }
+            }
+        }.start();
+
+        pause(100);
+
+        ThreadSet monitors = new JvmRuntimeFactory().currentRuntime().getThreads()
+                .where(nameIs("multipleMonitors"))
+        ;
+
+        // All locks on single frame should be reported. Outermost lock should
+        // be at the bottom (first), innermost last.
+        assertThat(monitors.toString(), containsString(Util.formatTrace(
+                "- locked " + new ThreadLock.WithHashCode(str),
+                "- locked " + new ThreadLock.WithHashCode(str),
+                "- locked " + new ThreadLock.WithHashCode(obj),
+                "- locked " + new ThreadLock.WithHashCode(lock)
+        )));
+
+        assertThat(monitors.onlyThread().getAcquiredLocks().size(), equalTo(3));
     }
 
     private void assertStatusIs(ThreadStatus expected, Thread thread) {

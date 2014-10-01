@@ -49,4 +49,13 @@ public class Util {
         } catch (InterruptedException ex) {
         }
     }
+
+    public static String formatTrace(String... frames) {
+        StringBuilder sb = new StringBuilder();
+        for (String frame: frames) {
+            sb.append('\t').append(frame).append('\n');
+        }
+
+        return sb.toString();
+    }
 }

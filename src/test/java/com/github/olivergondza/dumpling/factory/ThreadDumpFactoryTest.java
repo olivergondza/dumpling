@@ -722,6 +722,23 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertThat(threads.size(), equalTo(2));
     }
 
+    @Test
+    public void multipleMonitorsOnSingleStackFrame() throws Exception {
+        ThreadSet monitors = runtimeFrom("multiple-monitors-on-single-frame.log").getThreads();
+
+        // All locks on single frame should be reported. Outermost lock should
+        // be at the bottom (first), innermost last.
+        assertThat(monitors.toString(), containsString(Util.formatTrace(
+                "- locked <0x7d7531890> (a java.lang.String)",
+                "- locked <0x7d7531890> (a java.lang.String)",
+                "- locked <0x7d7531880> (a java.lang.Object)",
+                "- locked <0x7d7531870> (a sun.misc.Lock)"
+        )));
+
+        // Duplicates are collapsed
+        assertThat(monitors.onlyThread().getAcquiredLocks().size(), equalTo(3));
+    }
+
     private ProcessRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {
         return new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), resource));
     }

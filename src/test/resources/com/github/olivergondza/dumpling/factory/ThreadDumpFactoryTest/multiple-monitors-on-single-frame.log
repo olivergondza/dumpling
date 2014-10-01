@@ -1,0 +1,15 @@
+2014-10-01 10:02:41
+Full thread dump OpenJDK 64-Bit Server VM (24.65-b04 mixed mode):
+
+"multipleMonitors" prio=10 tid=0x00007f2848310800 nid=0xcef waiting on condition [0x00007f283e841000]
+   java.lang.Thread.State: TIMED_WAITING (sleeping)
+	at java.lang.Thread.sleep(Native Method)
+	at com.github.olivergondza.dumpling.Util.pause(Util.java:48)
+	at com.github.olivergondza.dumpling.model.ProcessTheadTest$1.run(ProcessTheadTest.java:100)
+	- locked <0x00000007d7531890> (a java.lang.String)
+	- locked <0x00000007d7531890> (a java.lang.String)
+	- locked <0x00000007d7531880> (a java.lang.Object)
+	- locked <0x00000007d7531870> (a sun.misc.Lock)
+
+JNI global references: 179
+

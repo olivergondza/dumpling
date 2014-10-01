@@ -57,6 +57,11 @@ public abstract class ThreadLock {
 
         private final int identityHashCode;
 
+        public WithHashCode(@Nonnull Object instance) {
+            super(instance.getClass().getCanonicalName());
+            identityHashCode = System.identityHashCode(instance);
+        }
+
         public WithHashCode(@Nonnull String className, int identityHashCode) {
             super(className);
             this.identityHashCode = identityHashCode;

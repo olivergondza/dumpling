@@ -44,13 +44,13 @@ public class ProcessTheadTest {
     public void printLocksOnCorrectPosionInStackTrace() throws Exception {
         String dump = factory.fromFile(Util.resourceFile("producer-consumer.log")).getThreads().toString();
 
-        assertThat(dump, containsString(slice(
+        assertThat(dump, containsString(Util.formatTrace(
                 "at hudson.model.Queue.getItem(Queue.java:719)",
                 "- waiting to lock <0x4063a9378> (a hudson.model.Queue)",
                 "at hudson.model.AbstractProject.getQueueItem(AbstractProject.java:927)"
         )));
 
-        assertThat(dump, containsString(slice(
+        assertThat(dump, containsString(Util.formatTrace(
                 "at hudson.model.Queue.maintain(Queue.java:1106)",
                 "- locked <0x4063a9378> (a hudson.model.Queue)",
                 "at hudson.model.Queue.pop(Queue.java:935)",
@@ -79,15 +79,5 @@ public class ProcessTheadTest {
         ThreadSet threads = factory.fromFile(Util.resourceFile("producer-consumer.log")).getThreads();
         assertThat(threads.where(nameIs("blocked_thread")), equalTo(threads.where(waitingOnLock("hudson.model.Queue"))));
         assertThat(threads.where(nameIs("owning_thread")), equalTo(threads.where(acquiredLock("hudson.model.Queue"))));
-
-    }
-
-    private String slice(String... frames) {
-        StringBuilder sb = new StringBuilder();
-        for (String frame: frames) {
-            sb.append('\t').append(frame).append('\n');
-        }
-
-        return sb.toString();
     }
 }
