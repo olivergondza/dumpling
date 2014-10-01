@@ -23,7 +23,7 @@ In case of running queries exposed through CLI, the command itself chooses suita
 Run custom groovy query:
 
 ```bash
-$ ./dumpling.sh groovy --in threaddump jstack-crash.log <<< "runtime.threads.grep { it.threadStatus.waiting }"
+$ ./dumpling.sh groovy --in threaddump jstack-crash.log <<< "runtime.threads.grep { it.status.waiting }"
 ```
 
 For interactive investigation there is `groovysh` command to open the shell, load threaddumps and query its state as necessary.
