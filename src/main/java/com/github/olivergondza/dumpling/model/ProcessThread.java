@@ -80,7 +80,15 @@ public class ProcessThread {
         return state.tid;
     }
 
+    /**
+     * @deprecated Kept for backward compatibility, use {@link #getStatus()} instead.
+     */
+    @Deprecated
     public ThreadStatus getThreadStatus() {
+        return getStatus();
+    }
+
+    public ThreadStatus getStatus() {
         return state.status;
     }
 

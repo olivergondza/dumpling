@@ -244,7 +244,7 @@ public class JvmRuntimeFactoryTest {
             ProcessRuntime runtime = new JvmRuntimeFactory().currentRuntime();
             ProcessThread waiting = runtime.getThreads().where(nameIs("monitorOwnerOnObjectWait")).onlyThread();
             assertThat(waiting.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
-            assertThat(waiting.getThreadStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
+            assertThat(waiting.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
 
             // Current thread is
             ProcessThread current = runtime.getThreads().where(nameIs(Thread.currentThread().getName())).onlyThread();
@@ -277,8 +277,8 @@ public class JvmRuntimeFactoryTest {
             ProcessThread current = runtime.getThreads().where(nameIs(Thread.currentThread().getName())).onlyThread();
             ProcessThread blocked = runtime.getThreads().where(nameIs("ownableSynchronizers")).onlyThread();
 
-            assertThat(current.getThreadStatus(), equalTo(ThreadStatus.RUNNABLE));
-            assertThat(blocked.getThreadStatus(), equalTo(ThreadStatus.PARKED));
+            assertThat(current.getStatus(), equalTo(ThreadStatus.RUNNABLE));
+            assertThat(blocked.getStatus(), equalTo(ThreadStatus.PARKED));
 
             Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(blocked.getWaitingOnLock()));
             assertThat(current.getAcquiredLocks(), equalTo(locks));
@@ -345,7 +345,7 @@ public class JvmRuntimeFactoryTest {
         if (processThread == null) throw new AssertionError(
                 "No process thread in runtime for " + thread.getName()
         );
-        return processThread.getThreadStatus();
+        return processThread.getStatus();
     }
 
     private ProcessRuntime runtime() {

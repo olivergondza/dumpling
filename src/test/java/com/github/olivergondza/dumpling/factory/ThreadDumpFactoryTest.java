@@ -68,7 +68,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertEquals(35, threads.size());
 
         ProcessThread main = threads.where(nameIs("main")).onlyThread();
-        assertEquals(ThreadStatus.RUNNABLE, main.getThreadStatus());
+        assertEquals(ThreadStatus.RUNNABLE, main.getStatus());
         assertEquals(Thread.State.RUNNABLE, main.getState());
         assertThat(139675222183936L, equalTo(main.getTid()));
         assertThat(24597L, equalTo(main.getNid()));
@@ -96,7 +96,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertEquals(143, threads.size());
 
         ProcessThread thread = threads.where(nameIs("Channel reader thread: jenkins_slave_02")).onlyThread();
-        assertEquals(ThreadStatus.RUNNABLE, thread.getThreadStatus());
+        assertEquals(ThreadStatus.RUNNABLE, thread.getStatus());
         StackTrace trace = thread.getStackTrace();
         assertEquals(13, trace.size());
 
@@ -609,7 +609,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
         ProcessThread parking = threads.where(nameIs("ConnectionValidator")).onlyThread();
 
-        assertThat(parking.getThreadStatus(), equalTo(ThreadStatus.PARKED_TIMED));
+        assertThat(parking.getStatus(), equalTo(ThreadStatus.PARKED_TIMED));
         assertThat(parking.getWaitingOnLock().getClassName(), equalTo(
                 "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject"
         ));
@@ -647,7 +647,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     public void inconsistentThreadStateAndLockInformation() throws Exception {
         ProcessThread thread = runtimeFrom("inconsistent-locks-and-state.log").getThreads().onlyThread();
 
-        assertThat(thread.getThreadStatus(), equalTo(ThreadStatus.RUNNABLE));
+        assertThat(thread.getStatus(), equalTo(ThreadStatus.RUNNABLE));
         ThreadLock expectedLock = new ThreadLock.WithAddress(
                 "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject", 21032260640L
         );
@@ -664,16 +664,16 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
         final ThreadLock lock = new ThreadLock.WithAddress("java.lang.Object", 33677473560L);
         final Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(lock));
-        assertThat(owning.getThreadStatus(), equalTo(ThreadStatus.SLEEPING));
+        assertThat(owning.getStatus(), equalTo(ThreadStatus.SLEEPING));
         assertThat(owning.getAcquiredLocks(), equalTo(locks));
         assertThat(owning.getWaitingOnLock(), equalTo(null));
 
-        assertThat(waiting.getThreadStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
+        assertThat(waiting.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
         assertThat(waiting.getWaitingOnLock(), equalTo(lock));
         assertThat(waiting.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
 
         ProcessThread nested = threads.where(nameIs("waiting_in_nested_synchronized")).onlyThread();
-        assertThat(nested.getThreadStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT_TIMED));
+        assertThat(nested.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT_TIMED));
         assertThat(nested.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
         //assertThat(nested.getWaitingOnLock(), equalTo(new ThreadLock.WithAddress(0, "java.lang.Object", 33677473560L)));
     }
@@ -695,7 +695,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertThat(owning.getAcquiredLocks(), equalTo(locks));
         assertThat(owning.getWaitingOnLock(), equalTo(null));
 
-        assertThat(waiting.getThreadStatus(), equalTo(ThreadStatus.PARKED));
+        assertThat(waiting.getStatus(), equalTo(ThreadStatus.PARKED));
         assertThat(waiting.getWaitingOnLock(), equalTo(lock));
         assertThat(waiting.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
 
@@ -706,7 +706,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     public void threadNameWithQuotes() throws Exception {
         ProcessThread quotes = runtimeFrom("quoted.log").getThreads().onlyThread();
         assertThat(quotes.getName(), equalTo("\"o\""));
-        assertThat(quotes.getThreadStatus(), equalTo(ThreadStatus.SLEEPING));
+        assertThat(quotes.getStatus(), equalTo(ThreadStatus.SLEEPING));
         assertThat(quotes.getPriority(), equalTo(10));
         assertThat(quotes.getTid(), equalTo(139651066363904L));
         assertThat(quotes.getNid(), equalTo(19257L));
@@ -716,7 +716,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     public void threadNameWithLinebreak() throws Exception {
         ProcessThread quotes = runtimeFrom("linebreaked.log").getThreads().onlyThread();
         assertThat(quotes.getName(), equalTo("Thread\nName\nWith\nLinebreaks"));
-        assertThat(quotes.getThreadStatus(), equalTo(ThreadStatus.SLEEPING));
+        assertThat(quotes.getStatus(), equalTo(ThreadStatus.SLEEPING));
         assertThat(quotes.getPriority(), equalTo(10));
         assertThat(quotes.getTid(), equalTo(139680862656512L));
         assertThat(quotes.getNid(), equalTo(18973L));
@@ -914,7 +914,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         if (!equals(lhs.getName(), rhs.getName())) return "name";
         if (lhs.getPriority() != rhs.getPriority()) return "priority";
         if (lhs.isDaemon() != rhs.isDaemon()) return "daemon";
-        if (!equals(lhs.getThreadStatus(), rhs.getThreadStatus())) return "thread status";
+        if (!equals(lhs.getStatus(), rhs.getStatus())) return "thread status";
         if (!equals(lhs.getWaitingOnLock(), rhs.getWaitingOnLock())) return "waiting on lock";
         if (!lhs.getAcquiredLocks().equals(rhs.getAcquiredLocks())) return "acquired locks";
         // if (!Arrays.equals(lhs.getStackTrace(), rhs.getStackTrace())) return "stack trace";

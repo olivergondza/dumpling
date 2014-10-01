@@ -103,7 +103,7 @@ public class ThreadDumpFactoryVendorTest {
 
     private void assertSleeping(ProcessRuntime runtime) {
         ProcessThread sleeping = thread(runtime, "sleeping");
-        assertThat(sleeping.getThreadStatus(), equalTo(ThreadStatus.SLEEPING));
+        assertThat(sleeping.getStatus(), equalTo(ThreadStatus.SLEEPING));
         StackTraceElement traceElement = sleeping.getStackTrace().getElement(0);
         assertThat(
                 traceElement,
@@ -113,12 +113,12 @@ public class ThreadDumpFactoryVendorTest {
 
     private void assertWaiting(ProcessRuntime runtime) {
         ProcessThread waiting = thread(runtime, "waiting");
-        assertThat(waiting.getThreadStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
+        assertThat(waiting.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
     }
 
     private void assertBusyWaiting(ProcessRuntime runtime) {
         ProcessThread busyWaiting = thread(runtime, "busy_waiting");
-        assertThat(busyWaiting.getThreadStatus(), equalTo(ThreadStatus.RUNNABLE));
+        assertThat(busyWaiting.getStatus(), equalTo(ThreadStatus.RUNNABLE));
         assertThat(
                 busyWaiting.getAcquiredLocks().iterator().next().getClassName(),
                 equalTo("com.github.olivergondza.dumpling.factory.ThreadDumpFactoryVendorTest$BusyWaiting")
