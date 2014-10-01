@@ -81,19 +81,19 @@ public class TopContendersTest extends AbstractCliTest {
     }
 
     private void assertListing(String out) {
-        assertThat(out, containsString("\nBlocking threads: 1; Blocked threads: 3\n"));
+        assertThat(out, containsString(String.format("%nBlocking threads: 1; Blocked threads: 3%n")));
 
         // Header
-        assertThat(out, containsString("* \"producer\" prio=10 tid=140692931092480 nid=4567\n"));
-        assertThat(out, containsString("\n  (1) \"consumerC\" prio=10 tid=140692931145728 nid=4570\n"));
-        assertThat(out, containsString("\n  (2) \"consumerB\" prio=10 tid=140692931141632 nid=4569\n"));
-        assertThat(out, containsString("\n  (3) \"consumerA\" prio=10 tid=140692931094528 nid=4568\n"));
+        assertThat(out, containsString(String.format("* \"producer\" prio=10 tid=140692931092480 nid=4567%n")));
+        assertThat(out, containsString(String.format("%n  (1) \"consumerC\" prio=10 tid=140692931145728 nid=4570%n")));
+        assertThat(out, containsString(String.format("%n  (2) \"consumerB\" prio=10 tid=140692931141632 nid=4569%n")));
+        assertThat(out, containsString(String.format("%n  (3) \"consumerA\" prio=10 tid=140692931094528 nid=4568%n")));
 
         // No tread listing
-        assertThat(out, not(containsString("\n\"producer\" prio=10 tid=140692931092480 nid=4567\n")));
-        assertThat(out, not(containsString("\n\"consumerA\" prio=10 tid=140692931094528 nid=4568\n")));
-        assertThat(out, not(containsString("\n\"consumerB\" prio=10 tid=140692931141632 nid=4569\n")));
-        assertThat(out, not(containsString("\n\"consumerC\" prio=10 tid=140692931145728 nid=4570\n")));
+        assertThat(out, not(containsString(String.format("%n\"producer\" prio=10 tid=140692931092480 nid=4567%n"))));
+        assertThat(out, not(containsString(String.format("%n\"consumerA\" prio=10 tid=140692931094528 nid=4568%n"))));
+        assertThat(out, not(containsString(String.format("%n\"consumerB\" prio=10 tid=140692931141632 nid=4569%n"))));
+        assertThat(out, not(containsString(String.format("%n\"consumerC\" prio=10 tid=140692931145728 nid=4570%n"))));
     }
 
     @Test
