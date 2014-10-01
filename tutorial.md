@@ -26,7 +26,7 @@ groovy methods can by used side by side.
 
 ```groovy
 // Find RUNNABLE ajp threads
-runtime.threads.grep { it.status == ThreadStatus.RUNNABLE }.where(nameContains(~/ajp-.*/))
+runtime.threads.grep { it.status.runnable }.where(nameContains(~/ajp-.*/))
 ```
 
 ## Predefined queries
