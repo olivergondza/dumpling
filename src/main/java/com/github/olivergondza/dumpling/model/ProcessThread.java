@@ -314,14 +314,6 @@ public class ProcessThread {
                 sb.append("\n   java.lang.Thread.State: ").append(status.getName());
             }
 
-            if (!acquiredSynchronizers.isEmpty()) {
-                for (ThreadLock synchronizer: acquiredSynchronizers) {
-                    if (!synchronizer.equals(waitingOnLock)) {
-                        sb.append("\n\t- synchronized ").append(synchronizer.toString());
-                    }
-                }
-            }
-
             int depth = 0;
             for (StackTraceElement traceLine: stackTrace.getElemens()) {
                 sb.append("\n\tat ").append(traceLine);
@@ -336,6 +328,13 @@ public class ProcessThread {
                 }
 
                 depth++;
+            }
+
+            if (!acquiredSynchronizers.isEmpty()) {
+                sb.append("\n\n   Locked ownable synchronizers:\n");
+                for (ThreadLock synchronizer: acquiredSynchronizers) {
+                    sb.append("\t- ").append(synchronizer.toString()).append('\n');
+                }
             }
 
             return sb.toString();

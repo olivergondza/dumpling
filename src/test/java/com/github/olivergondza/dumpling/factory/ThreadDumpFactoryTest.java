@@ -680,7 +680,14 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
     @Test
     public void ownableSynchronizers() throws Exception {
-        ThreadSet threads = runtimeFrom("ownable-synchronizers.log").getThreads();
+        ProcessRuntime threads = runtimeFrom("ownable-synchronizers.log");
+        checkOwnableSynchronizers(threads);
+        checkOwnableSynchronizers(reparse(threads));
+    }
+
+    private void checkOwnableSynchronizers(ProcessRuntime runtime) {
+        ThreadSet threads = runtime.getThreads();
+        System.out.println(threads);
         ProcessThread waiting = threads.where(nameIs("blockedThread")).onlyThread();
         ProcessThread owning = threads.where(nameIs("main")).onlyThread();
 
