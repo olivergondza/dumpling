@@ -41,8 +41,8 @@ import javax.annotation.Nonnull;
  */
 public class ProcessThread {
 
-    private @Nonnull final ProcessRuntime runtime;
-    private @Nonnull final Builder state;
+    private final @Nonnull ProcessRuntime runtime;
+    private final @Nonnull Builder state;
 
     private ProcessThread(@Nonnull ProcessRuntime runtime, @Nonnull Builder builder) {
         this.runtime = runtime;

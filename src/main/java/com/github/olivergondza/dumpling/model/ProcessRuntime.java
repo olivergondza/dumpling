@@ -37,8 +37,8 @@ import com.github.olivergondza.dumpling.query.SingleThreadSetQuery;
  */
 public class ProcessRuntime {
 
-    private @Nonnull final ThreadSet threads;
-    private @Nonnull final ThreadSet emptySet;
+    private final @Nonnull ThreadSet threads;
+    private final @Nonnull ThreadSet emptySet;
 
     public ProcessRuntime(@Nonnull Set<ProcessThread.Builder> builders) {
         this.threads = createThreads(builders);
