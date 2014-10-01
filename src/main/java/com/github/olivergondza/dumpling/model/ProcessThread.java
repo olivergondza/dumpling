@@ -84,15 +84,20 @@ public class ProcessThread {
      * @deprecated Kept for backward compatibility, use {@link #getStatus()} instead.
      */
     @Deprecated
-    public ThreadStatus getThreadStatus() {
+    public @Nonnull ThreadStatus getThreadStatus() {
         return getStatus();
     }
 
-    public ThreadStatus getStatus() {
+    public @Nonnull ThreadStatus getStatus() {
         return state.status;
     }
 
-    public Thread.State getState() {
+    /**
+     * {@link Thread.State} of current thread.
+     *
+     * @return null if was not able to determine thread state.
+     */
+    public @CheckForNull Thread.State getState() {
         return state.status.getState();
     }
 
@@ -211,7 +216,7 @@ public class ProcessThread {
         // https://gist.github.com/rednaxelafx/843622
         private Long id, nid, tid;
         private @Nonnull StackTrace stackTrace = new StackTrace();
-        private ThreadStatus status;
+        private @Nonnull ThreadStatus status = ThreadStatus.UNKNOWN;
         private @CheckForNull ThreadLock waitingOnLock;
         private @Nonnull List<ThreadLock.Monitor> acquiredMonitors = Collections.emptyList();
         private @Nonnull List<ThreadLock> acquiredSynchronizers = Collections.emptyList();
@@ -268,7 +273,7 @@ public class ProcessThread {
             return stackTrace;
         }
 
-        public @Nonnull Builder setThreadStatus(ThreadStatus status) {
+        public @Nonnull Builder setThreadStatus(@Nonnull ThreadStatus status) {
             this.status = status;
             return this;
         }

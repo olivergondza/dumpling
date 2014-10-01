@@ -45,6 +45,12 @@ public enum ThreadStatus {
     PARKED_TIMED        ("TIMED_WAITING (parking)",             673,    State.TIMED_WAITING), // LockSupport.park(long)
     BLOCKED             ("BLOCKED (on object monitor)",         1025,   State.BLOCKED), // (re-)entering a synchronization block
     TERMINATED          ("TERMINATED",                          2,      State.TERMINATED),
+
+    /**
+     * Runtime factory was not able to determine thread state.
+     *
+     * This can happen for service threads in threaddump.
+     */
     UNKNOWN             ("UNKNOWN",                             -1,     null);
 
     private final @Nonnull String name;
