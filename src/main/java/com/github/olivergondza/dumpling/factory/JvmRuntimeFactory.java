@@ -121,12 +121,15 @@ public class JvmRuntimeFactory {
             int code = threadStatus.getInt(thread);
             return ThreadStatus.valueOf(code);
         } catch (IllegalArgumentException ex) {
-            ex.printStackTrace();
-        } catch (IllegalAccessException ex) {
-            ex.printStackTrace();
-        }
 
-        return ThreadStatus.UNKNOWN;
+            throw new UnsupportedJreException(ex);
+        } catch (IllegalAccessException ex) {
+
+            throw new UnsupportedJreException(ex);
+        } catch (NullPointerException ex) {
+
+            throw new UnsupportedJreException(ex);
+        }
     }
 
     private static Field threadStatus;
@@ -135,9 +138,18 @@ public class JvmRuntimeFactory {
             threadStatus = Thread.class.getDeclaredField("threadStatus");
             threadStatus.setAccessible(true);
         } catch (NoSuchFieldException ex) {
-            ex.printStackTrace();
+           // Ignore in initialization. NullPointerException will be thrown when accessing.
         } catch (SecurityException ex) {
-            ex.printStackTrace();
+           // Ignore in initialization. IllegalAccessException will be thrown when accessing.
+        }
+    }
+
+    private final static class UnsupportedJreException extends RuntimeException {
+        public UnsupportedJreException(Throwable cause) {
+            super(
+                    "Dumpling was unable to extract necessary information from running JVM. Report this as Dumpling feature request with JRE vendor and version attached.",
+                    cause
+            );
         }
     }
 }
