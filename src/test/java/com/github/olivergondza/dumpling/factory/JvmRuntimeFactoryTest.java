@@ -249,7 +249,7 @@ public class JvmRuntimeFactoryTest {
             // Current thread is
             ProcessThread current = runtime.getThreads().where(nameIs(Thread.currentThread().getName())).onlyThread();
             final Set<ThreadLock> expected = new HashSet<ThreadLock>(Arrays.asList(
-                    new ThreadLock.WithHashCode(lock.getClass().getCanonicalName(), lock.hashCode())
+                    ThreadLock.fromInstance(lock)
             ));
             assertThat(current.getAcquiredLocks(), equalTo(expected));
         }
@@ -319,10 +319,10 @@ public class JvmRuntimeFactoryTest {
         // All locks on single frame should be reported. Outermost lock should
         // be at the bottom (first), innermost last.
         assertThat(monitors.toString(), containsString(Util.formatTrace(
-                "- locked " + new ThreadLock.WithHashCode(str),
-                "- locked " + new ThreadLock.WithHashCode(str),
-                "- locked " + new ThreadLock.WithHashCode(obj),
-                "- locked " + new ThreadLock.WithHashCode(lock)
+                "- locked " + ThreadLock.fromInstance(str),
+                "- locked " + ThreadLock.fromInstance(str),
+                "- locked " + ThreadLock.fromInstance(obj),
+                "- locked " + ThreadLock.fromInstance(lock)
         )));
 
         assertThat(monitors.onlyThread().getAcquiredLocks().size(), equalTo(3));

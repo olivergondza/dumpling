@@ -36,7 +36,14 @@ public class ThreadLock {
     protected final @Nonnull String className;
     private final long id;
 
-    protected ThreadLock(@Nonnull String className, long id) {
+    public static @Nonnull ThreadLock fromInstance(@Nonnull Object instance) {
+        return new ThreadLock(
+                instance.getClass().getCanonicalName(),
+                System.identityHashCode(instance)
+        );
+    }
+
+    public ThreadLock(@Nonnull String className, long id) {
         this.className = className;
         this.id = id;
     }

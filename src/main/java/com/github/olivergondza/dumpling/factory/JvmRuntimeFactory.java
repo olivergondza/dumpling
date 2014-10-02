@@ -121,7 +121,7 @@ public class JvmRuntimeFactory {
     }
 
     private @Nonnull ThreadLock lock(final LockInfo info) {
-        return new ThreadLock.WithHashCode(info.getClassName(), info.getIdentityHashCode());
+        return new ThreadLock(info.getClassName(), info.getIdentityHashCode());
     }
 
     private ThreadStatus status(Thread thread) {

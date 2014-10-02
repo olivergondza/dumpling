@@ -200,8 +200,8 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
             // (TIMED_)WAITING, yet does not declare to wait on self monitor
             if (lock == null) {
                 try {
-                    ThreadLock.WithAddress data = (ThreadLock.WithAddress) monitors.get(0).getLock();
-                    lock = new ThreadLock.WithAddress(data.getClassName(), data.getAddress());
+                    ThreadLock data = monitors.get(0).getLock();
+                    lock = new ThreadLock(data.getClassName(), data.getId());
                 } catch (IndexOutOfBoundsException ex) {
                     throw new AssertionError("No monitors found for waiting/blocked thread", ex);
                 }
@@ -223,8 +223,8 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
         return builder;
     }
 
-    private @Nonnull ThreadLock.WithAddress createLock(Matcher matcher) {
-        return new ThreadLock.WithAddress(matcher.group(2), Long.parseLong(matcher.group(1), 16));
+    private @Nonnull ThreadLock createLock(Matcher matcher) {
+        return new ThreadLock(matcher.group(2), Long.parseLong(matcher.group(1), 16));
     }
 
     private Builder initHeader(Builder builder, String attrs) {

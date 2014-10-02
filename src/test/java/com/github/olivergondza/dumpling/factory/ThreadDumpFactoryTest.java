@@ -648,7 +648,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         ProcessThread thread = runtimeFrom("inconsistent-locks-and-state.log").getThreads().onlyThread();
 
         assertThat(thread.getStatus(), equalTo(ThreadStatus.RUNNABLE));
-        ThreadLock expectedLock = new ThreadLock.WithAddress(
+        ThreadLock expectedLock = new ThreadLock(
                 "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject", 21032260640L
         );
         assertThat(thread.getWaitingOnLock(), equalTo(expectedLock));
@@ -662,7 +662,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         ProcessThread waiting = threads.where(nameIs("monitorOwnerInObjectWait")).onlyThread();
         ProcessThread owning = threads.where(nameIs("main")).onlyThread();
 
-        final ThreadLock lock = new ThreadLock.WithAddress("java.lang.Object", 33677473560L);
+        final ThreadLock lock = new ThreadLock("java.lang.Object", 33677473560L);
         final Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(lock));
         assertThat(owning.getStatus(), equalTo(ThreadStatus.SLEEPING));
         assertThat(owning.getAcquiredLocks(), equalTo(locks));
@@ -675,7 +675,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         ProcessThread nested = threads.where(nameIs("waiting_in_nested_synchronized")).onlyThread();
         assertThat(nested.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT_TIMED));
         assertThat(nested.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
-        //assertThat(nested.getWaitingOnLock(), equalTo(new ThreadLock.WithAddress(0, "java.lang.Object", 33677473560L)));
+        //assertThat(nested.getWaitingOnLock(), equalTo(new ThreadLock(0, "java.lang.Object", 33677473560L)));
     }
 
     @Test
@@ -690,7 +690,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         ProcessThread waiting = threads.where(nameIs("blockedThread")).onlyThread();
         ProcessThread owning = threads.where(nameIs("main")).onlyThread();
 
-        final ThreadLock lock = new ThreadLock.WithAddress("java.util.concurrent.locks.ReentrantLock$NonfairSync", 32296902960L);
+        final ThreadLock lock = new ThreadLock("java.util.concurrent.locks.ReentrantLock$NonfairSync", 32296902960L);
         final Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(lock));
         assertThat(owning.getAcquiredLocks(), equalTo(locks));
         assertThat(owning.getWaitingOnLock(), equalTo(null));
@@ -763,7 +763,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         ).onlyThread();
 
         ThreadLock lock = t.getAcquiredLocks().iterator().next();
-        assertThat(lock, equalTo((ThreadLock) new ThreadLock.WithHashCode(this)));
+        assertThat(lock, equalTo(ThreadLock.fromInstance(this)));
     }
 
     private ProcessRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {
@@ -790,7 +790,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     }
 
     private ThreadLock lock(@Nonnull String classname, long address) {
-        return new ThreadLock.WithAddress(classname, address);
+        return new ThreadLock(classname, address);
     }
 
     private TypeSafeMatcher<ProcessRuntime> stacktraceEquals(final StackTrace expected, final String threadName) {
