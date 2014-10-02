@@ -25,7 +25,6 @@ package com.github.olivergondza.dumpling.query;
 
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameContains;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -150,17 +149,17 @@ public class BlockingTreeTest extends AbstractCliTest {
     private void assertQueryListing(String out) {
         // Roots
         assertThat(out, containsString("\"a\""));
-        assertThat(out, containsString("\n\"b\""));
+        assertThat(out, containsString("%n\"b\""));
 
         // Blocked by roots
-        assertThat(out, containsString("\n\t\"aa\""));
-        assertThat(out, containsString("\n\t\"ab\""));
-        assertThat(out, containsString("\n\t\"ba\""));
+        assertThat(out, containsString("%n\t\"aa\""));
+        assertThat(out, containsString("%n\t\"ab\""));
+        assertThat(out, containsString("%n\t\"ba\""));
 
         // Deeply nested
-        assertThat(out, containsString("\n\t\t\"aaa\""));
+        assertThat(out, containsString("%n\t\t\"aaa\""));
 
-        assertThat(out, not(containsString("\n\"aaa\" prio=10 tid=139918763419648 nid=31957\n")));
+        assertThat(out, not(containsString("%n\"aaa\" prio=10 tid=139918763419648 nid=31957%n")));
     }
 
     @Test
@@ -180,16 +179,16 @@ public class BlockingTreeTest extends AbstractCliTest {
     private void assertLongQueryListing(final String out) {
         // Roots
         assertThat(out, containsString("\"a\""));
-        assertThat(out, containsString("\n\"b\""));
+        assertThat(out, containsString("%n\"b\""));
 
         // Blocked by roots
-        assertThat(out, containsString("\n\t\"aa\""));
-        assertThat(out, containsString("\n\t\"ab\""));
-        assertThat(out, containsString("\n\t\"ba\""));
+        assertThat(out, containsString("%n\t\"aa\""));
+        assertThat(out, containsString("%n\t\"ab\""));
+        assertThat(out, containsString("%n\t\"ba\""));
 
         // Deeply nested
-        assertThat(out, containsString("\n\t\t\"aaa\""));
+        assertThat(out, containsString("%n\t\t\"aaa\""));
 
-        assertThat(out, containsString("\n\"aaa\" prio=10 tid=139918763419648 nid=31957\n"));
+        assertThat(out, containsString("%n\"aaa\" prio=10 tid=139918763419648 nid=31957%n"));
     }
 }

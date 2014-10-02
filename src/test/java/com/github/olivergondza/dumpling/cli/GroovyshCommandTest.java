@@ -23,7 +23,6 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -39,10 +38,10 @@ public class GroovyshCommandTest extends AbstractCliTest {
     @Test
     public void test() throws Exception {
         File file = Util.resourceFile(ThreadDumpFactoryTest.class, "openjdk-1.7.0_60.log");
-        stdin("load('" + file.getAbsolutePath() + "').threads.size();\n");
+        stdin("load('" + file.getAbsolutePath() + "').threads.size();" + Util.NL);
         run("groovysh");
 
-        assertThat(out.toString(), containsString(" 35\n"));
+        assertThat(out.toString(), containsString(" 35%n"));
         assertThat(exitValue, equalTo(0));
     }
 }
