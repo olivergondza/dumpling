@@ -199,8 +199,12 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
             // Sometimes there are threads that are in Object.wait() and
             // (TIMED_)WAITING, yet does not declare to wait on self monitor
             if (lock == null) {
-                ThreadLock.WithAddress data = (ThreadLock.WithAddress) monitors.get(0).getLock();
-                lock = new ThreadLock.WithAddress(data.getClassName(), data.getAddress());
+                try {
+                    ThreadLock.WithAddress data = (ThreadLock.WithAddress) monitors.get(0).getLock();
+                    lock = new ThreadLock.WithAddress(data.getClassName(), data.getAddress());
+                } catch (IndexOutOfBoundsException ex) {
+                    throw new AssertionError("No monitors found for waiting/blocked thread", ex);
+                }
             }
 
             for (Iterator<Monitor> it = monitors.iterator(); it.hasNext();) {
