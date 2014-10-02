@@ -27,7 +27,11 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import javax.annotation.Nonnull;
+
 public class Util {
+
+    public static final @Nonnull String NL = System.getProperty("line.separator", "\n");
 
     public static File resourceFile(Class<?> testClass, String resource) throws URISyntaxException {
         URL res = testClass.getResource(testClass.getSimpleName() + "/" + resource);
@@ -53,7 +57,7 @@ public class Util {
     public static String formatTrace(String... frames) {
         StringBuilder sb = new StringBuilder();
         for (String frame: frames) {
-            sb.append('\t').append(frame).append('\n');
+            sb.append('\t').append(frame).append(NL);
         }
 
         return sb.toString();

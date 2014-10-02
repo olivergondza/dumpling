@@ -195,6 +195,8 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
      */
     public final static class Tree {
 
+        private static final @Nonnull String NL = System.getProperty("line.separator", "\n");
+
         private final @Nonnull ProcessThread root;
         private final @Nonnull Set<Tree> leaves;
 
@@ -224,7 +226,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
         }
 
         private void writeInto(String prefix, StringBuilder sb) {
-            sb.append(prefix).append(root.getHeader()).append('\n');
+            sb.append(prefix).append(root.getHeader()).append(NL);
             for (Tree l: leaves) {
                 l.writeInto(prefix + "\t", sb);
             }
