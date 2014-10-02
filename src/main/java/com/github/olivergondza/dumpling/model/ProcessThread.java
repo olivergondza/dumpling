@@ -325,9 +325,7 @@ public class ProcessThread {
         public String toString() {
             StringBuilder sb = headerBuilder();
 
-            if (status != null) {
-                sb.append(NL).append("   java.lang.Thread.State: ").append(status.getName());
-            }
+            sb.append(NL).append("   java.lang.Thread.State: ").append(status.getName());
 
             int depth = 0;
             for (StackTraceElement traceLine: stackTrace.getElemens()) {
