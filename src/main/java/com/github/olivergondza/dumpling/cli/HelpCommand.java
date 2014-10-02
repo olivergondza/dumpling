@@ -73,13 +73,13 @@ public class HelpCommand implements CliCommand {
     }
 
     /*package*/ static void printUsage(PrintStream out) {
-        out.println(usage("<COMMAND> [...]\n"));
+        out.printf(usage("<COMMAND> [...]%n%n"));
         out.println("Available commands:");
         for (CliCommand handler: sortedHandlers()) {
             CmdLineParser parser = new CmdLineParser(handler);
             out.print(handler.getName());
             parser.printSingleLineUsage(out);
-            out.print("\n\t");
+            out.printf("%n\t");
             out.println(handler.getDescription());
         }
     }

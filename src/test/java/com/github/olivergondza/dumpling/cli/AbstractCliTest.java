@@ -34,6 +34,8 @@ import java.io.UnsupportedEncodingException;
 
 import javax.annotation.Nonnull;
 
+import org.hamcrest.Matcher;
+
 public abstract class AbstractCliTest {
 
     protected InputStream in = null;
@@ -59,5 +61,16 @@ public abstract class AbstractCliTest {
         } catch (FileNotFoundException ex) {
             throw new AssertionError(ex);
         }
+    }
+
+    /**
+     * Contains string with platform dependent newlines.
+     *
+     * Clients are supposed to use <tt>%n</tt> instead of newline char.
+     */
+    protected Matcher<String> containsString(String str) {
+        return org.hamcrest.CoreMatchers.containsString(
+                String.format(str)
+        );
     }
 }
