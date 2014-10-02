@@ -116,7 +116,7 @@ public interface SingleThreadSetQuery<T extends SingleThreadSetQuery.Result> {
 
             final ThreadSet involvedThreads = involvedThreads();
             if (involvedThreads != null) {
-                out.println("\n");
+                out.printf("%n%n");
                 out.print(involvedThreads);
             }
 

@@ -45,6 +45,8 @@ import com.github.olivergondza.dumpling.query.SingleThreadSetQuery;
  */
 public class ThreadSet implements Iterable<ProcessThread> {
 
+    private static final @Nonnull String NL = System.getProperty("line.separator", "\n");
+
     private final @Nonnull ProcessRuntime runtime;
     private final @Nonnull Set<ProcessThread> threads;
 
@@ -147,7 +149,7 @@ public class ThreadSet implements Iterable<ProcessThread> {
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
         for (ProcessThread thread: threads) {
-            stringBuilder.append(thread).append("\n\n");
+            stringBuilder.append(thread).append(NL + NL);
         }
         return stringBuilder.toString();
     }

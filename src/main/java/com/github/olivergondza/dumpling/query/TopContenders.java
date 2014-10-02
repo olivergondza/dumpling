@@ -170,7 +170,7 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
         protected void printSummary(PrintStream out) {
             int blocking = contenders.size();
 
-            out.printf("Blocking threads: %d; Blocked threads: %d\n", blocking, blocked);
+            out.printf("Blocking threads: %d; Blocked threads: %d%n", blocking, blocked);
         }
 
         @Override

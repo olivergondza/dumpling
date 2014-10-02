@@ -67,7 +67,7 @@ public class HelpCommand implements CliCommand {
         CmdLineParser parser = new CmdLineParser(handler);
         out.print(usage(handler.getName()));
         parser.printSingleLineUsage(out);
-        out.println("\n");
+        out.printf("%n%n");
         out.println(handler.getDescription());
         parser.printUsage(out);
     }

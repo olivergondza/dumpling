@@ -36,6 +36,8 @@ import javax.annotation.Nonnull;
  */
 public class StackTrace {
 
+    private static final @Nonnull String NL = System.getProperty("line.separator", "\n");
+
     public static StackTraceElement element(String declaringClass, String methodName, String fileName, int lineNumber) {
         return new StackTraceElement(declaringClass, methodName, fileName, lineNumber);
     }
@@ -93,10 +95,10 @@ public class StackTrace {
         StringBuilder sb = new StringBuilder();
 
         for (StackTraceElement e: elements) {
-            sb.append("\n\tat ").append(e);
+            sb.append(NL).append("\tat ").append(e);
         }
 
-        sb.append('\n');
+        sb.append(NL);
         return sb.toString();
     }
 
