@@ -42,6 +42,8 @@ import com.github.olivergondza.dumpling.model.ThreadLock.Monitor;
  */
 public class ProcessThread {
 
+    private static final @Nonnull String NL = System.getProperty("line.separator", "\n");
+
     private final @Nonnull ProcessRuntime runtime;
     private final @Nonnull Builder state;
 
@@ -324,29 +326,29 @@ public class ProcessThread {
             StringBuilder sb = headerBuilder();
 
             if (status != null) {
-                sb.append("\n   java.lang.Thread.State: ").append(status.getName());
+                sb.append(NL).append("   java.lang.Thread.State: ").append(status.getName());
             }
 
             int depth = 0;
             for (StackTraceElement traceLine: stackTrace.getElemens()) {
-                sb.append("\n\tat ").append(traceLine);
+                sb.append(NL).append("\tat ").append(traceLine);
 
                 if (waitingOnLock != null && depth == 0) {
                     String verb = StackTrace.waitingVerb(traceLine);
-                    sb.append("\n\t- ").append(verb).append(' ').append(waitingOnLock);
+                    sb.append(NL).append("\t- ").append(verb).append(' ').append(waitingOnLock);
                 }
 
                 for (ThreadLock monitor: getMonitorsByDepth(depth)) {
-                    sb.append("\n\t- locked ").append(monitor.toString());
+                    sb.append(NL).append("\t- locked ").append(monitor.toString());
                 }
 
                 depth++;
             }
 
             if (!acquiredSynchronizers.isEmpty()) {
-                sb.append("\n\n   Locked ownable synchronizers:\n");
+                sb.append(NL + NL).append("   Locked ownable synchronizers:").append(NL);
                 for (ThreadLock synchronizer: acquiredSynchronizers) {
-                    sb.append("\t- ").append(synchronizer.toString()).append('\n');
+                    sb.append("\t- ").append(synchronizer.toString()).append(NL);
                 }
             }
 
