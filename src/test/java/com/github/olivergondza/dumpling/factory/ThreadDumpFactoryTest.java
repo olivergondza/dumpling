@@ -23,8 +23,8 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
+import static com.github.olivergondza.dumpling.Util.pause;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -743,6 +743,27 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
         // Duplicates are collapsed
         assertThat(monitors.onlyThread().getAcquiredLocks().size(), equalTo(3));
+    }
+
+    @Test
+    public void parseOutputProducedByJvmRuntimeFactory() {
+        new Thread("parseOutputProducedByJvmRuntimeFactory") {
+            @Override
+            public void run() {
+                synchronized (ThreadDumpFactoryTest.this) {
+                    pause(1000);
+                }
+            }
+        }.start();
+
+        pause(100);
+
+        ProcessThread t = reparse(new JvmRuntimeFactory().currentRuntime()).getThreads().where(
+                nameIs("parseOutputProducedByJvmRuntimeFactory")
+        ).onlyThread();
+
+        ThreadLock lock = t.getAcquiredLocks().iterator().next();
+        assertThat(lock, equalTo((ThreadLock) new ThreadLock.WithHashCode(this)));
     }
 
     private ProcessRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {

@@ -23,109 +23,85 @@
  */
 package com.github.olivergondza.dumpling.model;
 
-import java.lang.management.MonitorInfo;
-
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 
 /**
- * Thread lock identified by classname and id contributed by subclass.
+ * Thread lock identified by classname and id.
  *
  * @author ogondza
  */
-public abstract class ThreadLock {
+public class ThreadLock {
 
     protected final @Nonnull String className;
+    private final long id;
 
-    /**
-     * @param stackDepth Position of lock in stacktrace. See {@link MonitorInfo#getLockedStackDepth()}.
-     */
-    protected ThreadLock(@Nonnull String className) {
+    protected ThreadLock(@Nonnull String className, long id) {
         this.className = className;
+        this.id = id;
     }
 
     public @Nonnull String getClassName() {
         return className;
     }
 
-    /**
-     * {@link ThreadLock} identified with lock hashCode.
-     *
-     * @author ogondza
-     */
-    public static class WithHashCode extends ThreadLock {
+    public long getId() {
+        return id;
+    }
 
-        private final int identityHashCode;
+    @Override
+    public boolean equals(Object lhs) {
+        if (lhs == null) return false;
+        if (!(lhs instanceof ThreadLock)) return false;
+
+        ThreadLock other = (ThreadLock) lhs;
+        return id == other.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return 7 + 31 * new Long(id).hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("<0x%x> (a %s)", id, className);
+    }
+
+    /**
+     * @deprecated Kept for backward compatibility. Use {@link ThreadLock} instead.
+     */
+    @Deprecated
+    public static final class WithHashCode extends ThreadLock {
 
         public WithHashCode(@Nonnull Object instance) {
-            super(instance.getClass().getCanonicalName());
-            identityHashCode = System.identityHashCode(instance);
+            super(
+                    instance.getClass().getCanonicalName(),
+                    System.identityHashCode(instance)
+            );
         }
 
         public WithHashCode(@Nonnull String className, int identityHashCode) {
-            super(className);
-            this.identityHashCode = identityHashCode;
+            super(className, identityHashCode);
         }
 
         public long getIdentityHashCode() {
-            return identityHashCode;
-        }
-
-        @Override
-        public boolean equals(Object lhs) {
-            if (lhs == null) return false;
-            if (!lhs.getClass().equals(this.getClass())) return false;
-
-            ThreadLock.WithHashCode other = (ThreadLock.WithHashCode) lhs;
-            return identityHashCode == other.identityHashCode;
-        }
-
-        @Override
-        public int hashCode() {
-            return 7 + 31 * identityHashCode;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("%s@%x", className, identityHashCode);
+            return getId();
         }
     }
 
     /**
-     * {@link ThreadLock} identified with lock address.
-     *
-     * @author ogondza
+     * @deprecated Kept for backward compatibility. Use {@link ThreadLock} instead.
      */
-    public static class WithAddress extends ThreadLock {
-
-        private final long address;
+    @Deprecated
+    public static final class WithAddress extends ThreadLock {
 
         public WithAddress(@Nonnull String className, long address) {
-            super(className);
-            this.address = address;
+            super(className, address);
         }
 
         public long getAddress() {
-            return address;
-        }
-
-        @Override
-        public boolean equals(Object lhs) {
-            if (lhs == null) return false;
-            if (!lhs.getClass().equals(this.getClass())) return false;
-
-            ThreadLock.WithAddress other = (ThreadLock.WithAddress) lhs;
-            return address == other.address;
-        }
-
-        @Override
-        public int hashCode() {
-            return 7 + 67 * new Long(address).hashCode();
-        }
-
-        @Override
-        public String toString() {
-            return String.format("<0x%x> (a %s)", address, className);
+            return getId();
         }
     }
 

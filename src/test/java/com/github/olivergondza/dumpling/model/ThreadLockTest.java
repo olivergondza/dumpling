@@ -30,7 +30,7 @@ import org.junit.Test;
 
 public class ThreadLockTest {
 
-    @Test
+    @Test @SuppressWarnings("deprecation")
     public void equalsWithAddress() {
         assertEquals(
                 new ThreadLock.WithAddress("my.class.Name", 42),
@@ -47,7 +47,7 @@ public class ThreadLockTest {
         );
     }
 
-    @Test
+    @Test @SuppressWarnings("deprecation")
     public void equalsWithHashCode() {
         assertEquals(
                 new ThreadLock.WithHashCode("my.class.Name", 42),
@@ -65,10 +65,19 @@ public class ThreadLockTest {
     }
 
     @Test
-    public void notEquals() {
+    public void equalsWith() {
+        assertEquals(
+                new ThreadLock("my.class.Name", 42),
+                new ThreadLock("my.class.Name", 42)
+        );
+
         assertNotEquals(
-                new ThreadLock.WithHashCode("my.class.Name", 42),
-                new ThreadLock.WithAddress("my.class.Name", 42)
+                new ThreadLock("my.class.Name", 42),
+                new ThreadLock("my.class.Name", 43)
+        );
+        assertNotEquals(
+                new ThreadLock("my.other.class.Name", 42),
+                new ThreadLock("my.class.Name", 43)
         );
     }
 }
