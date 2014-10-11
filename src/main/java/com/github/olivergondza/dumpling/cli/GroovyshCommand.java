@@ -27,6 +27,7 @@ import groovy.lang.Binding;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 
 import javax.annotation.Nonnull;
@@ -73,7 +74,25 @@ public class GroovyshCommand implements CliCommand {
                 "com.github.olivergondza.dumpling.query.*"
         ));
 
+        configureHistory(process, groovysh);
+
         return groovysh.run(new String[] {});
+    }
+
+    private void configureHistory(final ProcessStream process, final Groovysh groovysh) {
+
+        // Save history when shell ends
+        Runtime.getRuntime().addShutdownHook(new Thread("Save history dumpling shutdown hook") {
+            @Override
+            public void run() {
+                try {
+                    groovysh.getHistory().flush();
+                } catch (IOException ex) {
+                    process.err().println("Unable to save shell history");
+                    ex.printStackTrace(process.err());
+                }
+            }
+        });
     }
 
     private void registerCommands(final Binding binding) {
