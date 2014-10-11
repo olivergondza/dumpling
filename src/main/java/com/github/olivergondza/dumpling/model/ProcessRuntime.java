@@ -40,7 +40,7 @@ public class ProcessRuntime {
     private final @Nonnull ThreadSet threads;
     private final @Nonnull ThreadSet emptySet;
 
-    public ProcessRuntime(@Nonnull Set<ProcessThread.Builder> builders) {
+    public ProcessRuntime(@Nonnull Set<? extends ProcessThread.Builder> builders) {
         this.threads = createThreads(builders);
         this.emptySet = new ThreadSet(this, Collections.<ProcessThread>emptySet());
 
@@ -51,7 +51,7 @@ public class ProcessRuntime {
         );
     }
 
-    private @Nonnull ThreadSet createThreads(@Nonnull Set<ProcessThread.Builder> builders) {
+    private @Nonnull ThreadSet createThreads(@Nonnull Set<? extends ProcessThread.Builder> builders) {
         Set<ProcessThread> threads = new LinkedHashSet<ProcessThread>(builders.size());
         for (ProcessThread.Builder builder: builders) {
             threads.add(builder.build(this));

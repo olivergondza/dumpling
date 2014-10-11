@@ -23,13 +23,13 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.net.URISyntaxException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
@@ -123,7 +123,7 @@ public class GroovyCommandTest extends AbstractCliTest {
         assertThat(exitValue, equalTo(0));
     }
 
-    @Test
+    @Test @Ignore
     public void groovyToSet() {
         invoke("print runtime.threads.toSet().getClass()");
         assertThat(err.toString(), equalTo(""));
@@ -137,6 +137,37 @@ public class GroovyCommandTest extends AbstractCliTest {
         invoke("print runtime.threads.grep { " + choices + " }.empty");
         assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), equalTo("false"));
+        assertThat(exitValue, equalTo(0));
+    }
+
+    @Test
+    public void threadAccess() {
+        invoke(
+                "threads = new JvmRuntimeFactory().currentRuntime().getThreads();" +
+                // Get current thread
+                "assert threads.forCurrentThread().thread == Thread.currentThread();" +
+                "assert threads.forThread(Thread.currentThread()).thread == Thread.currentThread();" +
+                // There was no matching thread in the runtime
+                "assert threads.forThread(new Thread()) == null;"
+        );
+        assertThat(err.toString(), equalTo(""));
+        assertThat(exitValue, equalTo(0));
+    }
+
+    @Test
+    public void threadInstanceBhouldBeCorrectlyReleasedOnTermination() {
+        invoke(
+                "Thread.start('threadAccess-dying') { def i = 0; for(;;) {i++;} };\n" +
+                "threads = new JvmRuntimeFactory().currentRuntime().getThreads();\n" +
+                // Thread should be attached
+                "assert threads.where(nameIs('threadAccess-dying')).onlyThread().thread.name == 'threadAccess-dying';\n" +
+                "threads.where(nameIs('threadAccess-dying')).onlyThread().thread.stop();\n" +
+                "Thread.sleep(1000);System.gc();\n" +
+                //"println threads.where(nameIs('threadAccess-dying')).onlyThread().thread.state;\n" +
+                // Thread should no longer be attached after it was killed
+                "assert threads.where(nameIs('threadAccess-dying')).onlyThread().thread == null;"
+        );
+        assertThat(err.toString(), equalTo(""));
         assertThat(exitValue, equalTo(0));
     }
 

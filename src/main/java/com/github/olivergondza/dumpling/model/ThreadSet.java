@@ -232,8 +232,9 @@ public class ThreadSet implements Iterable<ProcessThread> {
         return this;
     }
 
-    public @Nonnull ThreadSet toSet() {
-        return this;
+    // ThreadSet does not actually implement Set
+    public @Nonnull Set<ProcessThread> toSet() {
+        return Collections.unmodifiableSet(threads);
     }
 
     public @Nonnull ThreadSet intersect(ThreadSet other) {

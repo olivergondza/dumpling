@@ -47,7 +47,7 @@ public class ProcessThread {
     private final @Nonnull ProcessRuntime runtime;
     private final @Nonnull Builder state;
 
-    private ProcessThread(@Nonnull ProcessRuntime runtime, @Nonnull Builder builder) {
+    protected ProcessThread(@Nonnull ProcessRuntime runtime, @Nonnull Builder builder) {
         this.runtime = runtime;
         this.state = builder.clone();
     }
