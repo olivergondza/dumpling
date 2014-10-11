@@ -91,7 +91,7 @@ public class ThreadSet implements Iterable<ProcessThread> {
             }
         }
 
-        return derive(blocked);
+        return runtime.getThreadSet(blocked);
     }
 
     /**
@@ -114,13 +114,13 @@ public class ThreadSet implements Iterable<ProcessThread> {
             }
         }
 
-        return derive(blocking);
+        return runtime.getThreadSet(blocking);
     }
 
     public @Nonnull ThreadSet ignoring(@Nonnull ThreadSet actualThreads) {
         HashSet<ProcessThread> newThreads = new HashSet<ProcessThread>(threads);
         newThreads.removeAll(actualThreads.threads);
-        return derive(newThreads);
+        return runtime.getThreadSet(newThreads);
     }
 
     /**
@@ -135,7 +135,7 @@ public class ThreadSet implements Iterable<ProcessThread> {
             if (pred.isValid(thread)) subset.add(thread);
         }
 
-        return derive(subset);
+        return runtime.getThreadSet(subset);
     }
 
     /**
@@ -199,33 +199,27 @@ public class ThreadSet implements Iterable<ProcessThread> {
      * @return New thread collection bound to same runtime.
      */
     public @Nonnull ThreadSet derive(Collection<ProcessThread> threads) {
-        if (threads.isEmpty()) return runtime.getEmptyThreadSet();
-
-        Set<ProcessThread> threadSet = threads instanceof Set
-                ? (Set<ProcessThread>) threads
-                : new HashSet<ProcessThread>(threads)
-        ;
-        return new ThreadSet(runtime, threadSet);
+        return runtime.getThreadSet(threads);
     }
 
     // Groovy interop
 
     public @Nonnull ThreadSet grep() {
         // Do not invoke grep(Collection) as it was added in 2.0
-        return derive(DefaultGroovyMethods.grep((Object) threads));
+        return runtime.getThreadSet(DefaultGroovyMethods.grep((Object) threads));
     }
 
     public @Nonnull ThreadSet grep(Object filter) {
         // Do not invoke grep(Collection, Object) as it was added in 2.0
-        return derive(DefaultGroovyMethods.grep((Object) threads, filter));
+        return runtime.getThreadSet(DefaultGroovyMethods.grep((Object) threads, filter));
     }
 
     public @Nonnull ThreadSet findAll() {
-        return derive(DefaultGroovyMethods.findAll(threads));
+        return runtime.getThreadSet(DefaultGroovyMethods.findAll(threads));
     }
 
     public @Nonnull ThreadSet findAll(Closure<ProcessThread> predicate) {
-        return derive(DefaultGroovyMethods.findAll(threads, predicate));
+        return runtime.getThreadSet(DefaultGroovyMethods.findAll(threads, predicate));
     }
 
     public @Nonnull ThreadSet asImmutable() {
@@ -241,7 +235,7 @@ public class ThreadSet implements Iterable<ProcessThread> {
                 "Unable to intersect thread sets bound to different runtime"
         );
 
-        return derive(DefaultGroovyMethods.intersect(threads, other.threads));
+        return runtime.getThreadSet(DefaultGroovyMethods.intersect(threads, other.threads));
     }
 
     public @Nonnull ThreadSet plus(ThreadSet other) {
@@ -249,6 +243,6 @@ public class ThreadSet implements Iterable<ProcessThread> {
                 "Unable to merge thread sets bound to different runtime"
         );
 
-        return derive(DefaultGroovyMethods.plus(threads, other.threads));
+        return runtime.getThreadSet(DefaultGroovyMethods.plus(threads, other.threads));
     }
 }

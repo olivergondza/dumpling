@@ -142,7 +142,7 @@ public class ProcessThread {
                 blocked.add(thread);
             }
         }
-        return runtime.getThreads().derive(blocked);
+        return runtime.getThreadSet(blocked);
     }
 
     /**
@@ -154,7 +154,7 @@ public class ProcessThread {
         final ProcessThread blocking = getBlockingThread();
         if (blocking == null) return runtime.getEmptyThreadSet();
 
-        return new ThreadSet(runtime, Collections.singleton(blocking));
+        return runtime.getThreadSet(Collections.singleton(blocking));
     }
 
     /**

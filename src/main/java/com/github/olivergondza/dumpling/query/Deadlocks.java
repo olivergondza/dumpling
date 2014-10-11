@@ -120,7 +120,7 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
 
             this.deadlocks = Collections.unmodifiableSet(deadlocks);
             this.involved = showStackTraces
-                    ? new ThreadSet(runtime, involved)
+                    ? input.derive(involved)
                     : runtime.getEmptyThreadSet()
             ;
         }

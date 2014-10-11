@@ -23,7 +23,9 @@
  */
 package com.github.olivergondza.dumpling.model;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -41,8 +43,8 @@ public class ProcessRuntime {
     private final @Nonnull ThreadSet emptySet;
 
     public ProcessRuntime(@Nonnull Set<ProcessThread.Builder> builders) {
-        this.threads = createThreads(builders);
         this.emptySet = new ThreadSet(this, Collections.<ProcessThread>emptySet());
+        this.threads = createThreads(builders);
 
         int buildersSize = builders.size();
         int threadsSize = threads.size();
@@ -56,7 +58,7 @@ public class ProcessRuntime {
         for (ProcessThread.Builder builder: builders) {
             threads.add(builder.build(this));
         }
-        return new ThreadSet(this, Collections.unmodifiableSet(threads));
+        return getThreadSet(Collections.unmodifiableSet(threads));
     }
 
     /**
@@ -68,6 +70,19 @@ public class ProcessRuntime {
 
     public @Nonnull ThreadSet getEmptyThreadSet() {
         return emptySet;
+    }
+
+    /**
+     * Instantiate {@link ThreadSet} scoped to this runtime.
+     */
+    public @Nonnull ThreadSet getThreadSet(Collection<ProcessThread> threads) {
+        if (threads.isEmpty()) return emptySet;
+
+        Set<ProcessThread> threadSet = threads instanceof Set
+                ? (Set<ProcessThread>) threads
+                : new HashSet<ProcessThread>(threads)
+        ;
+        return new ThreadSet(this, threadSet);
     }
 
     /**
