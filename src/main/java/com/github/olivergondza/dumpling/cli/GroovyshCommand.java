@@ -65,6 +65,9 @@ public class GroovyshCommand implements CliCommand {
         final Binding binding = new Binding();
         registerCommands(binding);
 
+        // Do not use .inputrc as jline does not interpret it correctly: https://github.com/jline/jline2/issues/51
+        System.setProperty("jline.inputrc", "~/.no.inputrc");
+
         Groovysh groovysh = new Groovysh(this.getClass().getClassLoader(), binding, io);
 
         groovysh.getImports().addAll(Arrays.asList(
