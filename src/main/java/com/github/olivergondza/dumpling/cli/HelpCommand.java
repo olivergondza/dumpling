@@ -23,6 +23,8 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Comparator;
 import java.util.SortedSet;
@@ -63,15 +65,6 @@ public class HelpCommand implements CliCommand {
         return 0;
     }
 
-    /*package*/ static void printUsage(CliCommand handler, PrintStream out) {
-        CmdLineParser parser = new CmdLineParser(handler);
-        out.print(usage(handler.getName()));
-        parser.printSingleLineUsage(out);
-        out.printf("%n%n");
-        out.println(handler.getDescription());
-        parser.printUsage(out);
-    }
-
     /*package*/ static void printUsage(PrintStream out) {
         out.printf(usage("<COMMAND> [...]%n%n"));
         out.println("Available commands:");
@@ -81,6 +74,44 @@ public class HelpCommand implements CliCommand {
             parser.printSingleLineUsage(out);
             out.printf("%n\t");
             out.println(handler.getDescription());
+        }
+    }
+
+    /*package*/ static void printUsage(CliCommand handler, PrintStream out) {
+        out.print(handler.getDescription());
+        out.printf("%n%n");
+
+        CmdLineParser parser = new CmdLineParser(handler);
+        out.print(usage(handler.getName()));
+        parser.printSingleLineUsage(out);
+        out.printf("%n");
+        parser.printUsage(out);
+        printLongDescription(handler, out);
+    }
+
+    private static void printLongDescription(CliCommand handler, PrintStream out) {
+        String name = "command."+ handler.getName() + ".usage";
+        InputStream description = handler.getClass().getResourceAsStream(name);
+        if (description == null) return;
+
+        out.printf("%n");
+
+        try {
+            try {
+                forward(description, out);
+            } finally {
+                description.close();
+            }
+        } catch (IOException ex) {
+            throw new CommandFailedException("Unable to read detailed usage for " + handler.getName(), ex);
+        }
+    }
+
+    private static void forward(InputStream description, PrintStream out) throws IOException {
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = description.read(buffer)) != -1) {
+            out.write(buffer, 0, len);
         }
     }
 

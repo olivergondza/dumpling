@@ -46,10 +46,7 @@ import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
 /**
- * Get threads that block other threads.
- *
- * Mapping between blocking thread and a set of blocked threads.
- * Map is sorted by the number of blocked threads.
+ * Detect top-contenders, threads that block largest number of other threads.
  *
  * @author ogondza
  */
@@ -62,6 +59,9 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
         return this;
     }
 
+    /**
+     * @param threads Thread subset to be considered as a potential contenders. All threads in runtime are considered as blocking threads.
+     */
     @Override
     public Result query(ThreadSet threads) {
         return new Result(threads, showStackTraces);

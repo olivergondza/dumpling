@@ -54,6 +54,9 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
         return this;
     }
 
+    /**
+     * @param threads Include only cycles that contain at least one of input threads.
+     */
     @Override
     public @Nonnull Result query(@Nonnull ThreadSet threads) {
         return new Result(threads, showStackTraces);

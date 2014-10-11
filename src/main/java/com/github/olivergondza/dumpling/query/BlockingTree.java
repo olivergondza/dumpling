@@ -42,14 +42,7 @@ import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
 /**
- * Get a forest of all blocking trees.
- *
- * Non-blocked threads are the roots of tree hierarchies where parent-child
- * relationship represents blocking-blocked situation. Leaves of such trees
- * represents blocked but not blocking threads.
- *
- * Only such branches are included that contain threads from initial set.
- * Provide all threads in runtime to analyze all threads.
+ * Print trees of blocking threads.
  *
  * @author ogondza
  */
@@ -62,6 +55,10 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
         return this;
     }
 
+    /**
+     * @param threads Only only tree branches that contain threads in this set.
+     * Provide all threads in runtime to analyze whole runtime.
+     */
     @Override
     public @Nonnull Result query(ThreadSet threads) {
         return new Result(threads, showStackTraces);
@@ -82,7 +79,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
 
         @Override
         public String getDescription() {
-            return "Print contention trees";
+            return "Print trees of blocking threads";
         }
 
         @Override
