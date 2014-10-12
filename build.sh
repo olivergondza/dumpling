@@ -17,15 +17,17 @@ for tag in `git tag | grep dumpling- | grep -v '\-SNAPSHOT'`; do
         mv target/site/apidocs $target/
     fi
 
-    # Insert generic indexed javadoc configuration
-    git checkout $tag pom.xml
-    sed -i -e "/<.build>/r pom.xml.indexed" pom.xml
-    perl -0 -pi -e "s|<build>.*</build>||gs" pom.xml
-    mvn -e site
-    mv target/site/apidocs/*.md $target/
+    if [ ! -f $target/index.md ]; then
+        # Insert indexed javadoc configuration
+        git checkout $tag pom.xml
+        sed -i -e "/<.build>/r pom.xml.indexed" pom.xml
+        perl -0 -pi -e "s|<build>.*</build>||gs" pom.xml
+        mvn -e site
+        mv target/site/apidocs/*.md $target/
 
-    cp _includes/refdoc.index $target/index.md
-    sed -i "s/TAG/$tag/" $target/*.md
+        cp _includes/refdoc.index $target/index.md
+        sed -i "s/TAG/$tag/" $target/*.md
+    fi
 done
 
 git checkout gh-pages
