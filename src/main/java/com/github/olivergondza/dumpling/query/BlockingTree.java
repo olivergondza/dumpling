@@ -180,6 +180,11 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
         protected ThreadSet involvedThreads() {
             return showStackTraces ? involved : null;
         }
+
+        @Override
+        protected void printSummary(PrintStream out) {
+            out.printf("All threads: %d; Roots: %d%n", involved.size(), trees.size());
+        }
     }
 
     /**
