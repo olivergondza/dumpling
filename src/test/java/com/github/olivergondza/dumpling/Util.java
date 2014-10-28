@@ -24,6 +24,7 @@
 package com.github.olivergondza.dumpling;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
 import java.net.URL;
 
@@ -61,5 +62,9 @@ public class Util {
         }
 
         return sb.toString();
+    }
+
+    public static int currentPid() {
+        return Integer.parseInt(ManagementFactory.getRuntimeMXBean().getName().replaceAll("@.*", ""));
     }
 }

@@ -30,12 +30,12 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
-import java.lang.management.ManagementFactory;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.After;
 import org.junit.Test;
 
+import com.github.olivergondza.dumpling.Util;
 import com.github.olivergondza.dumpling.cli.AbstractCliTest;
 import com.github.olivergondza.dumpling.cli.CommandFailedException;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
@@ -50,9 +50,7 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
     public void invokeFactory() {
         setupFixture();
 
-        ProcessRuntime pidRuntime = new PidRuntimeFactory().forProcess(
-                Integer.parseInt(currentPid())
-        );
+        ProcessRuntime pidRuntime = new PidRuntimeFactory().forProcess(Util.currentPid());
 
         ProcessThread thread = pidRuntime.getThreads().where(nameIs("process-thread")).onlyThread();
         assertThat(
@@ -68,7 +66,7 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
         setupFixture();
 
         stdin("print runtime.threads.where(nameIs('process-thread')).onlyThread().status");
-        run("groovy", "--in", "process", currentPid());
+        run("groovy", "--in", "process", Integer.toString(Util.currentPid()));
 
         assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), equalTo("SLEEPING"));
@@ -98,15 +96,11 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
     public void jstackNotExecutable() {
         PidRuntimeFactory factory = new PidRuntimeFactory(System.getProperty("java.home") + "/no_such_dir/");
         try {
-            factory.forProcess(Integer.parseInt(currentPid()));
+            factory.forProcess(Util.currentPid());
             fail("No exception thrown");
         } catch(CommandFailedException ex) {
             assertThat(ex.getMessage(), containsString("Unable to invoke jstack: Cannot run program"));
         }
-    }
-
-    private String currentPid() {
-        return ManagementFactory.getRuntimeMXBean().getName().replaceAll("@.*", "");
     }
 
     private Thread setupFixture() {

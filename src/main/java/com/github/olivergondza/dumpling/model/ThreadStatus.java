@@ -80,8 +80,15 @@ public enum ThreadStatus {
      */
     UNKNOWN             ("UNKNOWN",                             -1,     null);
 
+    /**
+     * Description used in thread dump.
+     */
     private final @Nonnull String name;
     private final int code;
+
+    /**
+     * Matching Thread.State.
+     */
     private final State state;
 
     private ThreadStatus(@Nonnull String name, int code, State state) {
@@ -185,5 +192,13 @@ public enum ThreadStatus {
 
             throw ex;
         }
+    }
+
+    public static @Nonnull ThreadStatus fromState(Thread.State state) {
+        for (ThreadStatus value: values()) {
+            if (value.state.equals(state)) return value;
+        }
+
+        throw new AssertionError("No matching ThreadState");
     }
 }

@@ -79,6 +79,10 @@ public class StackTrace {
         this.elements = elements.clone(); // Shallow copy is ok here as StackTraceElement is immutable
     }
 
+    public StackTrace(@Nonnull List<StackTraceElement> elements) {
+        this.elements = elements.toArray(new StackTraceElement[elements.size()]);
+    }
+
     public int size() {
         return elements.length;
     }
