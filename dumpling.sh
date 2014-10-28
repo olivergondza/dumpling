@@ -9,10 +9,12 @@ if [ `ls $dir/target/dumpling-*-shaded.jar 2> /dev/null | wc -l` != 1 ]; then
   else
     jar="$dir/dumpling.jar"
     if [ ! -f $jar ]; then
-      echo "No sourcces found, downloading it now..."
+      echo "Downloading dumpling.jar now..."
       wget --no-check-certificate -nv -O $jar https://oss.sonatype.org/content/repositories/releases/com/github/olivergondza/dumpling/0.2/dumpling-0.2-shaded.jar || rm $jar
     fi
   fi
+else
+  jar=`ls $dir/target/dumpling-*-shaded.jar | head -n 1`
 fi
 
 java -jar "$jar" "$@"
