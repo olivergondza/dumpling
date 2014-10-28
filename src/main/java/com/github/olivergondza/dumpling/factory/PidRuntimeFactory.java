@@ -23,8 +23,6 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
-import groovy.swing.factory.TDFactory;
-
 import java.io.IOException;
 
 import javax.annotation.Nonnull;
@@ -39,7 +37,7 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
  *
  * Process ID is used as a locator.
  *
- * This implementations delegates to {@link TDFactory} so it shares its features
+ * This implementations invokes jstack binary and delegates to {@link ThreadDumpFactory} so it shares its features
  * and limitations.
  *
  * @author ogondza
