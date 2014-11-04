@@ -659,23 +659,33 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     @Test
     public void monitorOwnerInObjectWait() throws Exception {
         ThreadSet threads = runtimeFrom("in-object-wait.log").getThreads();
-        ProcessThread waiting = threads.where(nameIs("monitorOwnerInObjectWait")).onlyThread();
-        ProcessThread owning = threads.where(nameIs("main")).onlyThread();
 
-        final ThreadLock lock = new ThreadLock("java.lang.Object", 33677473560L);
-        final Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(lock));
+        ProcessThread reEntering = threads.where(nameIs("waitingToReacquireMonitorAfterWait")).onlyThread();
+        assertThat(reEntering.getStatus(), equalTo(ThreadStatus.BLOCKED));
+        assertThat(reEntering.getWaitingOnLock(), equalTo(new ThreadLock("java.lang.Object", 33677620560L)));
+        assertThat(reEntering.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
+
+        ProcessThread owning = threads.where(nameIs("main")).onlyThread();
+        final Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(
+                new ThreadLock("java.lang.Object", 33677473560L)
+        ));
         assertThat(owning.getStatus(), equalTo(ThreadStatus.SLEEPING));
         assertThat(owning.getAcquiredLocks(), equalTo(locks));
         assertThat(owning.getWaitingOnLock(), equalTo(null));
 
+        ProcessThread waiting = threads.where(nameIs("monitorOwnerInObjectWait")).onlyThread();
         assertThat(waiting.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
-        assertThat(waiting.getWaitingOnLock(), equalTo(lock));
+        assertThat(waiting.getWaitingOnLock(), equalTo(new ThreadLock("java.lang.Object", 33677473560L)));
         assertThat(waiting.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
 
         ProcessThread nested = threads.where(nameIs("waiting_in_nested_synchronized")).onlyThread();
-        assertThat(nested.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT_TIMED));
-        assertThat(nested.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
-        //assertThat(nested.getWaitingOnLock(), equalTo(new ThreadLock(0, "java.lang.Object", 33677473560L)));
+        assertThat(nested.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
+        final Set<ThreadLock> nestedLocks = new HashSet<ThreadLock>(Arrays.asList(
+                new ThreadLock("java.lang.Object", 33677621640L),
+                new ThreadLock("java.lang.Object", 33677621656L)
+        ));
+        assertThat(nested.getAcquiredLocks(), equalTo(nestedLocks));
+        assertThat(nested.getWaitingOnLock(), equalTo(new ThreadLock("java.lang.Object", 33677621672L)));
     }
 
     @Test

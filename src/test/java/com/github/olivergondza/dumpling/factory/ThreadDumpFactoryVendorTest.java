@@ -95,6 +95,61 @@ public class ThreadDumpFactoryVendorTest {
         }
     }
 
+// TODO https://github.com/olivergondza/dumpling/issues/32
+//  @Test
+//  public void waitingToReacquireMonitorAfterWait() {
+//      final Object lock = new Object();
+//      Thread thread = new Thread("waitingToReacquireMonitorAfterWait") {
+//          @Override
+//          public void run() {
+//              synchronized (lock) {
+//                  try {
+//                      lock.wait();
+//                  } catch (InterruptedException ex) {
+//                      // Noop
+//                  }
+//              }
+//          }
+//      };
+//      thread.start();
+//      pause(500);
+//
+//      synchronized (lock) {
+//
+//          lock.notify(); // Unblock the thread
+//
+//          pause(100000);
+//      }
+//  }
+
+//  @Test
+//  public void waitingToReacquireMonitorAfterWait() {
+//      final Object lock = new Object();
+//      final Object lock2 = new Object();
+//      final Object lock3 = new Object();
+//      Thread thread = new Thread("waitingToReacquireMonitorAfterWait") {
+//          @Override
+//          public void run() {
+//              synchronized (lock) { synchronized (lock2) { synchronized (lock3) { synchronized (lock2) { synchronized (lock) {
+//                  try {
+//                      lock3.wait();
+//                  } catch (InterruptedException ex) {
+//                      // Noop
+//                  }
+//              }}}}}
+//          }
+//      };
+//      thread.start();
+//      pause(500000);
+//
+//      synchronized (lock) {
+//
+//          lock.notify(); // Unblock the thread
+//
+//          pause(100000);
+//      }
+//  }
+
     private void assertState(ProcessRuntime runtime) {
         assertBusyWaiting(runtime);
         assertWaiting(runtime);

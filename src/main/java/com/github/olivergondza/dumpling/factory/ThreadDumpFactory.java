@@ -57,6 +57,8 @@ import com.github.olivergondza.dumpling.model.ThreadStatus;
  */
 public class ThreadDumpFactory implements CliRuntimeFactory {
 
+    private static final StackTraceElement WAIT_TRACE_ELEMENT = StackTrace.nativeElement("java.lang.Object", "wait");
+
     private static final String NL = "(?:\\r\\n|\\n)";
 
     private static final Pattern THREAD_DELIMITER = Pattern.compile(NL + NL + "(?!\\s)");
@@ -192,27 +194,17 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
         }
 
         // Eliminate self lock that is presented in threaddumps when in Object.wait()
-        if (
-                (builder.getThreadStatus().isWaiting() || builder.getThreadStatus() == ThreadStatus.BLOCKED) &&
-                builder.getStacktrace().getElemens().get(0).equals(StackTrace.nativeElement("java.lang.Object", "wait"))
-        ) {
-            // Sometimes there are threads that are in Object.wait() and
-            // (TIMED_)WAITING, yet does not declare to wait on self monitor
-            if (lock == null) {
-                try {
-                    ThreadLock data = monitors.get(0).getLock();
-                    lock = new ThreadLock(data.getClassName(), data.getId());
-                } catch (IndexOutOfBoundsException ex) {
-                    throw new AssertionError("No monitors found for waiting/blocked thread", ex);
-                }
+        if (WAIT_TRACE_ELEMENT.equals(builder.getStacktrace().getElement(0))) {
+
+            // Waiting on self lock -> the lock is not acquired
+            if (builder.getThreadStatus().isBlocked()) {
+                assert lock != null;
+                filterMonitors(monitors, lock);
             }
 
-            for (Iterator<Monitor> it = monitors.iterator(); it.hasNext();) {
-                Monitor m = it.next();
-
-                if (m.getLock().equals(lock)) {
-                    it.remove();
-                }
+            // remove self lock from acquired and waiting-on locks
+            if (builder.getThreadStatus().isWaiting()) {
+                filterMonitors(monitors, lock);
             }
         }
 
@@ -221,6 +213,16 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
         builder.setWaitingOnLock(lock);
 
         return builder;
+    }
+
+    private void filterMonitors(List<ThreadLock.Monitor> monitors, ThreadLock lock) {
+        for (Iterator<Monitor> it = monitors.iterator(); it.hasNext();) {
+            Monitor m = it.next();
+
+            if (m.getLock().equals(lock)) {
+                it.remove();
+            }
+        }
     }
 
     private @Nonnull ThreadLock createLock(Matcher matcher) {
