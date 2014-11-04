@@ -86,6 +86,17 @@ public class StackTrace {
         return elements[depth];
     }
 
+    /**
+     * Get all the stack trace elements.
+     */
+    public @Nonnull List<StackTraceElement> getElements() {
+        return Arrays.asList(elements);
+    }
+
+    /**
+     * @deprecated because of the typo.
+     */
+    @Deprecated
     public @Nonnull List<StackTraceElement> getElemens() {
         return Arrays.asList(elements);
     }
