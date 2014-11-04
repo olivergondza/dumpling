@@ -26,6 +26,7 @@ package com.github.olivergondza.dumpling.model;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 
@@ -82,8 +83,18 @@ public class StackTrace {
         return elements.length;
     }
 
-    public @Nonnull StackTraceElement getElement(@Nonnegative int depth) {
-        return elements[depth];
+    /**
+     * Get element of given stack depth.
+     *
+     * @return Stack element of null if not present.
+     */
+    public @CheckForNull StackTraceElement getElement(@Nonnegative int depth) {
+        if (depth < 0) throw new ArrayIndexOutOfBoundsException(depth);
+
+        return elements.length > depth
+                ? elements[depth]
+                : null
+        ;
     }
 
     public @Nonnull List<StackTraceElement> getElemens() {

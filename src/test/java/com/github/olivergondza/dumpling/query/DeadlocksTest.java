@@ -159,13 +159,6 @@ public class DeadlocksTest extends AbstractCliTest {
         assertLongListing(runtime.query(new Deadlocks().showStackTraces()).toString());
     }
 
-    @Test
-    public void typeSafeQuerying() {
-        JvmRuntime runtime = new JvmRuntimeFactory().currentRuntime();
-
-        new Deadlocks().query(runtime.getThreads()).getDeadlocks().iterator().next().forCurrentThread();
-    }
-
     private void assertLongListing(String out) {
         assertThat(out, containsString("- Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24 - Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107"));
 
