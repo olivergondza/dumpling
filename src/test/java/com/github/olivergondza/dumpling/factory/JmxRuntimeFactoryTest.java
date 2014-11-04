@@ -27,6 +27,7 @@ import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static com.github.olivergondza.dumpling.model.StackTrace.element;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -109,6 +110,26 @@ public class JmxRuntimeFactoryTest extends AbstractCliTest {
         // Reuse verification logic re-parsing the output as thread dump
         ProcessRuntime reparsed = new ThreadDumpFactory().fromStream(new ByteArrayInputStream(out.toByteArray()));
         assertThreadState(reparsed);
+    }
+
+    @Test
+    public void connectToNonexistingLocalProcess() {
+        try {
+            new JmxRuntimeFactory().forLocalProcess(299);
+            fail();
+        } catch (JmxRuntimeFactory.FailedToInitializeJmxConnection ex) {
+            assertThat(ex.getMessage(), containsString("No such process"));
+        }
+    }
+
+    @Test
+    public void connectToNonexistingRemoteProcess() {
+        try {
+            new JmxRuntimeFactory().forRemoteProcess("localhost", 22);
+            fail();
+        } catch (JmxRuntimeFactory.FailedToInitializeJmxConnection ex) {
+            assertThat(ex.getMessage(), containsString("Connection refused to host: localhost"));
+        }
     }
 
     private void assertThreadState(ProcessRuntime runtime) {

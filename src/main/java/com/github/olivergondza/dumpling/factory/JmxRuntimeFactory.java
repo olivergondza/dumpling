@@ -26,6 +26,7 @@ package com.github.olivergondza.dumpling.factory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.Thread.State;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -202,6 +203,10 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
                 final Method method = type.getDeclaredMethod("getServerConnection", int.class);
                 method.setAccessible(true);
                 return (MBeanServerConnection) method.invoke(null, pid);
+            } catch (InvocationTargetException ex) {
+                Throwable cause = ex.getCause(); // Unwrap and rethrow as FailedToInitializeJmxConnection is necessary
+                if (cause instanceof FailedToInitializeJmxConnection) throw (FailedToInitializeJmxConnection) cause;
+                throw new FailedToInitializeJmxConnection(cause);
             } catch (ReflectiveOperationException ex) {
                 throw new AssertionError("Unable to invoke " + CONNECTOR_CLASS_NAME, ex);
             } catch (SecurityException ex) {
@@ -306,7 +311,7 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
     public static final class FailedToInitializeJmxConnection extends RuntimeException {
 
         public FailedToInitializeJmxConnection(Throwable ex) {
-            super(ex);
+            super(ex.getMessage(), ex);
         }
 
         public FailedToInitializeJmxConnection(String string, Throwable ex) {
