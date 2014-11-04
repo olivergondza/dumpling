@@ -25,10 +25,10 @@ package com.github.olivergondza.dumpling.factory;
 
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static com.github.olivergondza.dumpling.model.StackTrace.element;
-import static com.github.olivergondza.dumpling.model.StackTrace.nativeElement;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
 
@@ -36,19 +36,28 @@ import org.junit.After;
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
+import com.github.olivergondza.dumpling.cli.AbstractCliTest;
 import com.github.olivergondza.dumpling.factory.JmxRuntimeFactory.RemoteConnector;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.StackTrace;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 
-public class JmxRuntimeFactoryTest {
+public class JmxRuntimeFactoryTest extends AbstractCliTest {
 
     private Process process;
+    private Thread thread;
 
     @After
-    public void after() {
-        if (process != null) process.destroy();
+    public void after() throws InterruptedException {
+        if (process != null) {
+            process.destroy();
+            process.waitFor();
+        }
+
+        if (thread != null) {
+            thread.stop();
+        }
     }
 
     @Test
@@ -70,32 +79,49 @@ public class JmxRuntimeFactoryTest {
     public void jmxRemoteConnect() throws IOException {
         runRemoteSut();
         ProcessRuntime runtime = new JmxRuntimeFactory().forRemoteProcess("localhost", 9876);
-        ProcessThread actual = runtime.getThreads().where(nameIs("remotely-observed-thread")).onlyThread();
-        StackTrace trace = actual.getStackTrace();
-
-        assertThat(actual.getName(), equalTo("remotely-observed-thread"));
-        assertThat(actual.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
-        // TODO priority
-        // TODO daemon
-        assertThat(trace.getElement(0), equalTo(nativeElement("java.lang.Object", "wait", "Object.java")));
-        assertThat(trace.getElement(1), equalTo(element("java.lang.Object", "wait", "Object.java", 503)));
-        assertThat(trace.getElement(2), equalTo(element(
-                "com.github.olivergondza.dumpling.factory.JmxTestProcess$1", "run", "JmxTestProcess.java", 42
-        )));
+        assertThreadState(runtime);
     }
 
     @Test
-    public void jmxLocalConnect() throws IOException {
+    public void jmxRemoteConnectViaCli() throws IOException {
+        runRemoteSut();
+        stdin("runtime.threads.where(nameIs('remotely-observed-thread'))");
+        run("groovy", "--in", "jmx", "localhost:9876");
+
+        // Reuse verification logic re-parsing the output as thread dump
+        ProcessRuntime reparsed = new ThreadDumpFactory().fromStream(new ByteArrayInputStream(out.toByteArray()));
+        assertThreadState(reparsed);
+    }
+
+    @Test
+    public void jmxLocalConnect() {
         runLocalSut();
         ProcessRuntime runtime = new JmxRuntimeFactory().forLocalProcess(Util.currentPid());
+        assertThreadState(runtime);
+    }
+
+    @Test
+    public void jmxLocalConnectViaCli() {
+        runLocalSut();
+        stdin("runtime.threads.where(nameIs('remotely-observed-thread'))");
+        run("groovy", "--in", "jmx", Integer.toString(Util.currentPid()));
+
+        // Reuse verification logic re-parsing the output as thread dump
+        ProcessRuntime reparsed = new ThreadDumpFactory().fromStream(new ByteArrayInputStream(out.toByteArray()));
+        assertThreadState(reparsed);
+    }
+
+    private void assertThreadState(ProcessRuntime runtime) {
         ProcessThread actual = runtime.getThreads().where(nameIs("remotely-observed-thread")).onlyThread();
         StackTrace trace = actual.getStackTrace();
 
         assertThat(actual.getName(), equalTo("remotely-observed-thread"));
         assertThat(actual.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
-        // TODO priority
-        // TODO daemon
-        assertThat(trace.getElement(0), equalTo(nativeElement("java.lang.Object", "wait", "Object.java")));
+        // TODO other attributes
+        // Test class and method name only as JVM way offer filename too while thread dump way does not
+        StackTraceElement innerFrame = trace.getElement(0);
+        assertThat(innerFrame.getClassName(), equalTo("java.lang.Object"));
+        assertThat(innerFrame.getMethodName(), equalTo("wait"));
         assertThat(trace.getElement(1), equalTo(element("java.lang.Object", "wait", "Object.java", 503)));
         assertThat(trace.getElement(2), equalTo(element(
                 "com.github.olivergondza.dumpling.factory.JmxTestProcess$1", "run", "JmxTestProcess.java", 42
@@ -103,7 +129,9 @@ public class JmxRuntimeFactoryTest {
     }
 
     private void runLocalSut() {
-        JmxTestProcess.runThread();
+        this.thread = JmxTestProcess.runThread();
+
+        Util.pause(1000);
     }
 
     private void runRemoteSut() throws IOException {

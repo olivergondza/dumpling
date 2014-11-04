@@ -34,8 +34,8 @@ public final class JmxTestProcess {
         JmxTestProcess.class.wait();
     }
 
-    public static void runThread() {
-        new Thread("remotely-observed-thread") {
+    public static Thread runThread() {
+        Thread thread = new Thread("remotely-observed-thread") {
             @Override
             public synchronized void run() {
                 try {
@@ -44,6 +44,8 @@ public final class JmxTestProcess {
                     ex.printStackTrace();
                 }
             };
-        }.start();
+        };
+        thread.start();
+        return thread;
     }
 }

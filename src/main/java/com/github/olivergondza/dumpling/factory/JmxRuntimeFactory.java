@@ -31,8 +31,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,6 +56,7 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ProcessThread.Builder;
 import com.github.olivergondza.dumpling.model.StackTrace;
+import com.github.olivergondza.dumpling.model.ThreadLock;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 
 public final class JmxRuntimeFactory implements CliRuntimeFactory {
@@ -67,20 +70,20 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
     public @Nonnull ProcessRuntime createRuntime(@Nonnull String locator, @Nonnull ProcessStream process) throws CommandFailedException {
         try {
             return fromConnection(locateConnection(locator));
-        } catch (IOException ex) {
-            throw new CommandFailedException(ex.getMessage(), ex);
+        } catch (FailedToInitializeJmxConnection ex) {
+            throw new CommandFailedException(ex);
         }
     }
 
-    public @Nonnull ProcessRuntime forRemoteProcess(@Nonnull String host, int port) throws IOException {
+    public @Nonnull ProcessRuntime forRemoteProcess(@Nonnull String host, int port) throws FailedToInitializeJmxConnection {
         return fromConnection(new RemoteConnector(host, port, null, null).getServerConnection());
     }
 
-    public @Nonnull ProcessRuntime forLocalProcess(int pid) throws IOException {
+    public @Nonnull ProcessRuntime forLocalProcess(int pid) throws FailedToInitializeJmxConnection {
         return fromConnection(new LocalConnector(pid).getServerConnection());
     }
 
-    private @Nonnull MBeanServerConnection locateConnection(@Nonnull String locator) throws IOException {
+    private @Nonnull MBeanServerConnection locateConnection(@Nonnull String locator) throws FailedToInitializeJmxConnection {
         try {
             int pid = Integer.parseInt(locator);
             return new LocalConnector(pid).getServerConnection();
@@ -93,7 +96,7 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
         try {
             return extractRuntime(connection);
         } catch (MBeanException ex) {
-            throw new FailedToInitializeJmxConnection("Remote method call failed", ex);
+            throw new FailedToInitializeJmxConnection("Remote MBean thrown an exception", ex);
         } catch (JMException ex) {
             throw new FailedToInitializeJmxConnection("Remote method call failed", ex);
         } catch (IOException ex) {
@@ -112,27 +115,64 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
                     .setName((String) thread.get("threadName"))
                     .setId((Long) thread.get("threadId"))
                     .setThreadStatus(ThreadStatus.fromState(state))
+                    .setStacktrace(getStackTrace(thread))
             ;
 
-            final CompositeData[] traceSource = (CompositeData[]) thread.get("stackTrace");
-            final StackTraceElement[] traceFrames = new StackTraceElement[traceSource.length];
-            for (int i = 0; i < traceSource.length; i++) {
-                final CompositeData frame = traceSource[i];
+            final List<ThreadLock.Monitor> monitors = getMonitors(thread);
+            final List<ThreadLock> synchonizers = getSynchronizers(thread);
 
-                final String className = (String) frame.get("className");
-                final String methodName = (String) frame.get("methodName");
-                final String fileName = (String) frame.get("fileName");
-                final int lineNumber = (Integer) frame.get("lineNumber");
-
-                traceFrames[i] = StackTrace.element(className, methodName, fileName, lineNumber);
-            }
-
-            builder.setStacktrace(traceFrames);
-
+            builder.setAcquiredMonitors(monitors).setAcquiredSynchronizers(synchonizers);
             builders.add(builder);
         }
 
         return new ProcessRuntime(builders);
+    }
+
+    private List<ThreadLock.Monitor> getMonitors(CompositeData thread) {
+        final CompositeData[] rawMonitors = (CompositeData[]) thread.get("lockedMonitors");
+        if (rawMonitors.length == 0) return Collections.emptyList();
+
+        final List<ThreadLock.Monitor> monitors = new ArrayList<ThreadLock.Monitor>(rawMonitors.length);
+        for (CompositeData rm: rawMonitors) {
+            monitors.add(new ThreadLock.Monitor(
+                    createLock(rm), (Integer) rm.get("lockedStackDepth")
+            ));
+        }
+        return monitors;
+    }
+
+    private List<ThreadLock> getSynchronizers(CompositeData thread) {
+        final CompositeData[] rawSynchonizers = (CompositeData[]) thread.get("lockedSynchronizers");
+        if (rawSynchonizers.length == 0) return Collections.emptyList();
+
+        final List<ThreadLock> synchonizers = new ArrayList<ThreadLock>(rawSynchonizers.length);
+        for (CompositeData rs: rawSynchonizers) {
+            synchonizers.add(createLock(rs));
+        }
+        return synchonizers;
+    }
+
+    private ThreadLock createLock(CompositeData rm) {
+        return new ThreadLock(
+                (String) rm.get("className"),
+                (Integer) rm.get("identityHashCode")
+        );
+    }
+
+    private @Nonnull StackTraceElement[] getStackTrace(CompositeData thread) {
+        final CompositeData[] traceSource = (CompositeData[]) thread.get("stackTrace");
+        final StackTraceElement[] traceFrames = new StackTraceElement[traceSource.length];
+        for (int i = 0; i < traceSource.length; i++) {
+            final CompositeData frame = traceSource[i];
+
+            final String className = (String) frame.get("className");
+            final String methodName = (String) frame.get("methodName");
+            final String fileName = (String) frame.get("fileName");
+            final int lineNumber = (Integer) frame.get("lineNumber");
+
+            traceFrames[i] = StackTrace.element(className, methodName, fileName, lineNumber);
+        }
+        return traceFrames;
     }
 
     private CompositeData[] getRemoteThreads(@Nonnull MBeanServerConnection connection) throws MBeanException, JMException, IOException {
@@ -146,7 +186,7 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
     }
 
     private static final class LocalConnector {
-        private static final String CONNECTOR_CLASS_NAME = "com.github.olivergondza.dumpling.factory.JmxLocalProcessConnector";
+        private static final String CONNECTOR_CLASS_NAME = "com.github.olivergondza.dumpling.factory.jmx.JmxLocalProcessConnector";
         private final @Nonnegative int pid;
 
         private LocalConnector(@Nonnegative int pid) {
@@ -240,13 +280,17 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
             return sb.toString();
         }
 
-        private @Nonnull MBeanServerConnection getServerConnection() throws IOException {
+        private @Nonnull MBeanServerConnection getServerConnection() {
 
             HashMap<String, String[]> map = new HashMap<String, String[]>();
             if (username != null) {
                 map.put(JMXConnector.CREDENTIALS, new String[] {username, password});
             }
-            return JMXConnectorFactory.connect(getServiceUrl(), map).getMBeanServerConnection();
+            try {
+                return JMXConnectorFactory.connect(getServiceUrl(), map).getMBeanServerConnection();
+            } catch (IOException ex) {
+                throw new FailedToInitializeJmxConnection(ex);
+            }
         }
 
         private JMXServiceURL getServiceUrl() {
