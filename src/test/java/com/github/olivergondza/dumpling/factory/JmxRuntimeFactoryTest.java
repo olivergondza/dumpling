@@ -30,8 +30,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Test;
@@ -77,14 +78,43 @@ public class JmxRuntimeFactoryTest extends AbstractCliTest {
     }
 
     @Test
-    public void jmxRemoteConnect() throws IOException {
+    public void jmxRemoteConnect() throws Exception {
         runRemoteSut();
         ProcessRuntime runtime = new JmxRuntimeFactory().forRemoteProcess("localhost", 9876);
         assertThreadState(runtime);
     }
 
     @Test
-    public void jmxRemoteConnectViaCli() throws IOException {
+    public void jmxRemoteConnectWithPasswd() throws Exception {
+        runRemoteSut(true);
+        ProcessRuntime runtime = new JmxRuntimeFactory().forRemoteProcess("localhost", 9876, "user", "secret_passwd");
+        assertThreadState(runtime);
+    }
+
+    @Test
+    public void jmxRemoteConnectMissingPasswd() throws Exception {
+        runRemoteSut(true);
+        try {
+            new JmxRuntimeFactory().forRemoteProcess("localhost", 9876);
+            fail();
+        } catch (JmxRuntimeFactory.FailedToInitializeJmxConnection ex) {
+            assertThat(ex.getMessage(), containsString("Credentials required"));
+        }
+    }
+
+    @Test
+    public void jmxRemoteConnectWithIncorrectPasswd() throws Exception {
+        runRemoteSut(true);
+        try {
+            new JmxRuntimeFactory().forRemoteProcess("localhost", 9876, "user", "incorrect_passwd");
+            fail();
+        } catch (JmxRuntimeFactory.FailedToInitializeJmxConnection ex) {
+            assertThat(ex.getMessage(), containsString("Invalid username or password"));
+        }
+    }
+
+    @Test
+    public void jmxRemoteConnectViaCli() throws Exception {
         runRemoteSut();
         stdin("runtime.threads.where(nameIs('remotely-observed-thread'))");
         run("groovy", "--in", "jmx", "localhost:9876");
@@ -155,16 +185,25 @@ public class JmxRuntimeFactoryTest extends AbstractCliTest {
         Util.pause(1000);
     }
 
-    private void runRemoteSut() throws IOException {
-        String[] args = {
-                "java", "-cp", "target/test-classes:target/classes",
-                "-Dcom.sun.management.jmxremote",
-                "-Dcom.sun.management.jmxremote.port=9876",
-                "-Dcom.sun.management.jmxremote.local.only=false",
-                "-Dcom.sun.management.jmxremote.authenticate=false",
-                "-Dcom.sun.management.jmxremote.ssl=false",
-                "com.github.olivergondza.dumpling.factory.JmxTestProcess"
-        };
+    private void runRemoteSut() throws Exception {
+        runRemoteSut(false);
+    }
+
+    private void runRemoteSut(boolean auth) throws Exception {
+        List<String> args = new ArrayList<String>();
+        args.add("java");
+        args.add("-cp");
+        args.add("target/test-classes:target/classes");
+        args.add("-Dcom.sun.management.jmxremote");
+        args.add("-Dcom.sun.management.jmxremote.port=9876");
+        args.add("-Dcom.sun.management.jmxremote.local.only=false");
+        args.add("-Dcom.sun.management.jmxremote.authenticate=" + auth);
+        args.add("-Dcom.sun.management.jmxremote.ssl=false");
+        if (auth) {
+            args.add("-Dcom.sun.management.jmxremote.password.file=" + getPath("jmxremote.password"));
+            args.add("-Dcom.sun.management.jmxremote.access.file=" + getPath("jmxremote.access"));
+        }
+        args.add("com.github.olivergondza.dumpling.factory.JmxTestProcess");
 
         this.process = new ProcessBuilder(args)
                 .redirectError(Redirect.INHERIT)
@@ -173,5 +212,12 @@ public class JmxRuntimeFactoryTest extends AbstractCliTest {
         ;
 
         Util.pause(1000);
+    }
+
+    private String getPath(String path) throws Exception {
+        String file = Util.resourceFile(getClass(), path).getAbsolutePath();
+        // Workaround http://jira.codehaus.org/browse/MRESOURCES-132
+        new ProcessBuilder("chmod", "600", file).start().waitFor();
+        return file;
     }
 }

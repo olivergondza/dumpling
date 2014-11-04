@@ -77,7 +77,11 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
     }
 
     public @Nonnull ProcessRuntime forRemoteProcess(@Nonnull String host, int port) throws FailedToInitializeJmxConnection {
-        return fromConnection(new RemoteConnector(host, port, null, null).getServerConnection());
+        return forRemoteProcess(host, port, null, null);
+    }
+
+    public @Nonnull ProcessRuntime forRemoteProcess(@Nonnull String host, int port, String username, String password) throws FailedToInitializeJmxConnection {
+        return fromConnection(new RemoteConnector(host, port, username, password).getServerConnection());
     }
 
     public @Nonnull ProcessRuntime forLocalProcess(int pid) throws FailedToInitializeJmxConnection {
@@ -291,8 +295,11 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
             if (username != null) {
                 map.put(JMXConnector.CREDENTIALS, new String[] {username, password});
             }
+
             try {
                 return JMXConnectorFactory.connect(getServiceUrl(), map).getMBeanServerConnection();
+            } catch (SecurityException ex) {
+                throw new FailedToInitializeJmxConnection(ex);
             } catch (IOException ex) {
                 throw new FailedToInitializeJmxConnection(ex);
             }
