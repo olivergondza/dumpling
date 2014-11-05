@@ -50,6 +50,7 @@ public class JmxRuntimeFactoryTest extends AbstractCliTest {
     private Process process;
     private Thread thread;
 
+    @SuppressWarnings("deprecation")
     @After
     public void after() throws InterruptedException {
         if (process != null) {

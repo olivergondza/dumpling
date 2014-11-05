@@ -328,7 +328,7 @@ public class ProcessThread {
             sb.append(NL).append("   java.lang.Thread.State: ").append(status.getName());
 
             int depth = 0;
-            for (StackTraceElement traceLine: stackTrace.getElemens()) {
+            for (StackTraceElement traceLine: stackTrace.getElements()) {
                 sb.append(NL).append("\tat ").append(traceLine);
 
                 if (waitingOnLock != null && depth == 0) {
