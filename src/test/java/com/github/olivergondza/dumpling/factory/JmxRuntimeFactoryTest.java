@@ -169,11 +169,18 @@ public class JmxRuntimeFactoryTest extends AbstractCliTest {
         assertThat(actual.getName(), equalTo("remotely-observed-thread"));
         assertThat(actual.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
         // TODO other attributes
+
         // Test class and method name only as JVM way offer filename too while thread dump way does not
-        StackTraceElement innerFrame = trace.getElement(0);
+        final StackTraceElement innerFrame = trace.getElement(0);
         assertThat(innerFrame.getClassName(), equalTo("java.lang.Object"));
         assertThat(innerFrame.getMethodName(), equalTo("wait"));
-        assertThat(trace.getElement(1), equalTo(element("java.lang.Object", "wait", "Object.java", 503)));
+
+        // Do not assert line number as it changes between JDK versions
+        final StackTraceElement waitElement = trace.getElement(1);
+        assertThat(waitElement.getClassName(), equalTo("java.lang.Object"));
+        assertThat(waitElement.getMethodName(), equalTo("wait"));
+        assertThat(waitElement.getFileName(), equalTo("Object.java"));
+
         assertThat(trace.getElement(2), equalTo(element(
                 "com.github.olivergondza.dumpling.factory.JmxTestProcess$1", "run", "JmxTestProcess.java", 42
         )));
