@@ -37,7 +37,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
@@ -267,7 +266,6 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
     }
 
     /*package*/ static final class RemoteConnector {
-        private static final Pattern PATTERN = Pattern.compile("(?:(?<username>\\w+):(?<password>\\w+)@)?(?<host>\\w+):(?<port>\\d+)");
         /*package*/ final @Nonnull String host;
         /*package*/ final @Nonnegative int port;
         /*package*/ String username;
