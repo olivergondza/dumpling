@@ -116,6 +116,7 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
     }
 
     @After
+    @SuppressWarnings("deprecation")
     public void tearDown() {
         if (t != null) {
             t.stop();
