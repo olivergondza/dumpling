@@ -32,11 +32,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nonnegative;
@@ -270,12 +270,15 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
 
         /*package*/ RemoteConnector(@Nonnull String locator) {
 
-            Matcher matcher = PATTERN.matcher(locator);
-            matcher.find();
-            host = matcher.group("host");
-            port = Integer.parseInt(matcher.group("port"));
-            username = matcher.group("username");
-            password = matcher.group("password");
+            List<String> chunks = Arrays.asList(locator.split("[:@]"));
+            Collections.reverse(chunks);
+
+            port = Integer.parseInt(chunks.get(0));
+            host = chunks.get(1);
+            if (chunks.size() == 4) {
+                password = chunks.get(2);
+                username = chunks.get(3);
+            }
         }
 
         @Override
