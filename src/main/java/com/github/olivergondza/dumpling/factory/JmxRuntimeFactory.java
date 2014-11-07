@@ -211,9 +211,15 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
                 Throwable cause = ex.getCause(); // Unwrap and rethrow as FailedToInitializeJmxConnection is necessary
                 if (cause instanceof FailedToInitializeJmxConnection) throw (FailedToInitializeJmxConnection) cause;
                 throw new FailedToInitializeJmxConnection(cause);
-            } catch (ReflectiveOperationException ex) {
+            } catch (ClassNotFoundException ex) {
+                throw new AssertionError("Unable to invoke " + CONNECTOR_CLASS_NAME, ex);
+            } catch (NoSuchMethodException ex) {
                 throw new AssertionError("Unable to invoke " + CONNECTOR_CLASS_NAME, ex);
             } catch (SecurityException ex) {
+                throw new AssertionError("Unable to invoke " + CONNECTOR_CLASS_NAME, ex);
+            } catch (IllegalAccessException ex) {
+                throw new AssertionError("Unable to invoke " + CONNECTOR_CLASS_NAME, ex);
+            } catch (IllegalArgumentException ex) {
                 throw new AssertionError("Unable to invoke " + CONNECTOR_CLASS_NAME, ex);
             }
         }
