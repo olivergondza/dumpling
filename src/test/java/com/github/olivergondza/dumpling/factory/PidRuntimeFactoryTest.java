@@ -28,6 +28,7 @@ import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 import java.util.concurrent.locks.ReentrantLock;
@@ -53,9 +54,9 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
         ProcessRuntime pidRuntime = new PidRuntimeFactory().forProcess(Util.currentPid());
 
         ProcessThread thread = pidRuntime.getThreads().where(nameIs("process-thread")).onlyThread();
-        assertThat(thread.toString(), thread.getStatus(), equalTo(ThreadStatus.SLEEPING));
+        assertThat(thread.getStatus(), equalTo(ThreadStatus.SLEEPING));
+        assertFalse(thread.toString(), thread.getAcquiredLocks().isEmpty());
         assertThat(
-                thread.toString(),
                 thread.getAcquiredLocks().iterator().next().getClassName(),
                 equalTo("java.util.concurrent.locks.ReentrantLock$NonfairSync")
         );
