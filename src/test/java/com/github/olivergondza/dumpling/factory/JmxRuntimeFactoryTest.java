@@ -30,7 +30,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
-import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -206,13 +205,16 @@ public class JmxRuntimeFactoryTest extends AbstractCliTest {
         }
         args.add("com.github.olivergondza.dumpling.factory.JmxTestProcess");
 
-        this.process = new ProcessBuilder(args)
-                .redirectError(Redirect.INHERIT)
-                .redirectOutput(Redirect.INHERIT)
-                .start()
-        ;
+        this.process = new ProcessBuilder(args).start();
 
         Util.pause(1000);
+
+        try {
+            this.process.exitValue();
+            fail("JmxTestProcess process terminated prematurelly");
+        } catch (IllegalThreadStateException ex) {
+            return;
+        }
     }
 
     private String getPath(String path) throws Exception {
