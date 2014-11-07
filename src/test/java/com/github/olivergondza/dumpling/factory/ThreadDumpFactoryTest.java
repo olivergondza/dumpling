@@ -33,7 +33,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -932,7 +932,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
     private ProcessRuntime reparse(ProcessRuntime actual) {
         String output = actual.getThreads().toString();
-        ByteArrayInputStream stream = new ByteArrayInputStream(output.getBytes(StandardCharsets.UTF_8));
+        ByteArrayInputStream stream = new ByteArrayInputStream(output.getBytes(Charset.forName("UTF8")));
         ProcessRuntime reparsed = new ThreadDumpFactory().fromStream(stream);
         return reparsed;
     }
