@@ -224,7 +224,7 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
             try {
                 Class.forName("com.sun.tools.attach.VirtualMachine");
                 return currentClassLoader;
-            } catch (ClassNotFoundException _) {
+            } catch (ClassNotFoundException ex) {
                 // Using null as parent classloader to baypass parent-first policy
                 return new URLClassLoader(locateJars(), null);
             }
