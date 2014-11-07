@@ -212,16 +212,22 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
                 if (cause instanceof FailedToInitializeJmxConnection) throw (FailedToInitializeJmxConnection) cause;
                 throw new FailedToInitializeJmxConnection(cause);
             } catch (ClassNotFoundException ex) {
-                throw new AssertionError("Unable to invoke " + CONNECTOR_CLASS_NAME, ex);
+                throw assertionError("Unable to invoke " + CONNECTOR_CLASS_NAME, ex);
             } catch (NoSuchMethodException ex) {
-                throw new AssertionError("Unable to invoke " + CONNECTOR_CLASS_NAME, ex);
+                throw assertionError("Unable to invoke " + CONNECTOR_CLASS_NAME, ex);
             } catch (SecurityException ex) {
-                throw new AssertionError("Unable to invoke " + CONNECTOR_CLASS_NAME, ex);
+                throw assertionError("Unable to invoke " + CONNECTOR_CLASS_NAME, ex);
             } catch (IllegalAccessException ex) {
-                throw new AssertionError("Unable to invoke " + CONNECTOR_CLASS_NAME, ex);
+                throw assertionError("Unable to invoke " + CONNECTOR_CLASS_NAME, ex);
             } catch (IllegalArgumentException ex) {
-                throw new AssertionError("Unable to invoke " + CONNECTOR_CLASS_NAME, ex);
+                throw assertionError("Unable to invoke " + CONNECTOR_CLASS_NAME, ex);
             }
+        }
+
+        private AssertionError assertionError(String msg, Throwable cause) {
+            AssertionError ex = new AssertionError("Unable to invoke " + CONNECTOR_CLASS_NAME);
+            ex.initCause(cause);
+            return ex;
         }
 
         private ClassLoader loadToolsJarClasses() {
