@@ -23,7 +23,6 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -40,7 +39,7 @@ public class GroovyCommandTest extends AbstractCliTest {
     public void executeScript() {
         invoke("print runtime.threads.size()");
         assertThat(err.toString(), equalTo(""));
-        assertThat(exitValue, equalTo(0));
+        assertThat(this, succeeded());
         assertThat(out.toString(), equalTo("8"));
     }
 
@@ -48,7 +47,7 @@ public class GroovyCommandTest extends AbstractCliTest {
     public void filter() {
         invoke("runtime.threads.where(nameIs('owning_thread')).collect { it.name }");
         assertThat(err.toString(), equalTo(""));
-        assertThat(exitValue, equalTo(0));
+        assertThat(this, succeeded());
         assertThat(out.toString().trim(), equalTo("[owning_thread]"));
     }
 
@@ -56,7 +55,7 @@ public class GroovyCommandTest extends AbstractCliTest {
     public void loadSymbolsFromOtherDumplingPackages() {
         invoke("new Deadlocks(); ThreadStatus.valueOf(0); new JvmRuntimeFactory(); new CommandFailedException('')");
         assertThat(err.toString(), equalTo(""));
-        assertThat(exitValue, equalTo(0));
+        assertThat(this, succeeded());
     }
 
     @Test
@@ -72,7 +71,7 @@ public class GroovyCommandTest extends AbstractCliTest {
         invoke("print runtime.threads.grep().getClass()");
         assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), equalTo("class com.github.olivergondza.dumpling.model.ThreadSet"));
-        assertThat(exitValue, equalTo(0));
+        assertThat(this, succeeded());
     }
 
     @Test
@@ -80,7 +79,7 @@ public class GroovyCommandTest extends AbstractCliTest {
         invoke("print runtime.threads.grep { it.name == 'blocked_thread' }.getClass()");
         assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), equalTo("class com.github.olivergondza.dumpling.model.ThreadSet"));
-        assertThat(exitValue, equalTo(0));
+        assertThat(this, succeeded());
     }
 
     @Test
@@ -88,7 +87,7 @@ public class GroovyCommandTest extends AbstractCliTest {
         invoke("print runtime.threads.findAll().getClass()");
         assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), equalTo("class com.github.olivergondza.dumpling.model.ThreadSet"));
-        assertThat(exitValue, equalTo(0));
+        assertThat(this, succeeded());
     }
 
     @Test
@@ -96,7 +95,7 @@ public class GroovyCommandTest extends AbstractCliTest {
         invoke("print runtime.threads.findAll { it.name == 'blocked_thread' }.getClass()");
         assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), equalTo("class com.github.olivergondza.dumpling.model.ThreadSet"));
-        assertThat(exitValue, equalTo(0));
+        assertThat(this, succeeded());
     }
 
     @Test
@@ -104,7 +103,7 @@ public class GroovyCommandTest extends AbstractCliTest {
         invoke("print runtime.threads.asImmutable().getClass()");
         assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), equalTo("class com.github.olivergondza.dumpling.model.ThreadSet"));
-        assertThat(exitValue, equalTo(0));
+        assertThat(this, succeeded());
     }
 
     @Test
@@ -112,7 +111,7 @@ public class GroovyCommandTest extends AbstractCliTest {
         invoke("print runtime.threads.intersect(runtime.threads).getClass()");
         assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), equalTo("class com.github.olivergondza.dumpling.model.ThreadSet"));
-        assertThat(exitValue, equalTo(0));
+        assertThat(this, succeeded());
     }
 
     @Test
@@ -120,7 +119,7 @@ public class GroovyCommandTest extends AbstractCliTest {
         invoke("threadSum = runtime.threads + runtime.threads; print threadSum.getClass()");
         assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), equalTo("class com.github.olivergondza.dumpling.model.ThreadSet"));
-        assertThat(exitValue, equalTo(0));
+        assertThat(this, succeeded());
     }
 
     @Test
@@ -128,7 +127,7 @@ public class GroovyCommandTest extends AbstractCliTest {
         invoke("print runtime.threads.toSet().getClass()");
         assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), equalTo("class com.github.olivergondza.dumpling.model.ThreadSet"));
-        assertThat(exitValue, equalTo(0));
+        assertThat(this, succeeded());
     }
 
     @Test
@@ -137,7 +136,7 @@ public class GroovyCommandTest extends AbstractCliTest {
         invoke("print runtime.threads.grep { " + choices + " }.empty");
         assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), equalTo("false"));
-        assertThat(exitValue, equalTo(0));
+        assertThat(this, succeeded());
     }
 
     private void invoke(String script) {

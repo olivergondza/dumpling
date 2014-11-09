@@ -34,7 +34,9 @@ import java.io.UnsupportedEncodingException;
 
 import javax.annotation.Nonnull;
 
+import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
 
 public abstract class AbstractCliTest {
 
@@ -72,5 +74,25 @@ public abstract class AbstractCliTest {
         return org.hamcrest.CoreMatchers.containsString(
                 String.format(str)
         );
+    }
+
+    protected Matcher<AbstractCliTest> succeeded() {
+        return new TypeSafeMatcher<AbstractCliTest>() {
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("Successfull execution");
+            }
+
+            @Override
+            protected void describeMismatchSafely(AbstractCliTest item, Description mismatchDescription) {
+                mismatchDescription.appendText("Failed with: ").appendValue(item.exitValue).appendText("\n").appendValue(item.err);
+            }
+
+            @Override
+            protected boolean matchesSafely(AbstractCliTest item) {
+                return item.exitValue == 0;
+            }
+        };
     }
 }

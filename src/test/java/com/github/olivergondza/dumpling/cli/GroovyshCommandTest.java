@@ -23,7 +23,6 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.File;
@@ -42,6 +41,6 @@ public class GroovyshCommandTest extends AbstractCliTest {
         run("groovysh");
 
         assertThat(out.toString(), containsString(" 35%n"));
-        assertThat(exitValue, equalTo(0));
+        assertThat(this, succeeded());
     }
 }

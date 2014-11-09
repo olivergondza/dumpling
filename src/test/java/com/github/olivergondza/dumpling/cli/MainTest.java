@@ -23,7 +23,6 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -58,7 +57,7 @@ public class MainTest extends AbstractCliTest {
         assertThat(out.toString(), containsString("Usage: "));
         assertThat(out.toString(), containsString("Available commands:"));
         assertThat(out.toString(), containsString("blocking-tree"));
-        assertThat(exitValue, equalTo(0));
+        assertThat(this, succeeded());
     }
 
     @Test
@@ -68,7 +67,7 @@ public class MainTest extends AbstractCliTest {
         assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), containsString("dumpling.sh deadlocks"));
         assertThat(out.toString(), containsString("Detect cycles of blocked threads"));
-        assertThat(exitValue, equalTo(0));
+        assertThat(this, succeeded());
     }
 
     @Test
