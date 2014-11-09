@@ -61,6 +61,10 @@ public class ProcessThread {
     private void checkSanity() {
         if (state.name == null || state.name.isEmpty()) throw new IllegalArgumentException("Thread name not set");
         if (state.status == null) throw new IllegalArgumentException("Thread status not set");
+
+        if (state.id == null && state.tid == null && state.nid == null) {
+            throw new IllegalArgumentException("No thread identifier set");
+        }
     }
 
     public @Nonnull String getName() {
