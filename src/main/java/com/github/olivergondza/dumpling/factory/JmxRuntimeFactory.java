@@ -126,6 +126,12 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
             final List<ThreadLock> synchonizers = getSynchronizers(thread);
 
             builder.setAcquiredMonitors(monitors).setAcquiredSynchronizers(synchonizers);
+
+            final CompositeData lockInfo = (CompositeData) thread.get("lockInfo");
+            if (lockInfo != null) {
+                builder.setWaitingOnLock(createLock(lockInfo));
+            }
+
             builders.add(builder);
         }
 

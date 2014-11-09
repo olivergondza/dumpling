@@ -65,6 +65,10 @@ public class ProcessThread {
         if (state.id == null && state.tid == null && state.nid == null) {
             throw new IllegalArgumentException("No thread identifier set");
         }
+
+        if (state.status.isBlocked() && state.waitingOnLock == null) {
+            throw new IllegalArgumentException("Blocked thread does not declare monitor:\n" + state);
+        }
     }
 
     public @Nonnull String getName() {
