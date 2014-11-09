@@ -23,21 +23,16 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
-import groovy.lang.Binding;
-
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import javax.annotation.Nonnull;
 
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
 import org.kohsuke.args4j.CmdLineException;
-
-import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
-import com.github.olivergondza.dumpling.model.ProcessRuntime;
 
 /**
  * Run groovysh with imported Dumpling to investigate threaddump interactively.
@@ -47,6 +42,8 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
  * @author ogondza
  */
 public class GroovyshCommand implements CliCommand {
+
+    private static final GroovyInterpretterConfig CONFIG = new GroovyInterpretterConfig();
 
     @Override
     public String getName() {
@@ -62,24 +59,28 @@ public class GroovyshCommand implements CliCommand {
     public int run(@Nonnull ProcessStream process) throws CmdLineException {
 
         IO io = new IO(new BufferedInputStream(process.in()), process.out(), process.err());
-        final Binding binding = new Binding();
-        registerCommands(binding);
 
         // Do not use .inputrc as jline does not interpret it correctly: https://github.com/jline/jline2/issues/51
         System.setProperty("jline.inputrc", "~/.no.inputrc");
 
-        Groovysh groovysh = new Groovysh(this.getClass().getClassLoader(), binding, io);
+        Groovysh groovysh = new Groovysh(this.getClass().getClassLoader(), CONFIG.getDefaultBinding(process), io);
 
-        groovysh.getImports().addAll(Arrays.asList(
-                "com.github.olivergondza.dumpling.cli.*",
-                "com.github.olivergondza.dumpling.factory.*",
-                "com.github.olivergondza.dumpling.model.*",
-                "com.github.olivergondza.dumpling.query.*"
-        ));
+        groovysh.getImports().addAll(getImports());
 
         configureHistory(process, groovysh);
 
         return groovysh.run(new String[] {});
+    }
+
+    private Collection<String> getImports() {
+        ArrayList<String> imports = new ArrayList<String>();
+        for (String starImport: CONFIG.getStarImports()) {
+            imports.add(starImport + ".*");
+        }
+        for (String staticStar: CONFIG.getStaticStars()) {
+            imports.add("static " + staticStar + ".*");
+        }
+        return imports;
     }
 
     private void configureHistory(final ProcessStream process, final Groovysh groovysh) {
@@ -94,14 +95,6 @@ public class GroovyshCommand implements CliCommand {
                     process.err().println("Unable to save shell history");
                     ex.printStackTrace(process.err());
                 }
-            }
-        });
-    }
-
-    private void registerCommands(final Binding binding) {
-        binding.setProperty("load", new Object() {
-            public ProcessRuntime call(String filename) throws Exception {
-                return new ThreadDumpFactory().fromFile(new File(filename));
             }
         });
     }

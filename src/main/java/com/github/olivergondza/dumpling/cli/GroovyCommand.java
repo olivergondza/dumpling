@@ -43,7 +43,9 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
  */
 public class GroovyCommand implements CliCommand {
 
-    @Option(name = "-i", aliases = {"--in"}, required = true, usage = "Input for process runtime")
+    private static final GroovyInterpretterConfig CONFIG = new GroovyInterpretterConfig();
+
+    @Option(name = "-i", aliases = {"--in"}, usage = "Input for process runtime")
     private ProcessRuntime runtime;
 
     @Override
@@ -58,18 +60,19 @@ public class GroovyCommand implements CliCommand {
 
     @Override
     public int run(ProcessStream process) throws CmdLineException {
-        Binding binding = new Binding();
-        binding.setProperty("runtime", runtime);
-        binding.setProperty("out", process.out());
-        binding.setProperty("err", process.err());
+        Binding binding = CONFIG.getDefaultBinding(process);
+        if (runtime != null) {
+            binding.setProperty("runtime", runtime);
+        }
 
         CompilerConfiguration cc = new CompilerConfiguration();
         ImportCustomizer imports = new ImportCustomizer();
-        imports.addStarImports("com.github.olivergondza.dumpling.cli");
-        imports.addStarImports("com.github.olivergondza.dumpling.factory");
-        imports.addStarImports("com.github.olivergondza.dumpling.query");
-        imports.addStarImports("com.github.olivergondza.dumpling.model");
-        imports.addStaticStars("com.github.olivergondza.dumpling.model.ProcessThread");
+        for (String starImport: CONFIG.getStarImports()) {
+            imports.addStarImports(starImport);
+        }
+        for (String staticStar: CONFIG.getStaticStars()) {
+            imports.addStaticStars(staticStar);
+        }
         cc.addCompilationCustomizers(imports);
 
         GroovyShell shell = new GroovyShell(binding, cc);

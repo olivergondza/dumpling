@@ -24,7 +24,6 @@
 package com.github.olivergondza.dumpling.cli;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.net.URISyntaxException;
@@ -49,21 +48,6 @@ public class GroovyCommandTest extends AbstractCliTest {
         assertThat(err.toString(), equalTo(""));
         assertThat(this, succeeded());
         assertThat(out.toString().trim(), equalTo("[owning_thread]"));
-    }
-
-    @Test
-    public void loadSymbolsFromOtherDumplingPackages() {
-        invoke("new Deadlocks(); ThreadStatus.valueOf(0); new JvmRuntimeFactory(); new CommandFailedException('')");
-        assertThat(err.toString(), equalTo(""));
-        assertThat(this, succeeded());
-    }
-
-    @Test
-    public void failTheScript() {
-        invoke("new ThereIsNoSuchClass()");
-        assertThat(err.toString(), containsString("dumpling-script: 1: unable to resolve class ThereIsNoSuchClass"));
-        assertThat(out.toString(), equalTo(""));
-        assertThat(exitValue, not(equalTo(0)));
     }
 
     @Test
