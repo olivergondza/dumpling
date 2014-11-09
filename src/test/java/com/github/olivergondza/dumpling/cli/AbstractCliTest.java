@@ -37,6 +37,7 @@ import javax.annotation.Nonnull;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.junit.After;
 
 public abstract class AbstractCliTest {
 
@@ -44,6 +45,23 @@ public abstract class AbstractCliTest {
     protected ByteArrayOutputStream err = new ByteArrayOutputStream();
     protected ByteArrayOutputStream out = new ByteArrayOutputStream();
     protected int exitValue;
+
+    /* Autocleaned fixture */
+    protected Process process;
+    protected Thread thread;
+
+    @SuppressWarnings("deprecation")
+    @After
+    public void after() throws InterruptedException {
+        if (process != null) {
+            process.destroy();
+            process.waitFor();
+        }
+
+        if (thread != null) {
+            thread.stop();
+        }
+    }
 
     protected int run(@Nonnull String... args) {
         return exitValue = new Main().run(args, new ProcessStream(in, new PrintStream(out), new PrintStream(err)));
@@ -74,6 +92,10 @@ public abstract class AbstractCliTest {
         return org.hamcrest.CoreMatchers.containsString(
                 String.format(str)
         );
+    }
+
+    protected Matcher<String> isEmptyString() {
+        return org.hamcrest.text.IsEmptyString.isEmptyString();
     }
 
     protected Matcher<AbstractCliTest> succeeded() {

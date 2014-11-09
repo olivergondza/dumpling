@@ -23,20 +23,22 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
+import static com.github.olivergondza.dumpling.TestThread.JMX_CONNECTION;
+import static com.github.olivergondza.dumpling.TestThread.JMX_HOST;
+import static com.github.olivergondza.dumpling.TestThread.JMX_PASSWD;
+import static com.github.olivergondza.dumpling.TestThread.JMX_PORT;
+import static com.github.olivergondza.dumpling.TestThread.JMX_USER;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
-import static com.github.olivergondza.dumpling.model.StackTrace.element;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.junit.After;
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
+import com.github.olivergondza.dumpling.TestThread;
 import com.github.olivergondza.dumpling.cli.AbstractCliTest;
 import com.github.olivergondza.dumpling.factory.JmxRuntimeFactory.RemoteConnector;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
@@ -45,22 +47,6 @@ import com.github.olivergondza.dumpling.model.StackTrace;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 
 public class JmxRuntimeFactoryTest extends AbstractCliTest {
-
-    private Process process;
-    private Thread thread;
-
-    @SuppressWarnings("deprecation")
-    @After
-    public void after() throws InterruptedException {
-        if (process != null) {
-            process.destroy();
-            process.waitFor();
-        }
-
-        if (thread != null) {
-            thread.stop();
-        }
-    }
 
     @Test
     public void parseRemoteLogin() {
@@ -80,14 +66,14 @@ public class JmxRuntimeFactoryTest extends AbstractCliTest {
     @Test
     public void jmxRemoteConnect() throws Exception {
         runRemoteSut();
-        ProcessRuntime runtime = new JmxRuntimeFactory().forRemoteProcess("localhost", 9876);
+        ProcessRuntime runtime = new JmxRuntimeFactory().forRemoteProcess(JMX_HOST, JMX_PORT);
         assertThreadState(runtime);
     }
 
     @Test
     public void jmxRemoteConnectWithPasswd() throws Exception {
         runRemoteSut(true);
-        ProcessRuntime runtime = new JmxRuntimeFactory().forRemoteProcess("localhost", 9876, "user", "secret_passwd");
+        ProcessRuntime runtime = new JmxRuntimeFactory().forRemoteProcess(JMX_HOST, JMX_PORT, JMX_USER, JMX_PASSWD);
         assertThreadState(runtime);
     }
 
@@ -95,7 +81,7 @@ public class JmxRuntimeFactoryTest extends AbstractCliTest {
     public void jmxRemoteConnectMissingPasswd() throws Exception {
         runRemoteSut(true);
         try {
-            new JmxRuntimeFactory().forRemoteProcess("localhost", 9876);
+            new JmxRuntimeFactory().forRemoteProcess(JMX_HOST, JMX_PORT);
             fail();
         } catch (JmxRuntimeFactory.FailedToInitializeJmxConnection ex) {
             assertThat(ex.getMessage(), containsString("Credentials required"));
@@ -106,7 +92,7 @@ public class JmxRuntimeFactoryTest extends AbstractCliTest {
     public void jmxRemoteConnectWithIncorrectPasswd() throws Exception {
         runRemoteSut(true);
         try {
-            new JmxRuntimeFactory().forRemoteProcess("localhost", 9876, "user", "incorrect_passwd");
+            new JmxRuntimeFactory().forRemoteProcess(JMX_HOST, JMX_PORT, JMX_USER, "incorrect_passwd");
             fail();
         } catch (JmxRuntimeFactory.FailedToInitializeJmxConnection ex) {
             assertThat(ex.getMessage(), containsString("Invalid username or password"));
@@ -117,7 +103,7 @@ public class JmxRuntimeFactoryTest extends AbstractCliTest {
     public void jmxRemoteConnectViaCli() throws Exception {
         runRemoteSut();
         stdin("runtime.threads.where(nameIs('remotely-observed-thread'))");
-        run("groovy", "--in", "jmx", "localhost:9876");
+        run("groovy", "--in", "jmx", JMX_CONNECTION);
 
         // Reuse verification logic re-parsing the output as thread dump
         ProcessRuntime reparsed = new ThreadDumpFactory().fromStream(new ByteArrayInputStream(out.toByteArray()));
@@ -181,53 +167,21 @@ public class JmxRuntimeFactoryTest extends AbstractCliTest {
         assertThat(waitElement.getMethodName(), equalTo("wait"));
         assertThat(waitElement.getFileName(), equalTo("Object.java"));
 
-        assertThat(trace.getElement(2), equalTo(element(
-                "com.github.olivergondza.dumpling.factory.JmxTestProcess$1", "run", "JmxTestProcess.java", 42
-        )));
+        final StackTraceElement testFrame = trace.getElement(2);
+        assertThat(testFrame.getClassName(), equalTo("com.github.olivergondza.dumpling.TestThread$1"));
+        assertThat(testFrame.getMethodName(), equalTo("run"));
+        assertThat(testFrame.getFileName(), equalTo("TestThread.java"));
     }
 
     private void runLocalSut() {
-        this.thread = JmxTestProcess.runThread();
-
-        Util.pause(1000);
+        this.thread = TestThread.runThread();
     }
 
     private void runRemoteSut() throws Exception {
-        runRemoteSut(false);
+        process = TestThread.runJmxObservableProcess(false);
     }
 
     private void runRemoteSut(boolean auth) throws Exception {
-        List<String> args = new ArrayList<String>();
-        args.add("java");
-        args.add("-cp");
-        args.add("target/test-classes:target/classes");
-        args.add("-Dcom.sun.management.jmxremote");
-        args.add("-Dcom.sun.management.jmxremote.port=9876");
-        args.add("-Dcom.sun.management.jmxremote.local.only=false");
-        args.add("-Dcom.sun.management.jmxremote.authenticate=" + auth);
-        args.add("-Dcom.sun.management.jmxremote.ssl=false");
-        if (auth) {
-            args.add("-Dcom.sun.management.jmxremote.password.file=" + getPath("jmxremote.password"));
-            args.add("-Dcom.sun.management.jmxremote.access.file=" + getPath("jmxremote.access"));
-        }
-        args.add("com.github.olivergondza.dumpling.factory.JmxTestProcess");
-
-        this.process = new ProcessBuilder(args).start();
-
-        Util.pause(1000);
-
-        try {
-            this.process.exitValue();
-            fail("JmxTestProcess process terminated prematurelly");
-        } catch (IllegalThreadStateException ex) {
-            return;
-        }
-    }
-
-    private String getPath(String path) throws Exception {
-        String file = Util.resourceFile(getClass(), path).getAbsolutePath();
-        // Workaround http://jira.codehaus.org/browse/MRESOURCES-132
-        new ProcessBuilder("chmod", "600", file).start().waitFor();
-        return file;
+        process = TestThread.runJmxObservableProcess(auth);
     }
 }
