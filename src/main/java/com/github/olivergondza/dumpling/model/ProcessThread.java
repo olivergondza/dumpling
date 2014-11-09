@@ -47,16 +47,23 @@ public class ProcessThread {
     private final @Nonnull ProcessRuntime runtime;
     private final @Nonnull Builder state;
 
-    private ProcessThread(@Nonnull ProcessRuntime runtime, @Nonnull Builder builder) {
-        this.runtime = runtime;
-        this.state = builder.clone();
-    }
-
     public static @Nonnull Builder builder() {
         return new Builder();
     }
 
-    public String getName() {
+    private ProcessThread(@Nonnull ProcessRuntime runtime, @Nonnull Builder builder) {
+        this.runtime = runtime;
+        this.state = builder.clone();
+
+        checkSanity();
+    }
+
+    private void checkSanity() {
+        if (state.name == null || state.name.isEmpty()) throw new IllegalArgumentException("Thread name not set");
+        if (state.status == null) throw new IllegalArgumentException("Thread status not set");
+    }
+
+    public @Nonnull String getName() {
         return state.name;
     }
 
