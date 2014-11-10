@@ -84,7 +84,7 @@ public final class TestThread {
         }
         args.add("com.github.olivergondza.dumpling.TestThread");
 
-        final Process process = new ProcessBuilder(args).inheritIO().start();
+        final Process process = new ProcessBuilder(args).start();
 
         Util.pause(1000);
 
