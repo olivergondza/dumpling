@@ -86,7 +86,7 @@ public class ThreadSet implements Iterable<ProcessThread> {
 
         Set<ProcessThread> blocked = new HashSet<ProcessThread>();
         for (ProcessThread thread: runtime.getThreads()) {
-            if (acquired.contains(thread.getWaitingOnLock())) {
+            if (acquired.contains(thread.getWaitingToLock())) {
                 blocked.add(thread);
             }
         }
@@ -100,8 +100,8 @@ public class ThreadSet implements Iterable<ProcessThread> {
     public @Nonnull ThreadSet getBlockingThreads() {
         Set<ThreadLock> waitingOn = new HashSet<ThreadLock>();
         for (ProcessThread thread: threads) {
-            if (thread.getWaitingOnLock() != null) {
-                waitingOn.add(thread.getWaitingOnLock());
+            if (thread.getWaitingToLock() != null) {
+                waitingOn.add(thread.getWaitingToLock());
             }
         }
 

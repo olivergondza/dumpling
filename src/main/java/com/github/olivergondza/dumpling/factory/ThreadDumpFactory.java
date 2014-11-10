@@ -60,13 +60,16 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
     private static final StackTraceElement WAIT_TRACE_ELEMENT = StackTrace.nativeElement("java.lang.Object", "wait");
 
     private static final String NL = "(?:\\r\\n|\\n)";
+    private static final String LOCK_SUBPATTERN = "<0x(\\w+)> \\(a ([^\\)]+)\\)";
 
     private static final Pattern THREAD_DELIMITER = Pattern.compile(NL + NL + "(?!\\s)");
     private static final Pattern STACK_TRACE_ELEMENT_LINE = Pattern.compile(" *at (\\S+)\\.(\\S+)\\(([^:]+?)(\\:\\d+)?\\)");
-    private static final Pattern ACQUIRED_LINE = Pattern.compile("- locked <0x(\\w+)> \\(a ([^\\)]+)\\)");
+    private static final Pattern ACQUIRED_LINE = Pattern.compile("- locked " + LOCK_SUBPATTERN);
+    private static final Pattern WAITING_ON_LINE = Pattern.compile("- waiting on " + LOCK_SUBPATTERN); // In Object.wait()
     // Oracle/OpenJdk puts unnecessary space after 'parking to wait for'
-    private static final Pattern WAITING_FOR_LINE = Pattern.compile("- (?:waiting on|waiting to lock|parking to wait for ?) <0x(\\w+)> \\(a ([^\\)]+)\\)");
-    private static final Pattern OWNABLE_SYNCHRONIZER_LINE = Pattern.compile("- <0x(\\w+)> \\(a ([^\\)]+)\\)");
+    // Omit 'waiting on' as it is not a monitor that blocks the thread
+    private static final Pattern WAITING_TO_LOCK_LINE = Pattern.compile("- (?:waiting to lock|parking to wait for ?) " + LOCK_SUBPATTERN);
+    private static final Pattern OWNABLE_SYNCHRONIZER_LINE = Pattern.compile("- " + LOCK_SUBPATTERN);
     private static final Pattern THREAD_HEADER = Pattern.compile(
             "^\"(.*)\" ([^\\n\\r]+)(?:" + NL + "\\s+java.lang.Thread.State: ([^\\n\\r]+)(?:" + NL + "(.+))?)?",
             Pattern.DOTALL
@@ -149,7 +152,9 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
     private Builder initLocks(Builder builder, String string) {
         List<ThreadLock.Monitor> monitors = new ArrayList<ThreadLock.Monitor>();
         List<ThreadLock> synchronizers = new ArrayList<ThreadLock>();
-        List<ThreadLock> waitingFor = new ArrayList<ThreadLock>(1);
+        List<ThreadLock> waitingToLock = new ArrayList<ThreadLock>(1); // Block waiting on monitor
+        // TODO propagate waiting on into model
+        List<ThreadLock> waitingOnLock = new ArrayList<ThreadLock>(1); // in Object.wait()
         int depth = -1;
 
         StringTokenizer tokenizer = new StringTokenizer(string, "\n");
@@ -162,9 +167,15 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
                 continue;
             }
 
-            Matcher waitingForMatcher = WAITING_FOR_LINE.matcher(line);
-            if (waitingForMatcher.find()) {
-                waitingFor.add(createLock(waitingForMatcher));
+            Matcher waitingToMatcher = WAITING_TO_LOCK_LINE.matcher(line);
+            if (waitingToMatcher.find()) {
+                waitingToLock.add(createLock(waitingToMatcher));
+                continue;
+            }
+
+            Matcher waitingOnMatcher = WAITING_ON_LINE.matcher(line);
+            if (waitingOnMatcher.find()) {
+                waitingOnLock.add(createLock(waitingOnMatcher));
                 continue;
             }
 
@@ -184,33 +195,43 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
         }
 
         ThreadLock lock = null;
-        switch(waitingFor.size()) {
+        switch(waitingToLock.size()) {
             case 0: // Noop
             break;
             case 1:
-                lock = waitingFor.get(0);
+                lock = waitingToLock.get(0);
             break;
-            default: throw new AssertionError(String.format("Waiting for %d locks is not possible.", waitingFor.size()));
+            default: throw new AssertionError(String.format("Waiting to lock %d locks is not possible.", waitingToLock.size()));
         }
 
-        // Eliminate self lock that is presented in threaddumps when in Object.wait()
-        if (WAIT_TRACE_ELEMENT.equals(builder.getStacktrace().getElement(0))) {
+        ThreadLock waitingOn = null;
+        switch(waitingOnLock.size()) {
+            case 0: // Noop
+            break;
+            case 1:
+                waitingOn = waitingOnLock.get(0);
+            break;
+            default: throw new AssertionError(String.format("Waiting on %d locks is not possible.", waitingOnLock.size()));
+        }
 
-            // Waiting on self lock -> the lock is not acquired
+        if (waitingOn != null) {
+            // Eliminate self lock that is presented in threaddumps when in Object.wait().
+            filterMonitors(monitors, waitingOn);
+
+            // 'waiting on' is reported even when blocked re-entering the monitor. Convert it from waitingOn to waitingTo
             if (builder.getThreadStatus().isBlocked()) {
-                assert lock != null;
-                filterMonitors(monitors, lock);
-            }
 
-            // remove self lock from acquired and waiting-on locks
-            if (builder.getThreadStatus().isWaiting()) {
-                filterMonitors(monitors, lock);
+                lock = waitingOn;
+                waitingOn = null;
+            } else if (!builder.getThreadStatus().isWaiting()) {
+
+                throw new AssertionError("Thread dump reports 'waiting on' while not blocked nor waiting: " + string);
             }
         }
 
         builder.setAcquiredMonitors(monitors);
         builder.setAcquiredSynchronizers(synchronizers);
-        builder.setWaitingOnLock(lock);
+        builder.setWaitingToLock(lock);
 
         return builder;
     }

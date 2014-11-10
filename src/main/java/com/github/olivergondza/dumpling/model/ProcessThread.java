@@ -66,7 +66,7 @@ public class ProcessThread {
             throw new IllegalArgumentException("No thread identifier set");
         }
 
-        if (state.status.isBlocked() && state.waitingOnLock == null) {
+        if (state.status.isBlocked() && state.waitingToLock == null) {
             throw new IllegalArgumentException("Blocked thread does not declare monitor:\n" + state);
         }
     }
@@ -130,8 +130,16 @@ public class ProcessThread {
         return state.stackTrace;
     }
 
+    /**
+     * @deprecated Renamed to {@link #setWaitingToLock(ThreadLock)}.
+     */
+    @Deprecated
     public @CheckForNull ThreadLock getWaitingOnLock() {
-        return state.waitingOnLock;
+        return state.waitingToLock;
+    }
+
+    public @CheckForNull ThreadLock getWaitingToLock() {
+        return state.waitingToLock;
     }
 
     public @Nonnull Set<ThreadLock> getAcquiredLocks() {
@@ -153,7 +161,7 @@ public class ProcessThread {
         Set<ProcessThread> blocked = new LinkedHashSet<ProcessThread>();
         for (ProcessThread thread: runtime.getThreads()) {
             if (thread == this) continue;
-            if (getAcquiredLocks().contains(thread.state.waitingOnLock)) {
+            if (getAcquiredLocks().contains(thread.state.waitingToLock)) {
                 blocked.add(thread);
             }
         }
@@ -179,7 +187,7 @@ public class ProcessThread {
     public @CheckForNull ProcessThread getBlockingThread() {
         for (ProcessThread thread: runtime.getThreads()) {
             if (thread == this) continue;
-            if (thread.getAcquiredLocks().contains(state.waitingOnLock)) {
+            if (thread.getAcquiredLocks().contains(state.waitingToLock)) {
                 return thread;
             }
         }
@@ -234,7 +242,7 @@ public class ProcessThread {
         private Long id, nid, tid;
         private @Nonnull StackTrace stackTrace = new StackTrace();
         private @Nonnull ThreadStatus status = ThreadStatus.UNKNOWN;
-        private @CheckForNull ThreadLock waitingOnLock;
+        private @CheckForNull ThreadLock waitingToLock;
         private @Nonnull List<ThreadLock.Monitor> acquiredMonitors = Collections.emptyList();
         private @Nonnull List<ThreadLock> acquiredSynchronizers = Collections.emptyList();
 
@@ -299,8 +307,16 @@ public class ProcessThread {
             return status;
         }
 
+        /**
+         * @deprecated Renamed to {@link #setWaitingToLock(ThreadLock)}.
+         */
+        @Deprecated
         public @Nonnull Builder setWaitingOnLock(ThreadLock lock) {
-            this.waitingOnLock = lock;
+            return setWaitingToLock(lock);
+        }
+
+        public @Nonnull Builder setWaitingToLock(ThreadLock lock) {
+            this.waitingToLock = lock;
             return this;
         }
 
@@ -346,9 +362,9 @@ public class ProcessThread {
             for (StackTraceElement traceLine: stackTrace.getElements()) {
                 sb.append(NL).append("\tat ").append(traceLine);
 
-                if (waitingOnLock != null && depth == 0) {
+                if (waitingToLock != null && depth == 0) {
                     String verb = StackTrace.waitingVerb(traceLine);
-                    sb.append(NL).append("\t- ").append(verb).append(' ').append(waitingOnLock);
+                    sb.append(NL).append("\t- ").append(verb).append(' ').append(waitingToLock);
                 }
 
                 for (ThreadLock monitor: getMonitorsByDepth(depth)) {
@@ -421,7 +437,7 @@ public class ProcessThread {
         return new Predicate() {
             @Override
             public boolean isValid(ProcessThread thread) {
-                final ThreadLock lock = thread.getWaitingOnLock();
+                final ThreadLock lock = thread.getWaitingToLock();
                 return lock != null && lock.getClassName().equals(className);
             }
         };

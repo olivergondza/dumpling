@@ -280,7 +280,7 @@ public class JvmRuntimeFactoryTest {
             assertThat(current.getStatus(), equalTo(ThreadStatus.RUNNABLE));
             assertThat(blocked.getStatus(), equalTo(ThreadStatus.PARKED));
 
-            Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(blocked.getWaitingOnLock()));
+            Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(blocked.getWaitingToLock()));
             assertThat(current.getAcquiredLocks(), equalTo(locks));
 
             assertThat(blocked.getBlockingThread(), equalTo(current));
