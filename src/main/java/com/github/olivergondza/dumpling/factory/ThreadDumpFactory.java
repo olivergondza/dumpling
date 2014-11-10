@@ -152,9 +152,9 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
     private Builder initLocks(Builder builder, String string) {
         List<ThreadLock.Monitor> monitors = new ArrayList<ThreadLock.Monitor>();
         List<ThreadLock> synchronizers = new ArrayList<ThreadLock>();
-        List<ThreadLock> waitingToLock = new ArrayList<ThreadLock>(1); // Block waiting on monitor
+        ThreadLock waitingToLock = null; // Block waiting on monitor
         // TODO propagate waiting on into model
-        List<ThreadLock> waitingOnLock = new ArrayList<ThreadLock>(1); // in Object.wait()
+        ThreadLock waitingOnLock = null; // in Object.wait()
         int depth = -1;
 
         StringTokenizer tokenizer = new StringTokenizer(string, "\n");
@@ -169,13 +169,19 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
 
             Matcher waitingToMatcher = WAITING_TO_LOCK_LINE.matcher(line);
             if (waitingToMatcher.find()) {
-                waitingToLock.add(createLock(waitingToMatcher));
+                if (waitingToLock != null) throw new AssertionError(
+                        "Waiting to lock reported several times per single thread: " + string
+                );
+                waitingToLock = createLock(waitingToMatcher);
                 continue;
             }
 
             Matcher waitingOnMatcher = WAITING_ON_LINE.matcher(line);
             if (waitingOnMatcher.find()) {
-                waitingOnLock.add(createLock(waitingOnMatcher));
+                if (waitingOnLock != null) throw new AssertionError(
+                        "Waiting on lock reported several times per single thread: " + string
+                );
+                waitingOnLock = createLock(waitingOnMatcher);
                 continue;
             }
 
@@ -194,35 +200,15 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
             depth++;
         }
 
-        ThreadLock lock = null;
-        switch(waitingToLock.size()) {
-            case 0: // Noop
-            break;
-            case 1:
-                lock = waitingToLock.get(0);
-            break;
-            default: throw new AssertionError(String.format("Waiting to lock %d locks is not possible.", waitingToLock.size()));
-        }
-
-        ThreadLock waitingOn = null;
-        switch(waitingOnLock.size()) {
-            case 0: // Noop
-            break;
-            case 1:
-                waitingOn = waitingOnLock.get(0);
-            break;
-            default: throw new AssertionError(String.format("Waiting on %d locks is not possible.", waitingOnLock.size()));
-        }
-
-        if (waitingOn != null) {
+        if (waitingOnLock != null) {
             // Eliminate self lock that is presented in threaddumps when in Object.wait().
-            filterMonitors(monitors, waitingOn);
+            filterMonitors(monitors, waitingOnLock);
 
             // 'waiting on' is reported even when blocked re-entering the monitor. Convert it from waitingOn to waitingTo
             if (builder.getThreadStatus().isBlocked()) {
 
-                lock = waitingOn;
-                waitingOn = null;
+                waitingToLock = waitingOnLock;
+                waitingOnLock = null;
             } else if (!builder.getThreadStatus().isWaiting()) {
 
                 throw new AssertionError("Thread dump reports 'waiting on' while not blocked nor waiting: " + string);
@@ -231,7 +217,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
 
         builder.setAcquiredMonitors(monitors);
         builder.setAcquiredSynchronizers(synchronizers);
-        builder.setWaitingToLock(lock);
+        builder.setWaitingToLock(waitingToLock);
 
         return builder;
     }
