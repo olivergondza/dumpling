@@ -141,7 +141,7 @@ public class JmxRuntimeFactoryTest extends AbstractCliTest {
     @Test
     public void connectToNonexistingRemoteProcess() {
         try {
-            new JmxRuntimeFactory().forRemoteProcess("localhost", 22);
+            new JmxRuntimeFactory().forRemoteProcess("localhost", 0);
             fail();
         } catch (JmxRuntimeFactory.FailedToInitializeJmxConnection ex) {
             assertThat(ex.getMessage(), containsString("Connection refused to host: localhost"));
