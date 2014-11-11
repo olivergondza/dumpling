@@ -28,24 +28,21 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
-import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadLock;
-import com.github.olivergondza.dumpling.model.ThreadSet;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
+import com.github.olivergondza.dumpling.model.jvm.JvmRuntime;
+import com.github.olivergondza.dumpling.model.jvm.JvmThread;
 
 /**
  * Create {@link ProcessRuntime} from state of current process.
@@ -162,101 +159,6 @@ public class JvmRuntimeFactory {
                     "Dumpling was unable to extract necessary information from running JVM. Report this as Dumpling feature request with JRE vendor and version attached.",
                     cause
             );
-        }
-    }
-
-    /**
-     * Subclass handing JVM-aware {@link ThreadSet} implementation.
-     *
-     * @author ogondza
-     */
-    private final static class JvmRuntime extends ProcessRuntime {
-
-        private @Nonnull JvmThreadSet emptySet;
-
-        public JvmRuntime(@Nonnull Set<JvmThread.Builder> builders) {
-            super(builders);
-            this.emptySet = new JvmThreadSet(this, Collections.<ProcessThread>emptySet());
-        }
-
-        @Override
-        public ThreadSet getEmptyThreadSet() {
-            return emptySet;
-        }
-
-        @Override
-        public ThreadSet getThreads() {
-            return new JvmThreadSet(this, super.getThreads().toSet());
-        }
-    }
-
-    /**
-     * ThreadSet with convenient methods to take advantage from {@link Thread} availability.
-     *
-     * @author ogondza
-     */
-    private final static class JvmThreadSet extends ThreadSet {
-
-        public JvmThreadSet(@Nonnull JvmRuntime runtime, @Nonnull Set<ProcessThread> threads) {
-            super(runtime, threads);
-        }
-
-        /**
-         * Get {@link ProcessThread} for given {@link Thread}.
-         */
-        public @CheckForNull JvmThread forThread(@Nonnull Thread needle) {
-            for (ProcessThread candidate: this) {
-                final JvmThread jvmThread = (JvmThread) candidate;
-                final Thread thread = jvmThread.state.thread.get();
-                if (needle.equals(thread)) return jvmThread;
-            }
-            return null;
-        }
-
-        /**
-         * Get {@link ProcessThread} for given {@link Thread}.
-         */
-        public @CheckForNull JvmThread forCurrentThread() {
-            return forThread(Thread.currentThread());
-        }
-    }
-
-    /**
-     * {@link ProcessThread} with {@link Thread} reference.
-     *
-     * @author ogondza
-     */
-    private final static class JvmThread extends ProcessThread {
-
-        private final @Nonnull Builder state;
-
-        public JvmThread(@Nonnull ProcessRuntime runtime, @Nonnull Builder builder) {
-            super(runtime, builder);
-            this.state = builder;
-        }
-
-        /**
-         * Get {@link Thread} represented by this {@link ProcessThread}.
-         *
-         * @return <tt>null</tt> in case the thread does not longer exist.
-         */
-        public @CheckForNull Thread getThread() {
-            return state.thread.get();
-        }
-
-        private final static class Builder extends ProcessThread.Builder {
-
-            // Using weak reference not to keep the thread in memory once terminated
-            private final @Nonnull WeakReference<Thread> thread;
-
-            public Builder(@Nonnull Thread thread) {
-                this.thread = new WeakReference<Thread>(thread);
-            }
-
-            @Override
-            public ProcessThread build(@Nonnull ProcessRuntime runtime) {
-                return new JvmThread(runtime, this);
-            }
         }
     }
 }
