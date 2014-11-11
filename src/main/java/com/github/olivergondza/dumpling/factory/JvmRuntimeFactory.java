@@ -74,7 +74,7 @@ public class JvmRuntimeFactory {
             builder.setAcquiredMonitors(monitors(info));
             builder.setAcquiredSynchronizers(locks(info));
             LockInfo lock = info.getLockInfo();
-            if (lock != null) builder.setWaitingOnLock(lock(lock));
+            if (lock != null) builder.setWaitingToLock(lock(lock));
 
             state.add(builder);
         }
@@ -124,7 +124,7 @@ public class JvmRuntimeFactory {
         return new ThreadLock(info.getClassName(), info.getIdentityHashCode());
     }
 
-    private ThreadStatus status(Thread thread) {
+    private @Nonnull ThreadStatus status(Thread thread) {
 
         try {
             int code = threadStatus.getInt(thread);

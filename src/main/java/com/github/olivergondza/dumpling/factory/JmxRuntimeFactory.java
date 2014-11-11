@@ -129,7 +129,7 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
 
             final CompositeData lockInfo = (CompositeData) thread.get("lockInfo");
             if (lockInfo != null) {
-                builder.setWaitingOnLock(createLock(lockInfo));
+                builder.setWaitingToLock(createLock(lockInfo));
             }
 
             builders.add(builder);
