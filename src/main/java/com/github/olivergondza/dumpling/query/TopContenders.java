@@ -63,14 +63,14 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
     }
 
     @Override
-    public Result query(ThreadSet threads) {
+    public Result query(ThreadSet<?, ?, ?> threads) {
         return new Result(threads, showStackTraces);
     }
 
     public final static class Command implements CliCommand {
 
         @Option(name = "-i", aliases = {"--in"}, required = true, usage = "Input for process runtime")
-        private ProcessRuntime runtime;
+        private ProcessRuntime<?, ?, ?> runtime;
 
         @Option(name = "--show-stack-traces", usage = "List stack traces of all threads involved")
         private boolean showStackTraces = false;
@@ -95,15 +95,15 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
 
     public final static class Result extends SingleThreadSetQuery.Result {
 
-        private final @Nonnull Map<ProcessThread, ThreadSet> contenders;
-        private final @Nonnull ThreadSet involved;
+        private final @Nonnull Map<ProcessThread<?, ?, ?>, ThreadSet<?, ?, ?>> contenders;
+        private final @Nonnull ThreadSet<?, ?, ?> involved;
         private final @Nonnegative int blocked;
 
-        private Result(ThreadSet threads, boolean showStacktraces) {
-            final Set<ProcessThread> involved = new LinkedHashSet<ProcessThread>();
-            final Map<ProcessThread, ThreadSet> contenders = new TreeMap<ProcessThread, ThreadSet>(new Comparator<ProcessThread>() {
+        private Result(ThreadSet<?, ?, ?> threads, boolean showStacktraces) {
+            final Set<ProcessThread<?, ?, ?>> involved = new LinkedHashSet<ProcessThread<?, ?, ?>>();
+            final Map<ProcessThread<?, ?, ?>, ThreadSet<?, ?, ?>> contenders = new TreeMap<ProcessThread<?, ?, ?>, ThreadSet<?, ?, ?>>(new Comparator<ProcessThread<?, ?, ?>>() {
                 @Override
-                public int compare(ProcessThread lhs, ProcessThread rhs) {
+                public int compare(ProcessThread<?, ?, ?> lhs, ProcessThread<?, ?, ?> rhs) {
                     int lhsSize = lhs.getBlockedThreads().size();
                     int rhsSize = rhs.getBlockedThreads().size();
 
@@ -114,13 +114,13 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
                 }
             });
 
-            for (ProcessThread thread: threads) {
-                ThreadSet blocked = thread.getBlockedThreads();
+            for (ProcessThread<?, ?, ?> thread: threads) {
+                ThreadSet<?, ?, ?> blocked = thread.getBlockedThreads();
                 if (blocked.isEmpty()) continue;
 
                 contenders.put(thread, blocked);
                 involved.add(thread);
-                for (ProcessThread b: blocked) {
+                for (ProcessThread<?, ?, ?> b: blocked) {
                     involved.add(b);
                 }
             }
@@ -133,7 +133,7 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
             this.blocked = involved.size() - contenders.size();
         }
 
-        public @Nonnull ThreadSet getBlockers() {
+        public @Nonnull ThreadSet<?, ?, ?> getBlockers() {
             return involved.derive(contenders.keySet());
         }
 
@@ -142,18 +142,18 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
          *
          * @return null when there is none.
          */
-        public @CheckForNull ThreadSet blockedBy(ProcessThread thread) {
+        public @CheckForNull ThreadSet<?, ?, ?> blockedBy(ProcessThread<?, ?, ?> thread) {
             return contenders.get(thread);
         }
 
         @Override
         protected void printResult(PrintStream out) {
-            for (Entry<ProcessThread, ThreadSet> contention: contenders.entrySet()) {
+            for (Entry<ProcessThread<?, ?, ?>, ThreadSet<?, ?, ?>> contention: contenders.entrySet()) {
 
                 out.print("* ");
                 out.println(contention.getKey().getHeader());
                 int i = 1;
-                for (ProcessThread blocked: contention.getValue()) {
+                for (ProcessThread<?, ?, ?> blocked: contention.getValue()) {
 
                     out.printf("  (%d) ", i++);
                     out.println(blocked.getHeader());
@@ -162,7 +162,7 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
         }
 
         @Override
-        protected ThreadSet involvedThreads() {
+        protected ThreadSet<?, ?, ?> involvedThreads() {
             return involved;
         }
 

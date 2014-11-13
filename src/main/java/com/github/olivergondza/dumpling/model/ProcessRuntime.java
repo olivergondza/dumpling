@@ -35,14 +35,18 @@ import com.github.olivergondza.dumpling.query.SingleThreadSetQuery;
  * Snapshot of threads in JVM at given time.
  * @author ogondza
  */
-public class ProcessRuntime {
+public abstract class ProcessRuntime<
+        RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>,
+        SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
+        ThreadType extends ProcessThread<? extends ThreadType, SetType, RuntimeType>
+> {
 
-    private final @Nonnull ThreadSet threads;
-    private final @Nonnull ThreadSet emptySet;
+    private final @Nonnull SetType threads;
+    private final @Nonnull SetType emptySet;
 
-    public ProcessRuntime(@Nonnull Set<? extends ProcessThread.Builder> builders) {
+    public ProcessRuntime(@Nonnull Set<? extends ProcessThread.Builder<?>> builders) {
         this.threads = createThreads(builders);
-        this.emptySet = new ThreadSet(this, Collections.<ProcessThread>emptySet());
+        this.emptySet = createSet(Collections.<ThreadType>emptySet());
 
         int buildersSize = builders.size();
         int threadsSize = threads.size();
@@ -51,22 +55,26 @@ public class ProcessRuntime {
         );
     }
 
-    private @Nonnull ThreadSet createThreads(@Nonnull Set<? extends ProcessThread.Builder> builders) {
-        Set<ProcessThread> threads = new LinkedHashSet<ProcessThread>(builders.size());
-        for (ProcessThread.Builder builder: builders) {
-            threads.add(builder.build(this));
+    private @Nonnull SetType createThreads(@Nonnull Set<? extends ProcessThread.Builder<?>> builders) {
+        Set<ThreadType> threads = new LinkedHashSet<ThreadType>(builders.size());
+        for (ProcessThread.Builder<?> builder: builders) {
+            threads.add(createThread(builder));
         }
-        return new ThreadSet(this, Collections.unmodifiableSet(threads));
+        return createSet(Collections.unmodifiableSet(threads));
     }
+
+    protected abstract @Nonnull SetType createSet(@Nonnull Set<ThreadType> threads);
+
+    protected abstract @Nonnull ThreadType createThread(@Nonnull ProcessThread.Builder<?> builder);
 
     /**
      * All threads in current runtime.
      */
-    public @Nonnull ThreadSet getThreads() {
+    public @Nonnull SetType getThreads() {
         return threads;
     }
 
-    public @Nonnull ThreadSet getEmptyThreadSet() {
+    public @Nonnull SetType getEmptyThreadSet() {
         return emptySet;
     }
 

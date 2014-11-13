@@ -23,13 +23,12 @@
  */
 package com.github.olivergondza.dumpling.model.jvm;
 
-import java.util.Collections;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
 
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
-import com.github.olivergondza.dumpling.model.ProcessThread;
+import com.github.olivergondza.dumpling.model.ProcessThread.Builder;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
 /**
@@ -37,22 +36,19 @@ import com.github.olivergondza.dumpling.model.ThreadSet;
  *
  * @author ogondza
  */
-public final class JvmRuntime extends ProcessRuntime {
-
-    private @Nonnull JvmThreadSet emptySet;
+public final class JvmRuntime extends ProcessRuntime<JvmRuntime, JvmThreadSet, JvmThread> {
 
     public JvmRuntime(@Nonnull Set<JvmThread.Builder> builders) {
         super(builders);
-        this.emptySet = new JvmThreadSet(this, Collections.<ProcessThread>emptySet());
     }
 
     @Override
-    public JvmThreadSet getEmptyThreadSet() {
-        return emptySet;
+    protected JvmThreadSet createSet(Set<JvmThread> threads) {
+        return new JvmThreadSet(this, threads);
     }
 
     @Override
-    public JvmThreadSet getThreads() {
-        return new JvmThreadSet(this, super.getThreads().toSet());
+    protected JvmThread createThread(Builder<?> builder) {
+        return new JvmThread(this, (JvmThread.Builder) builder);
     }
 }

@@ -36,9 +36,9 @@ import com.github.olivergondza.dumpling.model.ThreadSet;
  *
  * @author ogondza
  */
-public final class JvmThreadSet extends ThreadSet {
+public final class JvmThreadSet extends ThreadSet<JvmThreadSet, JvmRuntime, JvmThread> {
 
-    public JvmThreadSet(@Nonnull JvmRuntime runtime, @Nonnull Set<ProcessThread> threads) {
+    public JvmThreadSet(@Nonnull JvmRuntime runtime, @Nonnull Set<JvmThread> threads) {
         super(runtime, threads);
     }
 
@@ -46,8 +46,8 @@ public final class JvmThreadSet extends ThreadSet {
      * Get {@link ProcessThread} for given {@link Thread}.
      */
     public @CheckForNull JvmThread forThread(@Nonnull Thread needle) {
-        for (ProcessThread candidate: this) {
-            final JvmThread jvmThread = (JvmThread) candidate;
+        for (JvmThread candidate: this) {
+            final JvmThread jvmThread = candidate;
             final Thread thread = jvmThread.getThread();
             if (needle.equals(thread)) return jvmThread;
         }

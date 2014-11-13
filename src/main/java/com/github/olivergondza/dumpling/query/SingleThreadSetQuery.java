@@ -52,7 +52,7 @@ public interface SingleThreadSetQuery<T extends SingleThreadSetQuery.Result> {
     /**
      * Get typed result of the query.
      */
-    public @Nonnull T query(@Nonnull ThreadSet initialSet);
+    public @Nonnull T query(@Nonnull ThreadSet<?, ?, ?> initialSet);
 
     /**
      * Query result that filter/arrange threads.
@@ -80,7 +80,7 @@ public interface SingleThreadSetQuery<T extends SingleThreadSetQuery.Result> {
          *
          * @return null or empty set when there are no threads to be printed.
          */
-        protected abstract @CheckForNull ThreadSet involvedThreads();
+        protected abstract @CheckForNull ThreadSet<?, ?, ?> involvedThreads();
 
         /**
          * Print optional summary for a query.
@@ -96,7 +96,7 @@ public interface SingleThreadSetQuery<T extends SingleThreadSetQuery.Result> {
          * provide custom value.
          */
         public int exitCode() {
-            final ThreadSet involvedThreads = involvedThreads();
+            final ThreadSet<?, ?, ?> involvedThreads = involvedThreads();
             return involvedThreads == null ? 0 : involvedThreads.size();
         }
 
@@ -114,7 +114,7 @@ public interface SingleThreadSetQuery<T extends SingleThreadSetQuery.Result> {
         protected final void printInto(@Nonnull PrintStream out) {
             printResult(out);
 
-            final ThreadSet involvedThreads = involvedThreads();
+            final ThreadSet<?, ?, ?> involvedThreads = involvedThreads();
             if (involvedThreads != null) {
                 out.printf("%n%n");
                 out.print(involvedThreads);

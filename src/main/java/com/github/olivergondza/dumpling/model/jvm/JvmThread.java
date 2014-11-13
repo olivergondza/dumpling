@@ -28,7 +28,6 @@ import java.lang.ref.WeakReference;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
-import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 
 /**
@@ -36,11 +35,11 @@ import com.github.olivergondza.dumpling.model.ProcessThread;
  *
  * @author ogondza
  */
-public final class JvmThread extends ProcessThread {
+public final class JvmThread extends ProcessThread<JvmThread, JvmThreadSet, JvmRuntime> {
 
     final @Nonnull JvmThread.Builder state;
 
-    public JvmThread(@Nonnull ProcessRuntime runtime, @Nonnull JvmThread.Builder builder) {
+    /*package*/ JvmThread(@Nonnull JvmRuntime runtime, @Nonnull JvmThread.Builder builder) {
         super(runtime, builder);
         this.state = builder;
     }
@@ -54,18 +53,13 @@ public final class JvmThread extends ProcessThread {
         return state.thread.get();
     }
 
-    public final static class Builder extends ProcessThread.Builder {
+    public final static class Builder extends ProcessThread.Builder<Builder> {
 
         // Using weak reference not to keep the thread in memory once terminated
         private final @Nonnull WeakReference<Thread> thread;
 
         public Builder(@Nonnull Thread thread) {
             this.thread = new WeakReference<Thread>(thread);
-        }
-
-        @Override
-        public @Nonnull ProcessThread build(@Nonnull ProcessRuntime runtime) {
-            return new JvmThread(runtime, this);
         }
     }
 }

@@ -34,7 +34,7 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
  *
  * @author ogondza
  */
-public interface CliRuntimeFactory {
+public interface CliRuntimeFactory<RuntimeType extends ProcessRuntime<?, ?, ?>> {
 
     /**
      * String identifier used to identify factory from command line.
@@ -48,5 +48,5 @@ public interface CliRuntimeFactory {
      *
      * @param locator Factory specific resource locator.
      */
-    @Nonnull ProcessRuntime createRuntime(@Nonnull String locator, @Nonnull ProcessStream process) throws CommandFailedException;
+    @Nonnull RuntimeType createRuntime(@Nonnull String locator, @Nonnull ProcessStream process) throws CommandFailedException;
 }

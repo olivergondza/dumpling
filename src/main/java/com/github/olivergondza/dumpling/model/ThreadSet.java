@@ -43,14 +43,18 @@ import com.github.olivergondza.dumpling.query.SingleThreadSetQuery;
  * @author ogondza
  * @see ProcessRuntime#getThreads()
  */
-public class ThreadSet implements Iterable<ProcessThread> {
+public class ThreadSet<
+        SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
+        RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>,
+        ThreadType extends ProcessThread<? extends ThreadType, SetType, RuntimeType>
+> implements Iterable<ThreadType> {
 
     private static final @Nonnull String NL = System.getProperty("line.separator", "\n");
 
-    private final @Nonnull ProcessRuntime runtime;
-    private final @Nonnull Set<ProcessThread> threads;
+    private final @Nonnull RuntimeType runtime;
+    private final @Nonnull Set<ThreadType> threads;
 
-    public ThreadSet(@Nonnull ProcessRuntime runtime, @Nonnull Set<ProcessThread> threads) {
+    public ThreadSet(@Nonnull RuntimeType runtime, @Nonnull Set<ThreadType> threads) {
         this.runtime = runtime;
         this.threads = Collections.unmodifiableSet(threads);
     }
@@ -58,7 +62,7 @@ public class ThreadSet implements Iterable<ProcessThread> {
     /**
      * Enclosing runtime.
      */
-    public @Nonnull ProcessRuntime getProcessRuntime() {
+    public @Nonnull RuntimeType getProcessRuntime() {
         return runtime;
     }
 
@@ -67,7 +71,7 @@ public class ThreadSet implements Iterable<ProcessThread> {
      *
      * @throws IllegalStateException if not exactly one thread present.
      */
-    public @Nonnull ProcessThread onlyThread() throws IllegalStateException {
+    public @Nonnull ThreadType onlyThread() throws IllegalStateException {
         if (size() != 1) throw new IllegalStateException(
                 "Exactly one thread expected in the set. Found " + size()
         );
@@ -78,14 +82,14 @@ public class ThreadSet implements Iterable<ProcessThread> {
     /**
      * Get threads blocked by any of current threads.
      */
-    public @Nonnull ThreadSet getBlockedThreads() {
+    public @Nonnull SetType getBlockedThreads() {
         Set<ThreadLock> acquired = new HashSet<ThreadLock>();
-        for (ProcessThread thread: threads) {
+        for (ThreadType thread: threads) {
             acquired.addAll(thread.getAcquiredLocks());
         }
 
-        Set<ProcessThread> blocked = new HashSet<ProcessThread>();
-        for (ProcessThread thread: runtime.getThreads()) {
+        Set<ThreadType> blocked = new HashSet<ThreadType>();
+        for (ThreadType thread: runtime.getThreads()) {
             if (acquired.contains(thread.getWaitingOnLock())) {
                 blocked.add(thread);
             }
@@ -97,16 +101,16 @@ public class ThreadSet implements Iterable<ProcessThread> {
     /**
      * Get threads blocking any of current threads.
      */
-    public @Nonnull ThreadSet getBlockingThreads() {
+    public @Nonnull SetType getBlockingThreads() {
         Set<ThreadLock> waitingOn = new HashSet<ThreadLock>();
-        for (ProcessThread thread: threads) {
+        for (ThreadType thread: threads) {
             if (thread.getWaitingOnLock() != null) {
                 waitingOn.add(thread.getWaitingOnLock());
             }
         }
 
-        Set<ProcessThread> blocking = new HashSet<ProcessThread>();
-        for (ProcessThread thread: runtime.getThreads()) {
+        Set<ThreadType> blocking = new HashSet<ThreadType>();
+        for (ThreadType thread: runtime.getThreads()) {
             Set<ThreadLock> threadHolding = thread.getAcquiredLocks();
             threadHolding.retainAll(waitingOn);
             if (!threadHolding.isEmpty()) {
@@ -117,8 +121,8 @@ public class ThreadSet implements Iterable<ProcessThread> {
         return derive(blocking);
     }
 
-    public @Nonnull ThreadSet ignoring(@Nonnull ThreadSet actualThreads) {
-        HashSet<ProcessThread> newThreads = new HashSet<ProcessThread>(threads);
+    public @Nonnull SetType ignoring(@Nonnull SetType actualThreads) {
+        HashSet<ThreadType> newThreads = new HashSet<ThreadType>(threads);
         newThreads.removeAll(actualThreads.threads);
         return derive(newThreads);
     }
@@ -129,9 +133,9 @@ public class ThreadSet implements Iterable<ProcessThread> {
      * @param pred Predicate to match.
      * @return {@link ThreadSet} scoped to current runtime containing subset of threads that match the predicate.
      */
-    public @Nonnull ThreadSet where(ProcessThread.Predicate pred) {
-        HashSet<ProcessThread> subset = new HashSet<ProcessThread>(size() / 2);
-        for (@Nonnull ProcessThread thread: threads) {
+    public @Nonnull SetType where(ProcessThread.Predicate pred) {
+        HashSet<ThreadType> subset = new HashSet<ThreadType>(size() / 2);
+        for (@Nonnull ThreadType thread: threads) {
             if (pred.isValid(thread)) subset.add(thread);
         }
 
@@ -148,7 +152,7 @@ public class ThreadSet implements Iterable<ProcessThread> {
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
-        for (ProcessThread thread: threads) {
+        for (ThreadType thread: threads) {
             stringBuilder.append(thread).append(NL + NL);
         }
         return stringBuilder.toString();
@@ -162,7 +166,7 @@ public class ThreadSet implements Iterable<ProcessThread> {
 
         if (!this.getClass().equals(rhs.getClass())) return false;
 
-        ThreadSet other = (ThreadSet) rhs;
+        SetType other = (SetType) rhs;
 
         return runtime.equals(other.runtime) && threads.equals(other.threads);
     }
@@ -189,7 +193,7 @@ public class ThreadSet implements Iterable<ProcessThread> {
     }
 
     @Override
-    public Iterator<ProcessThread> iterator() {
+    public Iterator<ThreadType> iterator() {
         return threads.iterator();
     }
 
@@ -198,46 +202,46 @@ public class ThreadSet implements Iterable<ProcessThread> {
      *
      * @return New thread collection bound to same runtime.
      */
-    public @Nonnull ThreadSet derive(Collection<ProcessThread> threads) {
+    public @Nonnull SetType derive(Collection<ThreadType> threads) {
         if (threads.isEmpty()) return runtime.getEmptyThreadSet();
 
-        Set<ProcessThread> threadSet = threads instanceof Set
-                ? (Set<ProcessThread>) threads
-                : new HashSet<ProcessThread>(threads)
+        Set<ThreadType> threadSet = threads instanceof Set
+                ? (Set<ThreadType>) threads
+                : new HashSet<ThreadType>(threads)
         ;
-        return new ThreadSet(runtime, threadSet);
+        return runtime.createSet(threadSet);
     }
 
     // Groovy interop
 
-    public @Nonnull ThreadSet grep() {
+    public @Nonnull SetType grep() {
         // Do not invoke grep(Collection) as it was added in 2.0
         return derive(DefaultGroovyMethods.grep((Object) threads));
     }
 
-    public @Nonnull ThreadSet grep(Object filter) {
+    public @Nonnull SetType grep(Object filter) {
         // Do not invoke grep(Collection, Object) as it was added in 2.0
         return derive(DefaultGroovyMethods.grep((Object) threads, filter));
     }
 
-    public @Nonnull ThreadSet findAll() {
+    public @Nonnull SetType findAll() {
         return derive(DefaultGroovyMethods.findAll(threads));
     }
 
-    public @Nonnull ThreadSet findAll(Closure<ProcessThread> predicate) {
+    public @Nonnull SetType findAll(Closure<ThreadType> predicate) {
         return derive(DefaultGroovyMethods.findAll(threads, predicate));
     }
 
-    public @Nonnull ThreadSet asImmutable() {
+    public @Nonnull ThreadSet<SetType, RuntimeType, ThreadType> asImmutable() {
         return this;
     }
 
     // ThreadSet does not actually implement Set
-    public @Nonnull Set<ProcessThread> toSet() {
+    public @Nonnull Set<ThreadType> toSet() {
         return Collections.unmodifiableSet(threads);
     }
 
-    public @Nonnull ThreadSet intersect(ThreadSet other) {
+    public @Nonnull SetType intersect(SetType other) {
         if (!runtime.equals(other.runtime)) throw new IllegalStateException(
                 "Unable to intersect thread sets bound to different runtime"
         );
@@ -245,7 +249,7 @@ public class ThreadSet implements Iterable<ProcessThread> {
         return derive(DefaultGroovyMethods.intersect(threads, other.threads));
     }
 
-    public @Nonnull ThreadSet plus(ThreadSet other) {
+    public @Nonnull SetType plus(SetType other) {
         if (!runtime.equals(other.runtime)) throw new IllegalStateException(
                 "Unable to merge thread sets bound to different runtime"
         );

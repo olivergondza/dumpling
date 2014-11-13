@@ -55,14 +55,14 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
     }
 
     @Override
-    public @Nonnull Result query(@Nonnull ThreadSet threads) {
+    public @Nonnull Result query(@Nonnull ThreadSet<?, ?, ?> threads) {
         return new Result(threads, showStackTraces);
     }
 
     public final static class Command implements CliCommand {
 
         @Option(name = "-i", aliases = {"--in"}, required = true, usage = "Input for process runtime")
-        private ProcessRuntime runtime;
+        private ProcessRuntime<?, ?, ?> runtime;
 
         @Option(name = "--show-stack-traces", usage = "List stack traces of all threads involved")
         private boolean showStackTraces = false;
@@ -87,21 +87,21 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
     }
 
     public final static class Result extends SingleThreadSetQuery.Result {
-        private final @Nonnull Set<ThreadSet> deadlocks;
-        private final @Nonnull ThreadSet involved;
+        private final @Nonnull Set<ThreadSet<?, ?, ?>> deadlocks;
+        private final @Nonnull ThreadSet<?, ?, ?> involved;
 
-        private Result(@Nonnull ThreadSet input, boolean showStackTraces) {
-            final ProcessRuntime runtime = input.getProcessRuntime();
+        private Result(@Nonnull ThreadSet<?, ?, ?> input, boolean showStackTraces) {
+            final ProcessRuntime<?, ?, ?> runtime = input.getProcessRuntime();
 
-            final HashSet<ThreadSet> deadlocks = new HashSet<ThreadSet>(1);
-            final LinkedHashSet<ProcessThread> involved = new LinkedHashSet<ProcessThread>(2);
+            final HashSet<ThreadSet<?, ?, ?>> deadlocks = new HashSet<ThreadSet<?, ?, ?>>(1);
+            final LinkedHashSet<ProcessThread<?, ?, ?>> involved = new LinkedHashSet<ProcessThread<?, ?, ?>>(2);
             // No need to visit threads more than once
-            final Set<ProcessThread> analyzed = new HashSet<ProcessThread>(input.size());
+            final Set<ProcessThread<?, ?, ?>> analyzed = new HashSet<ProcessThread<?, ?, ?>>(input.size());
 
-            for (ProcessThread thread: input) {
+            for (ProcessThread<?, ?, ?> thread: input) {
 
-                Set<ProcessThread> cycleCandidate = new LinkedHashSet<ProcessThread>(2);
-                for (ProcessThread blocking = thread.getBlockingThread(); blocking != null; blocking = blocking.getBlockingThread()) {
+                Set<ProcessThread<?, ?, ?>> cycleCandidate = new LinkedHashSet<ProcessThread<?, ?, ?>>(2);
+                for (ProcessThread<?, ?, ?> blocking = thread.getBlockingThread(); blocking != null; blocking = blocking.getBlockingThread()) {
                     if (analyzed.contains(thread)) break;
 
                     if (cycleCandidate.contains(blocking)) {
@@ -120,7 +120,7 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
 
             this.deadlocks = Collections.unmodifiableSet(deadlocks);
             this.involved = showStackTraces
-                    ? new ThreadSet(runtime, involved)
+                    ? input.derive(involved)
                     : runtime.getEmptyThreadSet()
             ;
         }
@@ -130,14 +130,14 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
          *
          * @return {@link Set} of {@link ThreadSet}s representing found deadlocks.
          */
-        public @Nonnull Set<ThreadSet> getDeadlocks() {
+        public @Nonnull Set<ThreadSet<?, ?, ?>> getDeadlocks() {
             return deadlocks;
         }
 
         @Override
         protected void printResult(PrintStream out) {
-            for(ThreadSet deadlock: deadlocks) {
-                for(ProcessThread thread: deadlock) {
+            for(ThreadSet<?, ?, ?> deadlock: deadlocks) {
+                for(ProcessThread<?, ?, ?> thread: deadlock) {
                     out.print(" - ");
                     out.print(thread.getName());
                 }
@@ -145,7 +145,7 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
         }
 
         @Override
-        protected ThreadSet involvedThreads() {
+        protected ThreadSet<?, ?, ?> involvedThreads() {
             return involved;
         }
 
