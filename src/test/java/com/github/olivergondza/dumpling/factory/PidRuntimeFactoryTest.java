@@ -55,7 +55,7 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
 
         ProcessThread thread = pidRuntime.getThreads().where(nameIs("process-thread")).onlyThread();
         assertThat(thread.getStatus(), equalTo(ThreadStatus.SLEEPING));
-        System.out.println(thread.toString());
+
         assertFalse(thread.getAcquiredLocks().isEmpty());
         assertThat(
                 thread.getAcquiredLocks().iterator().next().getClassName(),
