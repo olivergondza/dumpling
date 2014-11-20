@@ -9,7 +9,7 @@
 
   <ol class="trigger">
 
-    {% assign pages = site.pages | sort: "prio" %}
+    {% assign pages = site.pages | where: "category", "toplevel" | sort: "prio" %}
     {% for page in pages %}
       {% if page.title and page.prio %}
       <li>

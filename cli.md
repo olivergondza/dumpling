@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Dumpling as CLI tool
+category: toplevel
 prio: 20
 ---
 
