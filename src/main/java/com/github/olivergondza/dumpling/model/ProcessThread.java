@@ -110,7 +110,7 @@ public class ProcessThread {
     }
 
     /**
-     * {@link Thread.State} of current thread.
+     * {@link java.lang.Thread.State} of current thread.
      *
      * @return null if was not able to determine thread state.
      */
@@ -131,7 +131,7 @@ public class ProcessThread {
     }
 
     /**
-     * @deprecated Renamed to {@link #setWaitingToLock(ThreadLock)}.
+     * @deprecated Renamed to {@link #getWaitingToLock()}.
      */
     @Deprecated
     public @CheckForNull ThreadLock getWaitingOnLock() {
