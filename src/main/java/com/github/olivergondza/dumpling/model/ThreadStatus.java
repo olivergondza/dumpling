@@ -45,28 +45,28 @@ public enum ThreadStatus {
     /**
      * Thread in {@link Object#wait()}.
      *
-     * @see {@link Thread.State#WAITING}
+     * @see java.lang.Thread.State#WAITING
      */
     IN_OBJECT_WAIT      ("WAITING (on object monitor)",         401,    State.WAITING),
 
     /**
      * Thread in {@link Object#wait(long)}.
      *
-     * @see {@link Thread.State#TIMED_WAITING}
+     * @see java.lang.Thread.State#TIMED_WAITING
      */
     IN_OBJECT_WAIT_TIMED("TIMED_WAITING (on object monitor)",   417,    State.TIMED_WAITING),
 
     /**
      * Thread in {@link LockSupport#park()}.
      *
-     * @see {@link Thread.State#WAITING}
+     * @see java.lang.Thread.State#WAITING
      */
     PARKED              ("WAITING (parking)",                   657,    State.WAITING),
 
     /**
      * Thread in {@link LockSupport#parkNanos}.
      *
-     * @see {@link Thread.State#TIMED_WAITING}
+     * @see java.lang.Thread.State#TIMED_WAITING
      */
     PARKED_TIMED        ("TIMED_WAITING (parking)",             673,    State.TIMED_WAITING),
 
@@ -87,7 +87,7 @@ public enum ThreadStatus {
     private final int code;
 
     /**
-     * Matching Thread.State.
+     * Matching java.lang.Thread.State.
      */
     private final State state;
 
@@ -112,7 +112,7 @@ public enum ThreadStatus {
     /**
      * Newly create thread
      *
-     * @see {@link Thread.State#NEW}
+     * @see java.lang.Thread.State#NEW
      */
     public boolean isNew() {
         return this == NEW;
@@ -121,7 +121,7 @@ public enum ThreadStatus {
     /**
      * Thread that is runnable / running.
      *
-     * @see {@link Thread.State#RUNNABLE}
+     * @see java.lang.Thread.State#RUNNABLE
      */
     public boolean isRunnable() {
         return this == RUNNABLE;
@@ -130,7 +130,7 @@ public enum ThreadStatus {
     /**
      * Thread in {@link Thread#sleep(long)} or {@link Thread#sleep(long, int)} waiting to be notified.
      *
-     * @see {@link Thread.State#TIMED_WAITING}
+     * @see java.lang.Thread.State#TIMED_WAITING
      */
     public boolean isSleeping() {
         return this == SLEEPING;
@@ -139,7 +139,8 @@ public enum ThreadStatus {
     /**
      * Thread in {@link Object#wait()} or {@link Object#wait(long)}.
      *
-     * @see {@link Thread.State#WAITING}, {@link Thread.State#TIMED_WAITING}
+     * @see java.lang.Thread.State#WAITING
+     * @see java.lang.Thread.State#TIMED_WAITING
      */
     public boolean isWaiting() {
         return this == IN_OBJECT_WAIT || this == IN_OBJECT_WAIT_TIMED;
@@ -148,7 +149,8 @@ public enum ThreadStatus {
     /**
      * Thread in {@link LockSupport#park()} or {@link LockSupport#parkNanos}.
      *
-     * @see {@link Thread.State#WAITING}, {@link Thread.State#TIMED_WAITING}
+     * @see java.lang.Thread.State#WAITING
+     * @see java.lang.Thread.State#TIMED_WAITING
      */
     public boolean isParked() {
         return this == PARKED || this == PARKED_TIMED;
@@ -157,7 +159,7 @@ public enum ThreadStatus {
     /**
      * Thread (re-)entering a synchronization block.
      *
-     * @see {@link Thread.State#BLOCKED}
+     * @see java.lang.Thread.State#BLOCKED
      */
     public boolean isBlocked() {
         return this == BLOCKED;
@@ -166,7 +168,7 @@ public enum ThreadStatus {
     /**
      * Thread that terminated execution.
      *
-     * @see {@link Thread.State#TERMINATED}
+     * @see java.lang.Thread.State#TERMINATED
      */
     public boolean isTerminated() {
         return this == TERMINATED;
