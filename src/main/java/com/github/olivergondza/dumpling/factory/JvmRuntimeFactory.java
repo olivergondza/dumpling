@@ -45,7 +45,7 @@ import com.github.olivergondza.dumpling.model.ThreadLock;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 
 /**
- * Create {@link ProcessRuntime} from state of current process.
+ * Create {@link ProcessRuntime} from state of current JVM process.
  *
  * @author ogondza
  */

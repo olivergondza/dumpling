@@ -59,6 +59,13 @@ import com.github.olivergondza.dumpling.model.StackTrace;
 import com.github.olivergondza.dumpling.model.ThreadLock;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 
+/**
+ * Create runtime from running process via JMX interface.
+ *
+ * A process can be identified by process ID or by host and port combination.
+ *
+ * @author ogondza
+ */
 public final class JmxRuntimeFactory implements CliRuntimeFactory {
 
     @Override
