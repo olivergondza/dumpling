@@ -202,7 +202,7 @@ public class ThreadSet<
      *
      * @return New thread collection bound to same runtime.
      */
-    public @Nonnull SetType derive(Collection<ThreadType> threads) {
+    public @Nonnull SetType derive(Collection<? extends ThreadType> threads) {
         if (threads.isEmpty()) return runtime.getEmptyThreadSet();
 
         Set<ThreadType> threadSet = threads instanceof Set

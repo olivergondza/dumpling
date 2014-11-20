@@ -93,15 +93,18 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
         }
     }
 
-    public static final class Result extends SingleThreadSetQuery.Result {
+    public static final class Result<
+            SetType extends ThreadSet<SetType, ?, ThreadType>,
+            ThreadType extends ProcessThread<ThreadType, SetType, ?>
+    > extends SingleThreadSetQuery.Result {
 
-        private final @Nonnull Set<Tree> trees;
-        private final @Nonnull ThreadSet<?, ?, ?> involved;
+        private final @Nonnull Set<Tree<ThreadType>> trees;
+        private final @Nonnull SetType involved;
         private final boolean showStackTraces;
 
-        private Result(ThreadSet<?, ?, ?> threads, boolean showStackTraces) {
-            @Nonnull Set<Tree> roots = new HashSet<Tree>();
-            for (ProcessThread<?, ?, ?> thread: threads.getProcessRuntime().getThreads()) {
+        private Result(SetType threads, boolean showStackTraces) {
+            @Nonnull Set<Tree<ThreadType>> roots = new HashSet<Tree<ThreadType>>();
+            for (ThreadType thread: threads.getProcessRuntime().getThreads()) {
                 if (thread.getWaitingOnLock() == null && !thread.getAcquiredLocks().isEmpty()) {
                     if (!thread.getBlockedThreads().isEmpty()) {
                         roots.add(new Tree(thread, buildDown(thread)));
@@ -112,33 +115,33 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
             this.trees = Collections.unmodifiableSet(filter(roots, threads));
             this.showStackTraces = showStackTraces;
 
-            LinkedHashSet<ProcessThread<?, ?, ?>> involved = new LinkedHashSet<ProcessThread<?, ?, ?>>();
-            for (Tree root: trees) {
+            LinkedHashSet<ThreadType> involved = new LinkedHashSet<ThreadType>();
+            for (Tree<ThreadType> root: trees) {
                 flatten(root, involved);
             }
 
             this.involved = threads.derive(involved);
         }
 
-        private @Nonnull Set<Tree> buildDown(ProcessThread<?, ?, ?> thread) {
-            @Nonnull Set<Tree> newTrees = new HashSet<Tree>();
-            for(ProcessThread<?, ?, ?> t: thread.getBlockedThreads()) {
+        private @Nonnull Set<Tree<ThreadType>> buildDown(ThreadType thread) {
+            @Nonnull Set<Tree<ThreadType>> newTrees = new HashSet<Tree<ThreadType>>();
+            for(ThreadType t: thread.getBlockedThreads()) {
                 newTrees.add(new Tree(t, buildDown(t)));
             }
 
             return newTrees;
         }
 
-        private @Nonnull Set<Tree> filter(Set<Tree> roots, ThreadSet<?, ?, ?> threads) {
-            Set<Tree> filtered = new HashSet<Tree>();
-            for (Tree r: roots) {
+        private @Nonnull Set<Tree<ThreadType>> filter(Set<Tree<ThreadType>> roots, SetType threads) {
+            Set<Tree<ThreadType>> filtered = new HashSet<Tree<ThreadType>>();
+            for (Tree<ThreadType> r: roots) {
                 // Add whitelisted items including their subtrees
                 if (threads.contains(r.getRoot())) {
                     filtered.add(r);
                 }
 
                 // Remove nodes with all children filtered out
-                final Set<Tree> filteredLeaves = filter(r.getLeaves(), threads);
+                final Set<Tree<ThreadType>> filteredLeaves = filter(r.getLeaves(), threads);
                 if (filteredLeaves.isEmpty()) continue;
 
                 filtered.add(new Tree(r.getRoot(), filteredLeaves));
@@ -147,14 +150,14 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
             return filtered;
         }
 
-        private void flatten(Tree tree, Set<ProcessThread<?, ?, ?>> accumulator) {
+        private void flatten(Tree<ThreadType> tree, Set<ThreadType> accumulator) {
             accumulator.add(tree.getRoot());
-            for (Tree leaf: tree.getLeaves()) {
+            for (Tree<ThreadType> leaf: tree.getLeaves()) {
                 flatten(leaf, accumulator);
             }
         }
 
-        public @Nonnull Set<Tree> getTrees() {
+        public @Nonnull Set<Tree<ThreadType>> getTrees() {
             return trees;
         }
 
@@ -163,9 +166,9 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
          *
          * @since 0.2
          */
-        public @Nonnull ThreadSet<?, ?, ?> getRoots() {
-            Set<ProcessThread<?, ?, ?>> roots = new LinkedHashSet<ProcessThread<?, ?, ?>>(trees.size());
-            for (Tree tree: trees) {
+        public @Nonnull SetType getRoots() {
+            Set<ThreadType> roots = new LinkedHashSet<ThreadType>(trees.size());
+            for (Tree<ThreadType> tree: trees) {
                 roots.add(tree.getRoot());
             }
 
@@ -174,7 +177,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
 
         @Override
         protected void printResult(PrintStream out) {
-            for (Tree tree: trees) {
+            for (Tree<ThreadType> tree: trees) {
                 out.println(tree);
             }
         }
@@ -193,28 +196,28 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
      *
      * @author ogondza
      */
-    public final static class Tree {
+    public final static class Tree<ThreadType extends ProcessThread<ThreadType, ?, ?>> {
 
         private static final @Nonnull String NL = System.getProperty("line.separator", "\n");
 
-        private final @Nonnull ProcessThread<?, ?, ?> root;
-        private final @Nonnull Set<Tree> leaves;
+        private final @Nonnull ThreadType root;
+        private final @Nonnull Set<Tree<ThreadType>> leaves;
 
-        private Tree(@Nonnull ProcessThread<?, ?, ?> root, @Nonnull Set<Tree> leaves) {
+        private Tree(@Nonnull ThreadType root, @Nonnull Set<Tree<ThreadType>> leaves) {
             this.root = root;
             this.leaves = Collections.unmodifiableSet(leaves);
         }
 
-        /*package*/ Tree(@Nonnull ProcessThread<?, ?, ?> root, @Nonnull Tree... leaves) {
+        /*package*/ Tree(@Nonnull ThreadType root, @Nonnull Tree<ThreadType>... leaves) {
             this.root = root;
-            this.leaves = Collections.unmodifiableSet(new HashSet<Tree>(Arrays.asList(leaves)));
+            this.leaves = Collections.unmodifiableSet(new HashSet<Tree<ThreadType>>(Arrays.asList(leaves)));
         }
 
-        public @Nonnull ProcessThread<?, ?, ?> getRoot() {
+        public @Nonnull ThreadType getRoot() {
             return root;
         }
 
-        public @Nonnull Set<Tree> getLeaves() {
+        public @Nonnull Set<Tree<ThreadType>> getLeaves() {
             return leaves;
         }
 
@@ -227,7 +230,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
 
         private void writeInto(String prefix, StringBuilder sb) {
             sb.append(prefix).append(root.getHeader()).append(NL);
-            for (Tree l: leaves) {
+            for (Tree<ThreadType> l: leaves) {
                 l.writeInto(prefix + "\t", sb);
             }
         }
@@ -235,7 +238,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
         @Override
         public int hashCode() {
             int hashCode = 31 * root.hashCode();
-            for (Tree l: leaves) {
+            for (Tree<ThreadType> l: leaves) {
                 hashCode += l.hashCode() * 7;
             }
 
@@ -249,7 +252,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
 
             if (!rhs.getClass().equals(this.getClass())) return false;
 
-            Tree other = (Tree) rhs;
+            Tree<ThreadType> other = (Tree<ThreadType>) rhs;
             return this.root.equals(other.root) && this.leaves.equals(other.leaves);
         }
     }
