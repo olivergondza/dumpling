@@ -2,9 +2,11 @@
 
 refdoc="refdoc"
 
+prio=0
 for tag in `git tag | grep dumpling- | grep -v '\-SNAPSHOT'`; do
     target="$refdoc/$tag"
     last_tag=$tag
+    ((prio++))
 
     mkdir -p $target
     git checkout $tag src/main/ pom.xml
@@ -27,6 +29,7 @@ for tag in `git tag | grep dumpling- | grep -v '\-SNAPSHOT'`; do
 
         cp _includes/refdoc.index $target/index.md
         sed -i "s/TAG/$tag/" $target/*.md
+        sed -i "s/PRIO/$prio/" $target/index.md # Used for ordering
     fi
 done
 

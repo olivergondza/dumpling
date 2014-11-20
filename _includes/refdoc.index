@@ -3,6 +3,7 @@ layout: "default"
 tag: "TAG"
 title: "Reference documentation for TAG"
 category: "refdoc"
+prio: PRIO
 # used to generate version specific refdoc
 ---
 
