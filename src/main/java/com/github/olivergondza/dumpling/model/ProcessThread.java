@@ -41,7 +41,7 @@ import com.github.olivergondza.dumpling.model.ThreadLock.Monitor;
  * @author ogondza
  */
 public class ProcessThread<
-        ThreadType extends ProcessThread<? extends ThreadType, SetType, RuntimeType>,
+        ThreadType extends ProcessThread<ThreadType, SetType, RuntimeType>,
         SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
         RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>
 > {
@@ -138,7 +138,8 @@ public class ProcessThread<
         Set<ThreadType> blocked = new LinkedHashSet<ThreadType>();
         for (ThreadType thread: runtime.getThreads()) {
             if (thread == this) continue;
-            if (getAcquiredLocks().contains(thread.state.waitingOnLock)) {
+            ThreadLock lock = ((ProcessThread<?, ?, ?>) thread).state.waitingOnLock;
+            if (getAcquiredLocks().contains(lock)) {
                 blocked.add(thread);
             }
         }
@@ -186,7 +187,7 @@ public class ProcessThread<
         if (rhs == null) return false;
         if (!rhs.getClass().equals(this.getClass())) return false;
 
-        ThreadType other = (ThreadType) rhs;
+        ProcessThread<?, ?, ?> other = (ProcessThread<?, ?, ?>) rhs;
 
         if (state.tid == null ? other.state.tid != null : !state.tid.equals(other.state.tid)) return false;
         if (state.nid == null ? other.state.nid != null : !state.nid.equals(other.state.nid)) return false;

@@ -30,6 +30,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
+import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
 /**
@@ -47,12 +48,16 @@ import com.github.olivergondza.dumpling.model.ThreadSet;
  * @see ThreadSet#query(SingleThreadSetQuery)
  * @see ProcessRuntime#query(SingleThreadSetQuery)
  */
-public interface SingleThreadSetQuery<T extends SingleThreadSetQuery.Result> {
+public interface SingleThreadSetQuery<ResultType extends SingleThreadSetQuery.Result<?>> {
 
     /**
      * Get typed result of the query.
      */
-    public @Nonnull T query(@Nonnull ThreadSet<?, ?, ?> initialSet);
+    public @Nonnull <
+            SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
+            RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>,
+            ThreadType extends ProcessThread<ThreadType, SetType, RuntimeType>
+    > ResultType query(@Nonnull SetType initialSet);
 
     /**
      * Query result that filter/arrange threads.
@@ -68,7 +73,7 @@ public interface SingleThreadSetQuery<T extends SingleThreadSetQuery.Result> {
      * @author ogondza
      * @see SingleThreadSetQuery
      */
-    public static abstract class Result {
+    public static abstract class Result<SetType extends ThreadSet<SetType, ?, ?>> {
 
         /**
          * Print query result.
@@ -80,7 +85,7 @@ public interface SingleThreadSetQuery<T extends SingleThreadSetQuery.Result> {
          *
          * @return null or empty set when there are no threads to be printed.
          */
-        protected abstract @CheckForNull ThreadSet<?, ?, ?> involvedThreads();
+        protected abstract @CheckForNull SetType involvedThreads();
 
         /**
          * Print optional summary for a query.
@@ -96,7 +101,7 @@ public interface SingleThreadSetQuery<T extends SingleThreadSetQuery.Result> {
          * provide custom value.
          */
         public int exitCode() {
-            final ThreadSet<?, ?, ?> involvedThreads = involvedThreads();
+            final SetType involvedThreads = involvedThreads();
             return involvedThreads == null ? 0 : involvedThreads.size();
         }
 

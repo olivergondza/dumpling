@@ -51,7 +51,7 @@ import com.github.olivergondza.dumpling.model.jvm.JvmThread;
  */
 public class JvmRuntimeFactory {
 
-    public @Nonnull ProcessRuntime currentRuntime() {
+    public @Nonnull JvmRuntime currentRuntime() {
         Set<Thread> threads = Thread.getAllStackTraces().keySet();
         Map<Long, ThreadInfo> infos = infos();
 

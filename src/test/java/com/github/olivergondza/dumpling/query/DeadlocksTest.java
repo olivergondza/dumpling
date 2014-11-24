@@ -40,6 +40,7 @@ import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
+import com.github.olivergondza.dumpling.model.jvm.JvmRuntime;
 
 public class DeadlocksTest extends AbstractCliTest {
 
@@ -156,6 +157,13 @@ public class DeadlocksTest extends AbstractCliTest {
     public void toStringWithTraces() throws Exception {
         ProcessRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock.log"));
         assertLongListing(runtime.query(new Deadlocks().showStackTraces()).toString());
+    }
+
+    @Test
+    public void typeSafeQuerying() throws Exception {
+        JvmRuntime runtime = new JvmRuntimeFactory().currentRuntime();
+
+        runtime.query(new Deadlocks()).getDeadlocks().itterator().next().forCurrentThread();
     }
 
     private void assertLongListing(String out) {

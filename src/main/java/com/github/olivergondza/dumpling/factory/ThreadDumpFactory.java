@@ -43,12 +43,12 @@ import com.github.olivergondza.dumpling.cli.CliRuntimeFactory;
 import com.github.olivergondza.dumpling.cli.CommandFailedException;
 import com.github.olivergondza.dumpling.cli.ProcessStream;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
-import com.github.olivergondza.dumpling.model.ProcessThread;
-import com.github.olivergondza.dumpling.model.ProcessThread.Builder;
 import com.github.olivergondza.dumpling.model.StackTrace;
 import com.github.olivergondza.dumpling.model.ThreadLock;
 import com.github.olivergondza.dumpling.model.ThreadLock.Monitor;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
+import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
+import com.github.olivergondza.dumpling.model.dump.ThreadDumpThread;
 
 /**
  * Instantiate {@link ProcessRuntime} from threaddump produced by <tt>jstack</tt> or similar tool.
@@ -104,16 +104,16 @@ public class ThreadDumpFactory implements CliRuntimeFactory<ProcessRuntime<?, ?,
     }
 
     /*package*/ @Nonnull ProcessRuntime<?, ?, ?> fromStream(InputStream stream) {
-        return new ProcessRuntime(threads(stream));
+        return new ThreadDumpRuntime(threads(stream));
     }
 
-    private @Nonnull Set<Builder> threads(InputStream stream) {
-        Set<Builder> threads = new LinkedHashSet<Builder>();
+    private @Nonnull Set<ThreadDumpThread.Builder> threads(InputStream stream) {
+        Set<ThreadDumpThread.Builder> threads = new LinkedHashSet<ThreadDumpThread.Builder>();
 
         Scanner scanner = new Scanner(stream).useDelimiter(THREAD_DELIMITER);
         while (scanner.hasNext()) {
             String singleThread = scanner.next();
-            ProcessThread.Builder thread = thread(singleThread);
+            ThreadDumpThread.Builder thread = thread(singleThread);
             if (thread == null) continue;
             threads.add(thread);
         }
@@ -121,14 +121,14 @@ public class ThreadDumpFactory implements CliRuntimeFactory<ProcessRuntime<?, ?,
         return threads;
     }
 
-    private Builder thread(String singleThread) {
+    private ThreadDumpThread.Builder thread(String singleThread) {
 
         Matcher matcher = THREAD_HEADER.matcher(singleThread);
         if (!matcher.find()) return null;
 
-        Builder builder = ProcessThread.builder();
+        ThreadDumpThread.Builder builder = new ThreadDumpThread.Builder();
         builder.setName(matcher.group(1));
-        builder = initHeader(builder, matcher.group(2));
+        initHeader(builder, matcher.group(2));
 
         String status = matcher.group(3);
         if (status != null) {
@@ -137,14 +137,14 @@ public class ThreadDumpFactory implements CliRuntimeFactory<ProcessRuntime<?, ?,
 
         final String trace = matcher.group(4);
         if (trace != null) {
-            builder = initStacktrace(builder, trace);
-            builder = initLocks(builder, trace);
+            initStacktrace(builder, trace);
+            initLocks(builder, trace);
         }
 
         return builder;
     }
 
-    private Builder initLocks(Builder builder, String string) {
+    private void initLocks(ThreadDumpThread.Builder builder, String string) {
         List<ThreadLock.Monitor> monitors = new ArrayList<ThreadLock.Monitor>();
         List<ThreadLock> synchronizers = new ArrayList<ThreadLock>();
         List<ThreadLock> waitingFor = new ArrayList<ThreadLock>(1);
@@ -219,15 +219,13 @@ public class ThreadDumpFactory implements CliRuntimeFactory<ProcessRuntime<?, ?,
         builder.setAcquiredMonitors(monitors);
         builder.setAcquiredSynchronizers(synchronizers);
         builder.setWaitingOnLock(lock);
-
-        return builder;
     }
 
     private @Nonnull ThreadLock createLock(Matcher matcher) {
         return new ThreadLock(matcher.group(2), Long.parseLong(matcher.group(1), 16));
     }
 
-    private Builder initHeader(Builder builder, String attrs) {
+    private void initHeader(ThreadDumpThread.Builder builder, String attrs) {
         StringTokenizer tknzr = new StringTokenizer(attrs, " ");
         while (tknzr.hasMoreTokens()) {
             String token = tknzr.nextToken();
@@ -237,8 +235,6 @@ public class ThreadDumpFactory implements CliRuntimeFactory<ProcessRuntime<?, ?,
             else if (token.startsWith("nid=")) builder.setNid(parseLong(token.substring(4)));
             else if (token.matches("#\\d+")) builder.setId(Integer.parseInt(token.substring(1)));
         }
-
-        return builder;
     }
 
     private long parseLong(String value) {
@@ -248,7 +244,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory<ProcessRuntime<?, ?,
         ;
     }
 
-    private Builder initStacktrace(Builder builder, String trace) {
+    private void initStacktrace(ThreadDumpThread.Builder builder, String trace) {
         Matcher match = STACK_TRACE_ELEMENT_LINE.matcher(trace);
         ArrayList<StackTraceElement> traceElements = new ArrayList<StackTraceElement>();
 
@@ -269,9 +265,5 @@ public class ThreadDumpFactory implements CliRuntimeFactory<ProcessRuntime<?, ?,
                     match.group(1), match.group(2), sourceFile, sourceLine
             ));
         }
-
-        return builder.setStacktrace(
-                traceElements.toArray(new StackTraceElement[traceElements.size()])
-        );
     }
 }

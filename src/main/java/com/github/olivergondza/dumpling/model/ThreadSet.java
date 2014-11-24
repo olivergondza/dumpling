@@ -46,7 +46,7 @@ import com.github.olivergondza.dumpling.query.SingleThreadSetQuery;
 public class ThreadSet<
         SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
         RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>,
-        ThreadType extends ProcessThread<? extends ThreadType, SetType, RuntimeType>
+        ThreadType extends ProcessThread<ThreadType, SetType, RuntimeType>
 > implements Iterable<ThreadType> {
 
     private static final @Nonnull String NL = System.getProperty("line.separator", "\n");
@@ -54,7 +54,7 @@ public class ThreadSet<
     private final @Nonnull RuntimeType runtime;
     private final @Nonnull Set<ThreadType> threads;
 
-    public ThreadSet(@Nonnull RuntimeType runtime, @Nonnull Set<ThreadType> threads) {
+    protected ThreadSet(@Nonnull RuntimeType runtime, @Nonnull Set<ThreadType> threads) {
         this.runtime = runtime;
         this.threads = Collections.unmodifiableSet(threads);
     }
@@ -121,7 +121,7 @@ public class ThreadSet<
         return derive(blocking);
     }
 
-    public @Nonnull SetType ignoring(@Nonnull SetType actualThreads) {
+    public @Nonnull SetType ignoring(@Nonnull ThreadSet<?, ?, ?> actualThreads) {
         HashSet<ThreadType> newThreads = new HashSet<ThreadType>(threads);
         newThreads.removeAll(actualThreads.threads);
         return derive(newThreads);
@@ -145,8 +145,8 @@ public class ThreadSet<
     /**
      * Run query using this as an initial thread set.
      */
-    public <T extends SingleThreadSetQuery.Result> T query(SingleThreadSetQuery<T> query) {
-        return query.query(this);
+    public <T extends SingleThreadSetQuery.Result<SetType>> T query(SingleThreadSetQuery<T> query) {
+        return query.query((SetType) this);
     }
 
     @Override
@@ -166,7 +166,7 @@ public class ThreadSet<
 
         if (!this.getClass().equals(rhs.getClass())) return false;
 
-        SetType other = (SetType) rhs;
+        ThreadSet<?, ?, ?> other = (ThreadSet) rhs;
 
         return runtime.equals(other.runtime) && threads.equals(other.threads);
     }
@@ -241,19 +241,21 @@ public class ThreadSet<
         return Collections.unmodifiableSet(threads);
     }
 
-    public @Nonnull SetType intersect(SetType other) {
+    public @Nonnull SetType intersect(ThreadSet<?, ?, ?> other) {
         if (!runtime.equals(other.runtime)) throw new IllegalStateException(
                 "Unable to intersect thread sets bound to different runtime"
         );
 
-        return derive(DefaultGroovyMethods.intersect(threads, other.threads));
+        return derive(DefaultGroovyMethods.intersect((Set) threads, (Set) other.threads));
     }
 
+    @SuppressWarnings("cast")
     public @Nonnull SetType plus(SetType other) {
-        if (!runtime.equals(other.runtime)) throw new IllegalStateException(
+        final ThreadSet<?, ?, ?> typedOther = other;
+        if (!runtime.equals(typedOther.runtime)) throw new IllegalStateException(
                 "Unable to merge thread sets bound to different runtime"
         );
 
-        return derive(DefaultGroovyMethods.plus(threads, other.threads));
+        return derive(DefaultGroovyMethods.plus(threads, (Set<ThreadType>) typedOther.threads));
     }
 }

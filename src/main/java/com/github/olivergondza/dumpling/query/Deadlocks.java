@@ -45,7 +45,7 @@ import com.github.olivergondza.dumpling.model.ThreadSet;
  *
  * @author ogondza
  */
-public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
+public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result<?, ?, ?>> {
 
     private boolean showStackTraces = false;
 
@@ -55,8 +55,12 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
     }
 
     @Override
-    public @Nonnull Result query(@Nonnull ThreadSet<?, ?, ?> threads) {
-        return new Result(threads, showStackTraces);
+    public @Nonnull <
+            SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
+            RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>,
+            ThreadType extends ProcessThread<ThreadType, SetType, RuntimeType>
+    > Result<SetType, RuntimeType, ThreadType> query(@Nonnull SetType threads) {
+        return new Result<SetType, RuntimeType, ThreadType>(threads, showStackTraces);
     }
 
     public final static class Command implements CliCommand {
@@ -80,28 +84,30 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
         @Override
         public int run(@Nonnull ProcessStream process) throws CmdLineException {
 
-            Result result = new Result(runtime.getThreads(), showStackTraces);
+            Result<?, ?, ?> result = new Result(runtime.getThreads(), showStackTraces);
             result.printInto(process.out());
             return result.exitCode();
         }
     }
 
-    public final static class Result extends SingleThreadSetQuery.Result {
-        private final @Nonnull Set<ThreadSet<?, ?, ?>> deadlocks;
-        private final @Nonnull ThreadSet<?, ?, ?> involved;
+    public final static class Result<
+            SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
+            RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>,
+            ThreadType extends ProcessThread<ThreadType, SetType, RuntimeType>
+    > extends SingleThreadSetQuery.Result<SetType> {
+        private final @Nonnull Set<SetType> deadlocks;
+        private final @Nonnull SetType involved;
 
-        private Result(@Nonnull ThreadSet<?, ?, ?> input, boolean showStackTraces) {
-            final ProcessRuntime<?, ?, ?> runtime = input.getProcessRuntime();
-
-            final HashSet<ThreadSet<?, ?, ?>> deadlocks = new HashSet<ThreadSet<?, ?, ?>>(1);
-            final LinkedHashSet<ProcessThread<?, ?, ?>> involved = new LinkedHashSet<ProcessThread<?, ?, ?>>(2);
+        private Result(@Nonnull SetType input, boolean showStackTraces) {
+            final HashSet<SetType> deadlocks = new HashSet<SetType>(1);
+            final LinkedHashSet<ThreadType> involved = new LinkedHashSet<ThreadType>(2);
             // No need to visit threads more than once
-            final Set<ProcessThread<?, ?, ?>> analyzed = new HashSet<ProcessThread<?, ?, ?>>(input.size());
+            final Set<ThreadType> analyzed = new HashSet<ThreadType>(input.size());
 
-            for (ProcessThread<?, ?, ?> thread: input) {
+            for (ThreadType thread: input) {
 
-                Set<ProcessThread<?, ?, ?>> cycleCandidate = new LinkedHashSet<ProcessThread<?, ?, ?>>(2);
-                for (ProcessThread<?, ?, ?> blocking = thread.getBlockingThread(); blocking != null; blocking = blocking.getBlockingThread()) {
+                Set<ThreadType> cycleCandidate = new LinkedHashSet<ThreadType>(2);
+                for (ThreadType blocking = thread.getBlockingThread(); blocking != null; blocking = blocking.getBlockingThread()) {
                     if (analyzed.contains(thread)) break;
 
                     if (cycleCandidate.contains(blocking)) {
@@ -121,7 +127,7 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
             this.deadlocks = Collections.unmodifiableSet(deadlocks);
             this.involved = showStackTraces
                     ? input.derive(involved)
-                    : runtime.getEmptyThreadSet()
+                    : input.getProcessRuntime().getEmptyThreadSet()
             ;
         }
 
@@ -130,7 +136,7 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
          *
          * @return {@link Set} of {@link ThreadSet}s representing found deadlocks.
          */
-        public @Nonnull Set<ThreadSet<?, ?, ?>> getDeadlocks() {
+        public @Nonnull Set<SetType> getDeadlocks() {
             return deadlocks;
         }
 
@@ -145,7 +151,7 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
         }
 
         @Override
-        protected ThreadSet<?, ?, ?> involvedThreads() {
+        protected SetType involvedThreads() {
             return involved;
         }
 

@@ -53,7 +53,7 @@ import com.github.olivergondza.dumpling.model.ThreadSet;
  *
  * @author ogondza
  */
-public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Result> {
+public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Result<?, ?, ?>> {
 
     private boolean showStackTraces = false;
 
@@ -63,8 +63,12 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
     }
 
     @Override
-    public @Nonnull Result query(ThreadSet<?, ?, ?> threads) {
-        return new Result(threads, showStackTraces);
+    public @Nonnull <
+            SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
+            RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>,
+            ThreadType extends ProcessThread<ThreadType, SetType, RuntimeType>
+    > Result<SetType, RuntimeType, ThreadType> query(SetType threads) {
+        return new Result<SetType, RuntimeType, ThreadType>(threads, showStackTraces);
     }
 
     public final static class Command implements CliCommand {
@@ -87,16 +91,17 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
 
         @Override
         public int run(@Nonnull ProcessStream process) throws CmdLineException {
-            Result result = new Result(runtime.getThreads(), showStackTraces);
+            Result<?, ?, ?> result = new Result(runtime.getThreads(), showStackTraces);
             result.printInto(process.out());
             return result.exitCode();
         }
     }
 
     public static final class Result<
-            SetType extends ThreadSet<SetType, ?, ThreadType>,
-            ThreadType extends ProcessThread<ThreadType, SetType, ?>
-    > extends SingleThreadSetQuery.Result {
+            SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
+            RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>,
+            ThreadType extends ProcessThread<ThreadType, SetType, RuntimeType>
+    > extends SingleThreadSetQuery.Result<SetType> {
 
         private final @Nonnull Set<Tree<ThreadType>> trees;
         private final @Nonnull SetType involved;
@@ -107,7 +112,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
             for (ThreadType thread: threads.getProcessRuntime().getThreads()) {
                 if (thread.getWaitingOnLock() == null && !thread.getAcquiredLocks().isEmpty()) {
                     if (!thread.getBlockedThreads().isEmpty()) {
-                        roots.add(new Tree(thread, buildDown(thread)));
+                        roots.add(new Tree<ThreadType>(thread, buildDown(thread)));
                     }
                 }
             }
@@ -126,7 +131,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
         private @Nonnull Set<Tree<ThreadType>> buildDown(ThreadType thread) {
             @Nonnull Set<Tree<ThreadType>> newTrees = new HashSet<Tree<ThreadType>>();
             for(ThreadType t: thread.getBlockedThreads()) {
-                newTrees.add(new Tree(t, buildDown(t)));
+                newTrees.add(new Tree<ThreadType>(t, buildDown(t)));
             }
 
             return newTrees;
@@ -144,7 +149,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
                 final Set<Tree<ThreadType>> filteredLeaves = filter(r.getLeaves(), threads);
                 if (filteredLeaves.isEmpty()) continue;
 
-                filtered.add(new Tree(r.getRoot(), filteredLeaves));
+                filtered.add(new Tree<ThreadType>(r.getRoot(), filteredLeaves));
             }
 
             return filtered;
@@ -183,7 +188,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
         }
 
         @Override
-        protected ThreadSet<?, ?, ?> involvedThreads() {
+        protected SetType involvedThreads() {
             return showStackTraces ? involved : null;
         }
     }

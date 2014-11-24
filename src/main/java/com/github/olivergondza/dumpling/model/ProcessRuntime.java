@@ -38,7 +38,7 @@ import com.github.olivergondza.dumpling.query.SingleThreadSetQuery;
 public abstract class ProcessRuntime<
         RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>,
         SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
-        ThreadType extends ProcessThread<? extends ThreadType, SetType, RuntimeType>
+        ThreadType extends ProcessThread<ThreadType, SetType, RuntimeType>
 > {
 
     private final @Nonnull SetType threads;
@@ -83,7 +83,7 @@ public abstract class ProcessRuntime<
      *
      * @see ThreadSet#query(SingleThreadSetQuery)
      */
-    public <T extends SingleThreadSetQuery.Result> T query(SingleThreadSetQuery<T> query) {
+    public <T extends SingleThreadSetQuery.Result<SetType>> T query(SingleThreadSetQuery<T> query) {
         return threads.query(query);
     }
 }

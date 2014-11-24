@@ -53,7 +53,7 @@ import com.github.olivergondza.dumpling.model.ThreadSet;
  *
  * @author ogondza
  */
-public final class TopContenders implements SingleThreadSetQuery<TopContenders.Result> {
+public final class TopContenders implements SingleThreadSetQuery<TopContenders.Result<?, ?, ?>> {
 
     private boolean showStackTraces = false;
 
@@ -63,8 +63,12 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
     }
 
     @Override
-    public Result query(ThreadSet<?, ?, ?> threads) {
-        return new Result(threads, showStackTraces);
+    public @Nonnull <
+            SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
+            RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>,
+            ThreadType extends ProcessThread<ThreadType, SetType, RuntimeType>
+    > Result<SetType, RuntimeType, ThreadType> query(SetType threads) {
+        return new Result<SetType, RuntimeType, ThreadType>(threads, showStackTraces);
     }
 
     public final static class Command implements CliCommand {
@@ -87,23 +91,27 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
 
         @Override
         public int run(@Nonnull ProcessStream process) throws CmdLineException {
-            Result result = new Result(runtime.getThreads(), showStackTraces);
+            Result<?, ?, ?> result = new Result(runtime.getThreads(), showStackTraces);
             result.printInto(process.out());
             return result.exitCode();
         }
     }
 
-    public final static class Result extends SingleThreadSetQuery.Result {
+    public final static class Result<
+            SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
+            RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>,
+            ThreadType extends ProcessThread<ThreadType, SetType, RuntimeType>
+    > extends SingleThreadSetQuery.Result<SetType> {
 
-        private final @Nonnull Map<ProcessThread<?, ?, ?>, ThreadSet<?, ?, ?>> contenders;
-        private final @Nonnull ThreadSet<?, ?, ?> involved;
+        private final @Nonnull Map<ThreadType, SetType> contenders;
+        private final @Nonnull SetType involved;
         private final @Nonnegative int blocked;
 
-        private Result(ThreadSet<?, ?, ?> threads, boolean showStacktraces) {
-            final Set<ProcessThread<?, ?, ?>> involved = new LinkedHashSet<ProcessThread<?, ?, ?>>();
-            final Map<ProcessThread<?, ?, ?>, ThreadSet<?, ?, ?>> contenders = new TreeMap<ProcessThread<?, ?, ?>, ThreadSet<?, ?, ?>>(new Comparator<ProcessThread<?, ?, ?>>() {
+        private Result(SetType threads, boolean showStacktraces) {
+            final Set<ThreadType> involved = new LinkedHashSet<ThreadType>();
+            final Map<ThreadType, SetType> contenders = new TreeMap<ThreadType, SetType>(new Comparator<ThreadType>() {
                 @Override
-                public int compare(ProcessThread<?, ?, ?> lhs, ProcessThread<?, ?, ?> rhs) {
+                public int compare(ThreadType lhs, ThreadType rhs) {
                     int lhsSize = lhs.getBlockedThreads().size();
                     int rhsSize = rhs.getBlockedThreads().size();
 
@@ -114,13 +122,13 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
                 }
             });
 
-            for (ProcessThread<?, ?, ?> thread: threads) {
-                ThreadSet<?, ?, ?> blocked = thread.getBlockedThreads();
+            for (ThreadType thread: threads) {
+                SetType blocked = thread.getBlockedThreads();
                 if (blocked.isEmpty()) continue;
 
                 contenders.put(thread, blocked);
                 involved.add(thread);
-                for (ProcessThread<?, ?, ?> b: blocked) {
+                for (ThreadType b: blocked) {
                     involved.add(b);
                 }
             }
@@ -133,7 +141,7 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
             this.blocked = involved.size() - contenders.size();
         }
 
-        public @Nonnull ThreadSet<?, ?, ?> getBlockers() {
+        public @Nonnull SetType getBlockers() {
             return involved.derive(contenders.keySet());
         }
 
@@ -148,7 +156,7 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
 
         @Override
         protected void printResult(PrintStream out) {
-            for (Entry<ProcessThread<?, ?, ?>, ThreadSet<?, ?, ?>> contention: contenders.entrySet()) {
+            for (Entry<ThreadType, SetType> contention: contenders.entrySet()) {
 
                 out.print("* ");
                 out.println(contention.getKey().getHeader());
@@ -162,7 +170,7 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
         }
 
         @Override
-        protected ThreadSet<?, ?, ?> involvedThreads() {
+        protected SetType involvedThreads() {
             return involved;
         }
 
