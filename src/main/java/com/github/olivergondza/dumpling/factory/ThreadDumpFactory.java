@@ -55,7 +55,7 @@ import com.github.olivergondza.dumpling.model.dump.ThreadDumpThread;
  *
  * @author ogondza
  */
-public class ThreadDumpFactory implements CliRuntimeFactory<ProcessRuntime<?, ?, ?>> {
+public class ThreadDumpFactory implements CliRuntimeFactory<ThreadDumpRuntime> {
 
     private static final String NL = "(?:\\r\\n|\\n)";
 
@@ -76,7 +76,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory<ProcessRuntime<?, ?,
     }
 
     @Override
-    public @Nonnull ProcessRuntime<?, ?, ?> createRuntime(@Nonnull String locator, @Nonnull ProcessStream process) throws CommandFailedException {
+    public @Nonnull ThreadDumpRuntime createRuntime(@Nonnull String locator, @Nonnull ProcessStream process) throws CommandFailedException {
         if ("-".equals(locator)) {
             // Read stdin
             return fromStream(process.in());
@@ -94,7 +94,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory<ProcessRuntime<?, ?,
      *
      * @throws IOException File could not be loaded.
      */
-    public @Nonnull ProcessRuntime<?, ?, ?> fromFile(File threadDump) throws IOException {
+    public @Nonnull ThreadDumpRuntime fromFile(File threadDump) throws IOException {
         FileInputStream fis = new FileInputStream(threadDump);
         try {
             return fromStream(fis);
@@ -103,7 +103,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory<ProcessRuntime<?, ?,
         }
     }
 
-    /*package*/ @Nonnull ProcessRuntime<?, ?, ?> fromStream(InputStream stream) {
+    /*package*/ @Nonnull ThreadDumpRuntime fromStream(InputStream stream) {
         return new ThreadDumpRuntime(threads(stream));
     }
 

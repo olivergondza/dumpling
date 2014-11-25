@@ -37,10 +37,10 @@ import com.github.olivergondza.dumpling.Util;
 import com.github.olivergondza.dumpling.cli.AbstractCliTest;
 import com.github.olivergondza.dumpling.factory.JvmRuntimeFactory;
 import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
-import com.github.olivergondza.dumpling.model.ProcessRuntime;
-import com.github.olivergondza.dumpling.model.ProcessThread;
-import com.github.olivergondza.dumpling.model.ThreadSet;
+import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
 import com.github.olivergondza.dumpling.model.jvm.JvmRuntime;
+import com.github.olivergondza.dumpling.model.jvm.JvmThread;
+import com.github.olivergondza.dumpling.model.jvm.JvmThreadSet;
 
 public class DeadlocksTest extends AbstractCliTest {
 
@@ -106,13 +106,13 @@ public class DeadlocksTest extends AbstractCliTest {
 
         Util.pause(1000);
 
-        ProcessRuntime runtime = runtime();
-        final Set<ThreadSet> deadlocks = deadlocks(runtime);
+        JvmRuntime runtime = runtime();
+        final Set<JvmThreadSet> deadlocks = deadlocks(runtime);
 
         assertEquals("One deadlock should be present\n\n" + runtime.getThreads().toString(), 1, deadlocks.size());
-        for (ThreadSet deadlock: deadlocks) {
+        for (JvmThreadSet deadlock: deadlocks) {
             assertEquals("Deadlock should contain of 2 threads", 2, deadlock.size());
-            for (ProcessThread thread: deadlock) {
+            for (JvmThread thread: deadlock) {
                 assertTrue(thread.getName().matches("Deadlock thread [AB]"));
             }
         }
@@ -129,7 +129,7 @@ public class DeadlocksTest extends AbstractCliTest {
 
     @Test
     public void toStringNoTraces() throws Exception {
-        ProcessRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock.log"));
+        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock.log"));
         assertListing(runtime.query(new Deadlocks()).toString());
     }
 
@@ -155,7 +155,7 @@ public class DeadlocksTest extends AbstractCliTest {
 
     @Test
     public void toStringWithTraces() throws Exception {
-        ProcessRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock.log"));
+        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock.log"));
         assertLongListing(runtime.query(new Deadlocks().showStackTraces()).toString());
     }
 
@@ -163,7 +163,7 @@ public class DeadlocksTest extends AbstractCliTest {
     public void typeSafeQuerying() throws Exception {
         JvmRuntime runtime = new JvmRuntimeFactory().currentRuntime();
 
-        runtime.query(new Deadlocks()).getDeadlocks().itterator().next().forCurrentThread();
+        runtime.query(new Deadlocks()).getDeadlocks().iterator().next().forCurrentThread();
     }
 
     private void assertLongListing(String out) {
@@ -178,11 +178,11 @@ public class DeadlocksTest extends AbstractCliTest {
         assertThat(out, containsString("%n1 deadlocks detected%n"));
     }
 
-    private Set<ThreadSet> deadlocks(ProcessRuntime runtime) {
+    private Set<JvmThreadSet> deadlocks(JvmRuntime runtime) {
         return runtime.getThreads().query(new Deadlocks()).getDeadlocks();
     }
 
-    private ProcessRuntime runtime() {
+    private JvmRuntime runtime() {
         return new JvmRuntimeFactory().currentRuntime();
     }
 }

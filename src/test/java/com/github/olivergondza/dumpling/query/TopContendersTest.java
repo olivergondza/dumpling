@@ -33,20 +33,20 @@ import org.junit.Test;
 import com.github.olivergondza.dumpling.Util;
 import com.github.olivergondza.dumpling.cli.AbstractCliTest;
 import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
-import com.github.olivergondza.dumpling.model.ProcessRuntime;
-import com.github.olivergondza.dumpling.model.ProcessThread;
-import com.github.olivergondza.dumpling.model.ThreadSet;
+import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
+import com.github.olivergondza.dumpling.model.dump.ThreadDumpThread;
+import com.github.olivergondza.dumpling.model.dump.ThreadDumpThreadSet;
 import com.github.olivergondza.dumpling.query.TopContenders.Result;
 
 public class TopContendersTest extends AbstractCliTest {
 
     @Test
     public void trivial() throws Exception {
-        ProcessRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("producer-consumer.log"));
+        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("producer-consumer.log"));
 
         Result contenders = runtime.query(new TopContenders());
 
-        final ProcessThread owning = runtime.getThreads().where(nameIs("owning_thread")).onlyThread();
+        final ThreadDumpThread owning = runtime.getThreads().where(nameIs("owning_thread")).onlyThread();
 
         assertThat(contenders.getBlockers().size(), equalTo(1));
         assertThat(contenders.blockedBy(owning), equalTo(runtime.getThreads().where(nameIs("blocked_thread"))));
@@ -54,12 +54,12 @@ public class TopContendersTest extends AbstractCliTest {
 
     @Test
     public void contenders() throws Exception {
-        ProcessRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "contention.log"));
+        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "contention.log"));
 
         Result contenders = runtime.query(new TopContenders());
 
-        ThreadSet ts = runtime.getThreads();
-        final ProcessThread producerProcessThread = ts.where(nameIs("producer")).onlyThread();
+        ThreadDumpThreadSet ts = runtime.getThreads();
+        final ThreadDumpThread producerProcessThread = ts.where(nameIs("producer")).onlyThread();
 
         assertThat(contenders.getBlockers().size(), equalTo(1));
         assertThat(contenders.blockedBy(producerProcessThread).size(), equalTo(3));
@@ -75,7 +75,7 @@ public class TopContendersTest extends AbstractCliTest {
 
     @Test
     public void toStringNoTraces() throws Exception {
-        ProcessRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "contention.log"));
+        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "contention.log"));
         assertListing(runtime.query(new TopContenders()).toString());
     }
 
@@ -105,7 +105,7 @@ public class TopContendersTest extends AbstractCliTest {
 
     @Test
     public void toStringWithTraces() throws Exception {
-        ProcessRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "contention.log"));
+        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "contention.log"));
         assertLongListing(runtime.query(new TopContenders().showStackTraces()).toString());
     }
 

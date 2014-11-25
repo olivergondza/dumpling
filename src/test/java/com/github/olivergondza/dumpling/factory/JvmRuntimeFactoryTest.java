@@ -42,11 +42,11 @@ import org.hamcrest.collection.IsEmptyCollection;
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
-import com.github.olivergondza.dumpling.model.ProcessRuntime;
-import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadLock;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
+import com.github.olivergondza.dumpling.model.jvm.JvmRuntime;
+import com.github.olivergondza.dumpling.model.jvm.JvmThread;
 
 public class JvmRuntimeFactoryTest {
 
@@ -198,7 +198,7 @@ public class JvmRuntimeFactoryTest {
         new Thrd(10).start();
         new Thrd(10).start();
 
-        ProcessRuntime runtime;
+        JvmRuntime runtime;
         do {
             runtime = new JvmRuntimeFactory().currentRuntime();
 
@@ -209,7 +209,7 @@ public class JvmRuntimeFactoryTest {
     public void testThreadAttributes() {
         Thread expected = Thread.currentThread();
 
-        ProcessThread actual = new JvmRuntimeFactory().currentRuntime()
+        JvmThread actual = new JvmRuntimeFactory().currentRuntime()
                 .getThreads().where(nameIs(expected.getName())).onlyThread()
         ;
 
@@ -241,13 +241,13 @@ public class JvmRuntimeFactoryTest {
         synchronized(lock) {
 
             // Waiting thread is not supposed to own the thread
-            ProcessRuntime runtime = new JvmRuntimeFactory().currentRuntime();
-            ProcessThread waiting = runtime.getThreads().where(nameIs("monitorOwnerOnObjectWait")).onlyThread();
+            JvmRuntime runtime = new JvmRuntimeFactory().currentRuntime();
+            JvmThread waiting = runtime.getThreads().where(nameIs("monitorOwnerOnObjectWait")).onlyThread();
             assertThat(waiting.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
             assertThat(waiting.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
 
             // Current thread is
-            ProcessThread current = runtime.getThreads().where(nameIs(Thread.currentThread().getName())).onlyThread();
+            JvmThread current = runtime.getThreads().where(nameIs(Thread.currentThread().getName())).onlyThread();
             final Set<ThreadLock> expected = new HashSet<ThreadLock>(Arrays.asList(
                     ThreadLock.fromInstance(lock)
             ));
@@ -273,9 +273,9 @@ public class JvmRuntimeFactoryTest {
             thread.start();
             Thread.sleep(100); // Wait until blocked
 
-            ProcessRuntime runtime = new JvmRuntimeFactory().currentRuntime();
-            ProcessThread current = runtime.getThreads().where(nameIs(Thread.currentThread().getName())).onlyThread();
-            ProcessThread blocked = runtime.getThreads().where(nameIs("ownableSynchronizers")).onlyThread();
+            JvmRuntime runtime = new JvmRuntimeFactory().currentRuntime();
+            JvmThread current = runtime.getThreads().where(nameIs(Thread.currentThread().getName())).onlyThread();
+            JvmThread blocked = runtime.getThreads().where(nameIs("ownableSynchronizers")).onlyThread();
 
             assertThat(current.getStatus(), equalTo(ThreadStatus.RUNNABLE));
             assertThat(blocked.getStatus(), equalTo(ThreadStatus.PARKED));
@@ -341,20 +341,20 @@ public class JvmRuntimeFactoryTest {
     }
 
     private ThreadStatus statusOf(Thread thread) {
-        final ProcessThread processThread = forThread(runtime(), thread);
+        final JvmThread processThread = forThread(runtime(), thread);
         if (processThread == null) throw new AssertionError(
                 "No process thread in runtime for " + thread.getName()
         );
         return processThread.getStatus();
     }
 
-    private ProcessRuntime runtime() {
+    private JvmRuntime runtime() {
         pause(100);
         return new JvmRuntimeFactory().currentRuntime();
     }
 
-    private ProcessThread forThread(ProcessRuntime runtime, Thread candidate) {
-        for(ProcessThread thread: runtime.getThreads()) {
+    private JvmThread forThread(JvmRuntime runtime, Thread candidate) {
+        for(JvmThread thread: runtime.getThreads()) {
             if (thread.getId() == candidate.getId()) return thread;
         }
 
