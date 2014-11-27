@@ -3,29 +3,38 @@ layout: default
 title: Dumpling as CLI tool
 category: toplevel
 prio: 20
+dumpling-sh-url: https://raw.githubusercontent.com/olivergondza/dumpling/master/dumpling.sh
 ---
 
 # {{page.title}}
 
-Dumpling provides convenient wrapper `./dumpling.sh` to run dumpling (and build it if not built already). Run `./dumpling.sh help [<command>]` to see what it offers.
+## Getting dumpling CLI
 
-Alternatively, use `mvn package` to build uber jar in `target/dumpling-<version>-shaded.jar` to be invoked using `java -jar <shaded_jar_path>`.
-
-Run one of Dumpling predefined queries against threaddump:
+Dumpling provides convenient wrapper called [`./dumpling.sh`]({{page.dumpling-sh-url}}) to access dumpling in a convenient way:
 
 ```bash
-$ ./dumpling.sh deadlocks --in threaddump jstack-crash.log
+$ wget {{page.dumpling-sh-url}}
+$ chmod +x dumpling.sh
 ```
 
-When using Dumpling CLI, `--in` option is conventionally used to choose a *factory implementation* and a *locator* (yes, an option with 2 values).
+Then run `./dumpling.sh help [<command>]` to see what it offers.
 
-In case of running queries exposed through CLI, the command itself chooses suitable output format for query result. For convenience, command output and `toString()` output of query result are the same.
+## Batch processing
+
+When using Dumpling CLI, `--in` option is conventionally used to choose a *factory implementation* and a *locator* (yes, an option with 2 values). Run one of Dumpling predefined queries against threaddump.
+
+```bash
+$ ./dumpling.sh deadlocks --in process 4242
+$ ./dumpling.sh blocking-tree --in jmx localhost:4242
+```
 
 Run custom groovy query:
 
 ```bash
 $ ./dumpling.sh groovy --in threaddump jstack-crash.log <<< "runtime.threads.grep { it.status.waiting }"
 ```
+
+## Interactive investigation
 
 For interactive investigation there is `groovysh` command to open the shell, load threaddumps and query its state as necessary.
 
