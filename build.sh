@@ -32,6 +32,8 @@ for tag in `git tag | grep dumpling- | grep -v '\-SNAPSHOT'`; do
         sed -i "s/PRIO/$prio/" $target/index.md # Used for ordering
     fi
 done
+cp _includes/refdoc.index $refdoc/index.md
+sed -i -e "s/TAG/Dumpling Latest/" -e "s/prio: PRIO//" -e "s|prefix:|prefix: $tag/|" -e "s/category: refdoc//" $refdoc/index.md
 
 git checkout gh-pages
 git rm -rf --ignore-unmatch src/main/ pom.xml

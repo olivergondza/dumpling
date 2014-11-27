@@ -40,3 +40,5 @@ runtime.query(new BlockingTree().showStackTraces())
 
 Query transforms thread set into a result object that usually represent the outcome
 as in terms of known Dumpling abstractions.
+
+Continue to [Reference documentation](./refdoc/).

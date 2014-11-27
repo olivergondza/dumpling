@@ -17,7 +17,9 @@
       </li>
       {% endif %}
     {% endfor %}
-    <li>Reference:</li>
+    <li>
+      <a class="page-link" href="{{ site.baseurl }}/refdoc/">Reference:</a>
+    </li>
     {% assign pages = site.pages | where: "category", "refdoc" | sort: "prio" | reverse %}
     {% for page in pages %}
       <li>
