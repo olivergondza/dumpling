@@ -59,6 +59,11 @@ public class PidRuntimeFactory implements CliRuntimeFactory {
         return "process";
     }
 
+    @Override
+    public String getDescription() {
+        return "Create runtime from running process identified by PID.";
+    }
+
     public @Nonnull ProcessRuntime forProcess(int pid) {
         ProcessBuilder pb = new ProcessBuilder(jstackBinary(), "-l", Integer.toString(pid));
         try {

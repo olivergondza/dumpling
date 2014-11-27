@@ -67,13 +67,19 @@ public class HelpCommand implements CliCommand {
 
     /*package*/ static void printUsage(PrintStream out) {
         out.printf(usage("<COMMAND> [...]%n%n"));
-        out.println("Available commands:");
+
+        out.printf("Available commands:%n%n");
         for (CliCommand handler: sortedHandlers()) {
             CmdLineParser parser = new CmdLineParser(handler);
             out.print(handler.getName());
             parser.printSingleLineUsage(out);
-            out.printf("%n\t");
-            out.println(handler.getDescription());
+            out.printf("%n\t%s%n", handler.getDescription());
+        }
+
+        out.printf("%nAvailable factories:%n%n");
+        for (CliRuntimeFactory factory: Main.ProcessRuntimeOptionHandler.getFactories()) {
+            out.println(factory.getKind());
+            out.printf("\t%s%n", factory.getDescription());
         }
     }
 

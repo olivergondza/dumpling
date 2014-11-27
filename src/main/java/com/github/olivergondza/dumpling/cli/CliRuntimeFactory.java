@@ -44,6 +44,11 @@ public interface CliRuntimeFactory {
     @Nonnull String getKind();
 
     /**
+     * String description for CLI usage.
+     */
+    @Nonnull String getDescription();
+
+    /**
      * Create Runtime from String locator.
      *
      * @param locator Factory specific resource locator.

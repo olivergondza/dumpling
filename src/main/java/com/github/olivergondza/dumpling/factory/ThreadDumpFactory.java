@@ -78,6 +78,11 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
     }
 
     @Override
+    public String getDescription() {
+        return "Parse threaddrump from file, or standard input when '-' provided as a locator.";
+    }
+
+    @Override
     public @Nonnull ProcessRuntime createRuntime(@Nonnull String locator, @Nonnull ProcessStream process) throws CommandFailedException {
         if ("-".equals(locator)) {
             // Read stdin

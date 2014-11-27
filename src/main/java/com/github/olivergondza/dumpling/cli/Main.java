@@ -23,6 +23,8 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.CheckForNull;
@@ -122,16 +124,27 @@ public class Main {
             return "KIND LOCATOR";
         }
 
-        public static @CheckForNull CliRuntimeFactory getFactory(String name) {
-            Reflections reflections = new Reflections("com.github.olivergondza.dumpling");
-            final Set<Class<? extends CliRuntimeFactory>> types = reflections.getSubTypesOf(CliRuntimeFactory.class);
+        /*package*/ static @Nonnull List<CliRuntimeFactory> getFactories() {
+            List<CliRuntimeFactory> factories = new ArrayList<CliRuntimeFactory>();
+            for (Class<? extends CliRuntimeFactory> type: factoryTypes()) {
+                factories.add(instantiateFactory(type));
+            }
+            return factories;
+        }
 
-            for (Class<? extends CliRuntimeFactory> type: types) {
+        public static @CheckForNull CliRuntimeFactory getFactory(String name) {
+            for (Class<? extends CliRuntimeFactory> type: factoryTypes()) {
                 CliRuntimeFactory factory = instantiateFactory(type);
                 if (name.equals(factory.getKind())) return factory;
             }
 
             return null;
+        }
+
+        private static Set<Class<? extends CliRuntimeFactory>> factoryTypes() {
+            return new Reflections("com.github.olivergondza.dumpling")
+                    .getSubTypesOf(CliRuntimeFactory.class)
+            ;
         }
 
         private static CliRuntimeFactory instantiateFactory(Class<? extends CliRuntimeFactory> type) {

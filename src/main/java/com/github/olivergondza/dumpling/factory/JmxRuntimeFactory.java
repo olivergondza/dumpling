@@ -74,6 +74,11 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
     }
 
     @Override
+    public String getDescription() {
+        return "Create runtime from JMX process identified by PID or HOST:PORT combination. Credentials can be provided as USER:PASSWORD@HOST:PORT.";
+    }
+
+    @Override
     public @Nonnull ProcessRuntime createRuntime(@Nonnull String locator, @Nonnull ProcessStream process) throws CommandFailedException {
         try {
             return fromConnection(locateConnection(locator));
