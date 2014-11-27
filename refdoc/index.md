@@ -1,7 +1,7 @@
 ---
 layout: "default"
-tag: "Dumpling Latest"
-title: "Reference documentation for Dumpling Latest"
+tag: "dumpling-0.3"
+title: "Reference documentation for dumpling-0.3"
 
 
 prefix: dumpling-0.3/
