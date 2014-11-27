@@ -87,7 +87,7 @@ public class Main {
 
     public static class ProcessRuntimeOptionHandler extends OptionHandler<ProcessRuntime> {
 
-        // TODO: this is awfull but I found no better way
+        // TODO: this is awful but I found no better way
         private static ProcessStream system;
 
         public ProcessRuntimeOptionHandler(CmdLineParser parser, OptionDef option, Setter<? super ProcessRuntime> setter) {
