@@ -45,7 +45,6 @@ import com.github.olivergondza.dumpling.cli.ProcessStream;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ProcessThread.Builder;
-import com.github.olivergondza.dumpling.model.StackTrace;
 import com.github.olivergondza.dumpling.model.ThreadLock;
 import com.github.olivergondza.dumpling.model.ThreadLock.Monitor;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
@@ -56,8 +55,6 @@ import com.github.olivergondza.dumpling.model.ThreadStatus;
  * @author ogondza
  */
 public class ThreadDumpFactory implements CliRuntimeFactory {
-
-    private static final StackTraceElement WAIT_TRACE_ELEMENT = StackTrace.nativeElement("java.lang.Object", "wait");
 
     private static final String NL = "(?:\\r\\n|\\n)";
     private static final String LOCK_SUBPATTERN = "<0x(\\w+)> \\(a ([^\\)]+)\\)";
