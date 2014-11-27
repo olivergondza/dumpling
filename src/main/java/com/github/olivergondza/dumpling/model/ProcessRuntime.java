@@ -83,7 +83,7 @@ public abstract class ProcessRuntime<
      *
      * @see ThreadSet#query(SingleThreadSetQuery)
      */
-    public <T extends SingleThreadSetQuery.Result<SetType>> T query(SingleThreadSetQuery<T> query) {
+    public <T extends SingleThreadSetQuery.Result<? extends SetType>> T query(SingleThreadSetQuery<T> query) {
         return threads.query(query);
     }
 }

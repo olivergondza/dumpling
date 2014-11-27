@@ -145,7 +145,7 @@ public class ThreadSet<
     /**
      * Run query using this as an initial thread set.
      */
-    public <T extends SingleThreadSetQuery.Result<SetType>> T query(SingleThreadSetQuery<T> query) {
+    public <T extends SingleThreadSetQuery.Result<? extends SetType>> T query(SingleThreadSetQuery<T> query) {
         return query.<SetType, RuntimeType, ThreadType>query((SetType) this);
     }
 
@@ -216,12 +216,16 @@ public class ThreadSet<
 
     public @Nonnull SetType grep() {
         // Do not invoke grep(Collection) as it was added in 2.0
-        return derive(DefaultGroovyMethods.grep((Object) threads));
+        @SuppressWarnings({"unchecked"})
+        final Collection<ThreadType> grep = DefaultGroovyMethods.grep((Object) threads);
+        return derive(grep);
     }
 
     public @Nonnull SetType grep(Object filter) {
         // Do not invoke grep(Collection, Object) as it was added in 2.0
-        return derive(DefaultGroovyMethods.grep((Object) threads, filter));
+        @SuppressWarnings("unchecked")
+        final Collection<ThreadType> grep = DefaultGroovyMethods.grep((Object) threads, filter);
+        return derive(grep);
     }
 
     public @Nonnull SetType findAll() {
@@ -246,10 +250,11 @@ public class ThreadSet<
                 "Unable to intersect thread sets bound to different runtime"
         );
 
-        return derive(DefaultGroovyMethods.intersect((Set) threads, (Set) other.threads));
+        @SuppressWarnings("unchecked")
+        final Collection<ThreadType> intersect = DefaultGroovyMethods.intersect((Set) threads, (Set) other.threads);
+        return derive(intersect);
     }
 
-    @SuppressWarnings("cast")
     public @Nonnull SetType plus(SetType other) {
         final ThreadSet<?, ?, ?> typedOther = other;
         if (!runtime.equals(typedOther.runtime)) throw new IllegalStateException(

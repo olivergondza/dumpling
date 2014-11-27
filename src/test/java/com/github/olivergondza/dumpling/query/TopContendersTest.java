@@ -44,7 +44,7 @@ public class TopContendersTest extends AbstractCliTest {
     public void trivial() throws Exception {
         ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("producer-consumer.log"));
 
-        Result contenders = runtime.query(new TopContenders());
+        TopContenders.Result<ThreadDumpThreadSet, ThreadDumpRuntime, ThreadDumpThread> contenders = runtime.query(new TopContenders());
 
         final ThreadDumpThread owning = runtime.getThreads().where(nameIs("owning_thread")).onlyThread();
 

@@ -52,22 +52,23 @@ import org.junit.Test;
 import com.github.olivergondza.dumpling.Util;
 import com.github.olivergondza.dumpling.cli.AbstractCliTest;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
-import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.StackTrace;
 import com.github.olivergondza.dumpling.model.ThreadLock;
-import com.github.olivergondza.dumpling.model.ThreadSet;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
+import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
+import com.github.olivergondza.dumpling.model.dump.ThreadDumpThread;
+import com.github.olivergondza.dumpling.model.dump.ThreadDumpThreadSet;
 
 public class ThreadDumpFactoryTest extends AbstractCliTest {
 
     @Test
     public void openJdk7_60() throws Exception {
 
-        ThreadSet threads = runtimeFrom("openjdk-1.7.0_60.log").getThreads();
+        ThreadDumpThreadSet threads = runtimeFrom("openjdk-1.7.0_60.log").getThreads();
 
         assertEquals(35, threads.size());
 
-        ProcessThread main = threads.where(nameIs("main")).onlyThread();
+        ThreadDumpThread main = threads.where(nameIs("main")).onlyThread();
         assertEquals(ThreadStatus.RUNNABLE, main.getStatus());
         assertEquals(Thread.State.RUNNABLE, main.getState());
         assertThat(139675222183936L, equalTo(main.getTid()));
@@ -91,11 +92,11 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     @Test
     public void oracleJdk7_51() throws Exception {
 
-        ThreadSet threads = runtimeFrom("oraclejdk-1.7.0_51.log").getThreads();
+        ThreadDumpThreadSet threads = runtimeFrom("oraclejdk-1.7.0_51.log").getThreads();
 
         assertEquals(143, threads.size());
 
-        ProcessThread thread = threads.where(nameIs("Channel reader thread: jenkins_slave_02")).onlyThread();
+        ThreadDumpThread thread = threads.where(nameIs("Channel reader thread: jenkins_slave_02")).onlyThread();
         assertEquals(ThreadStatus.RUNNABLE, thread.getStatus());
         StackTrace trace = thread.getStackTrace();
         assertEquals(13, trace.size());
@@ -115,14 +116,14 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     @Test @Ignore
     public void oracleJdk6() throws Exception {
 
-        ThreadSet threads = runtimeFrom("oraclejdk-1.6.log").getThreads();
+        ThreadDumpThreadSet threads = runtimeFrom("oraclejdk-1.6.log").getThreads();
         assertEquals(15, threads.size());
     }
 
     @Test
     public void oracleJdk7() throws Exception {
 
-        ProcessRuntime expected = runtime (
+        ThreadDumpRuntime expected = runtime (
                 daemon("Attach Listener").setTid(194867200).setNid(18909).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
                 thread("GC task thread#0 (ParallelGC)").setTid(191416320).setNid(18882).setPriority(10),
                 thread("GC task thread#1 (ParallelGC)").setTid(191424512).setNid(18883).setPriority(10),
@@ -145,7 +146,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                         .setWaitingOnLock(lock("java.lang.UNIXProcess", 33649075520L))
         );
 
-        ProcessRuntime actual = runtimeFrom("oraclejdk-1.7.log");
+        ThreadDumpRuntime actual = runtimeFrom("oraclejdk-1.7.log");
         assertThat(actual, sameThreadsAs(expected));
 
         StackTrace expectedStackTrace = new StackTrace(
@@ -184,7 +185,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     @Test
     public void oracleJdk8() throws Exception {
 
-        ProcessRuntime expected = runtime (
+        ThreadDumpRuntime expected = runtime (
                 daemon("Attach Listener").setTid(1716535296).setNid(8144).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9).setId(11),
                 thread("GC task thread#0 (ParallelGC)").setTid(3059810304L).setNid(8115),
                 thread("GC task thread#1 (ParallelGC)").setTid(3059815424L).setNid(8116),
@@ -208,7 +209,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                         .setWaitingOnLock(lock("java.lang.UNIXProcess", 2468857072L))
         );
 
-        ProcessRuntime actual = runtimeFrom("oraclejdk-1.8.log");
+        ThreadDumpRuntime actual = runtimeFrom("oraclejdk-1.8.log");
         assertThat(actual, sameThreadsAs(expected));
 
         StackTrace expectedStackTrace = new StackTrace(
@@ -247,7 +248,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     @Test
     public void openjdk6() throws Exception {
 
-        ProcessRuntime expected = runtime (
+        ThreadDumpRuntime expected = runtime (
                 daemon("Attach Listener").setTid(507363328).setNid(28597).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
                 thread("GC task thread#0 (ParallelGC)").setTid(504647680).setNid(28568).setPriority(10),
                 thread("GC task thread#1 (ParallelGC)").setTid(504655872).setNid(28569).setPriority(10),
@@ -270,7 +271,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                         .setWaitingOnLock(lock("java.lang.UNIXProcess", 3791474536L))
         );
 
-        ProcessRuntime actual = runtimeFrom("openjdk-1.6.log");
+        ThreadDumpRuntime actual = runtimeFrom("openjdk-1.6.log");
         assertThat(actual, sameThreadsAs(expected));
 
         StackTrace expectedStackTrace = new StackTrace(
@@ -341,7 +342,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     @Test
     public void openjdk7() throws Exception {
 
-        ProcessRuntime expected = runtime (
+        ThreadDumpRuntime expected = runtime (
                 daemon("Attach Listener").setTid(1740638208).setNid(32404).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
                 thread("GC task thread#0 (ParallelGC)").setTid(3075542016L).setNid(32366).setPriority(10),
                 thread("GC task thread#1 (ParallelGC)").setTid(3075547136L).setNid(32367).setPriority(10),
@@ -368,7 +369,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                         .setWaitingOnLock(lock("java.lang.UNIXProcess", 2672107728L))
         );
 
-        ProcessRuntime actual = runtimeFrom("openjdk-1.7.log");
+        ThreadDumpRuntime actual = runtimeFrom("openjdk-1.7.log");
         assertThat(actual, sameThreadsAs(expected));
 
         StackTrace expectedStackTrace = new StackTrace(
@@ -439,7 +440,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     @Test
     public void openjdk8() throws Exception {
 
-        ProcessRuntime expected = runtime (
+        ThreadDumpRuntime expected = runtime (
                 daemon("Attach Listener").setTid(1733312512).setNid(7829).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9).setId(11),
                 thread("GC task thread#0 (ParallelGC)").setTid(3076587520L).setNid(7798),
                 thread("GC task thread#1 (ParallelGC)").setTid(3076592640L).setNid(7799),
@@ -463,7 +464,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                         .setWaitingOnLock(lock("java.lang.UNIXProcess", 2485805968L))
         );
 
-        ProcessRuntime actual = runtimeFrom("openjdk-1.8.log");
+        ThreadDumpRuntime actual = runtimeFrom("openjdk-1.8.log");
         assertThat(actual, sameThreadsAs(expected));
 
         StackTrace expectedStackTrace = new StackTrace(
@@ -534,24 +535,24 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     @Test @Ignore
     public void jrockit6() throws Exception {
 
-        ThreadSet threads = runtimeFrom("jrockit-1.6.log").getThreads();
+        ThreadDumpThreadSet threads = runtimeFrom("jrockit-1.6.log").getThreads();
         assertEquals(15, threads.size());
     }
 
     @Test @Ignore
     public void jrockit5() throws Exception {
 
-        ThreadSet threads = runtimeFrom("jrockit-1.5.log").getThreads();
+        ThreadDumpThreadSet threads = runtimeFrom("jrockit-1.5.log").getThreads();
         assertEquals(15, threads.size());
     }
 
     @Test
     public void lockRelationshipsShouldBePreserved() throws Exception {
 
-        ThreadSet threads = new ThreadDumpFactory().fromFile(Util.resourceFile("producer-consumer.log")).getThreads();
+        ThreadDumpThreadSet threads = new ThreadDumpFactory().fromFile(Util.resourceFile("producer-consumer.log")).getThreads();
 
-        ProcessThread blocked = threads.where(nameIs("blocked_thread")).onlyThread();
-        ProcessThread owning = threads.where(nameIs("owning_thread")).onlyThread();
+        ThreadDumpThread blocked = threads.where(nameIs("blocked_thread")).onlyThread();
+        ThreadDumpThread owning = threads.where(nameIs("owning_thread")).onlyThread();
 
         assertTrue(owning.getBlockingThreads().isEmpty());
         assertEquals(threads.where(nameIs("blocked_thread")), owning.getBlockedThreads());
@@ -563,10 +564,10 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     @Test
     public void doNotIncludeSelfToBlockedOrBlockingThreads() throws Exception {
 
-        ThreadSet threads = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "self-lock.log")).getThreads();
+        ThreadDumpThreadSet threads = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "self-lock.log")).getThreads();
 
-        ProcessThread handler = threads.where(nameIs("Reference Handler")).onlyThread();
-        ProcessThread finalizer = threads.where(nameIs("Finalizer")).onlyThread();
+        ThreadDumpThread handler = threads.where(nameIs("Reference Handler")).onlyThread();
+        ThreadDumpThread finalizer = threads.where(nameIs("Finalizer")).onlyThread();
 
         assertTrue(handler.getBlockedThreads().isEmpty());
         assertTrue(handler.getBlockingThreads().isEmpty());
@@ -577,7 +578,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     @Test
     public void preserveThreadOrder() throws Exception {
 
-        ThreadSet threads = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "self-lock.log")).getThreads();
+        ThreadDumpThreadSet threads = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "self-lock.log")).getThreads();
 
         List<String> expectedNames = Arrays.asList(
                 "Service Thread",
@@ -595,7 +596,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         );
 
         List<String> actualNames = new ArrayList<String>();
-        for (ProcessThread thread: threads) {
+        for (ThreadDumpThread thread: threads) {
             actualNames.add(thread.getName());
         }
 
@@ -605,9 +606,9 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     @Test
     public void parseParkedLocks() throws Exception {
 
-        ThreadSet threads = runtimeFrom("oraclejdk-1.7.0_51.log").getThreads();
+        ThreadDumpThreadSet threads = runtimeFrom("oraclejdk-1.7.0_51.log").getThreads();
 
-        ProcessThread parking = threads.where(nameIs("ConnectionValidator")).onlyThread();
+        ThreadDumpThread parking = threads.where(nameIs("ConnectionValidator")).onlyThread();
 
         assertThat(parking.getStatus(), equalTo(ThreadStatus.PARKED_TIMED));
         assertThat(parking.getWaitingOnLock().getClassName(), equalTo(
@@ -618,7 +619,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     @Test
     public void parseStacktraceContaining$() throws Exception {
 
-        ThreadSet threads = runtimeFrom("oraclejdk-1.7.0_51.log").getThreads();
+        ThreadDumpThreadSet threads = runtimeFrom("oraclejdk-1.7.0_51.log").getThreads();
 
         StackTrace actual = threads.where(nameIs("process reaper")).iterator().next().getStackTrace();
         StackTrace expected = new StackTrace(
@@ -645,7 +646,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     // Can not assume that, for instance, thread waiting to acquire lock is not runnable
     @Test
     public void inconsistentThreadStateAndLockInformation() throws Exception {
-        ProcessThread thread = runtimeFrom("inconsistent-locks-and-state.log").getThreads().onlyThread();
+        ThreadDumpThread thread = runtimeFrom("inconsistent-locks-and-state.log").getThreads().onlyThread();
 
         assertThat(thread.getStatus(), equalTo(ThreadStatus.RUNNABLE));
         ThreadLock expectedLock = new ThreadLock(
@@ -658,9 +659,9 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
     @Test
     public void monitorOwnerInObjectWait() throws Exception {
-        ThreadSet threads = runtimeFrom("in-object-wait.log").getThreads();
-        ProcessThread waiting = threads.where(nameIs("monitorOwnerInObjectWait")).onlyThread();
-        ProcessThread owning = threads.where(nameIs("main")).onlyThread();
+        ThreadDumpThreadSet threads = runtimeFrom("in-object-wait.log").getThreads();
+        ThreadDumpThread waiting = threads.where(nameIs("monitorOwnerInObjectWait")).onlyThread();
+        ThreadDumpThread owning = threads.where(nameIs("main")).onlyThread();
 
         final ThreadLock lock = new ThreadLock("java.lang.Object", 33677473560L);
         final Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(lock));
@@ -672,7 +673,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertThat(waiting.getWaitingOnLock(), equalTo(lock));
         assertThat(waiting.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
 
-        ProcessThread nested = threads.where(nameIs("waiting_in_nested_synchronized")).onlyThread();
+        ThreadDumpThread nested = threads.where(nameIs("waiting_in_nested_synchronized")).onlyThread();
         assertThat(nested.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT_TIMED));
         assertThat(nested.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
         //assertThat(nested.getWaitingOnLock(), equalTo(new ThreadLock(0, "java.lang.Object", 33677473560L)));
@@ -680,15 +681,15 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
     @Test
     public void ownableSynchronizers() throws Exception {
-        ProcessRuntime threads = runtimeFrom("ownable-synchronizers.log");
+        ThreadDumpRuntime threads = runtimeFrom("ownable-synchronizers.log");
         checkOwnableSynchronizers(threads);
         checkOwnableSynchronizers(reparse(threads));
     }
 
-    private void checkOwnableSynchronizers(ProcessRuntime runtime) {
-        ThreadSet threads = runtime.getThreads();
-        ProcessThread waiting = threads.where(nameIs("blockedThread")).onlyThread();
-        ProcessThread owning = threads.where(nameIs("main")).onlyThread();
+    private void checkOwnableSynchronizers(ThreadDumpRuntime runtime) {
+        ThreadDumpThreadSet threads = runtime.getThreads();
+        ThreadDumpThread waiting = threads.where(nameIs("blockedThread")).onlyThread();
+        ThreadDumpThread owning = threads.where(nameIs("main")).onlyThread();
 
         final ThreadLock lock = new ThreadLock("java.util.concurrent.locks.ReentrantLock$NonfairSync", 32296902960L);
         final Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(lock));
@@ -704,7 +705,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
     @Test
     public void threadNameWithQuotes() throws Exception {
-        ProcessThread quotes = runtimeFrom("quoted.log").getThreads().onlyThread();
+        ThreadDumpThread quotes = runtimeFrom("quoted.log").getThreads().onlyThread();
         assertThat(quotes.getName(), equalTo("\"o\""));
         assertThat(quotes.getStatus(), equalTo(ThreadStatus.SLEEPING));
         assertThat(quotes.getPriority(), equalTo(10));
@@ -714,7 +715,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
     @Test
     public void threadNameWithLinebreak() throws Exception {
-        ProcessThread quotes = runtimeFrom("linebreaked.log").getThreads().onlyThread();
+        ThreadDumpThread quotes = runtimeFrom("linebreaked.log").getThreads().onlyThread();
         assertThat(quotes.getName(), equalTo("Thread\nName\nWith\nLinebreaks"));
         assertThat(quotes.getStatus(), equalTo(ThreadStatus.SLEEPING));
         assertThat(quotes.getPriority(), equalTo(10));
@@ -724,13 +725,13 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
     @Test
     public void crlf() throws Exception {
-        ThreadSet threads = runtimeFrom("crlf.log").getThreads();
+        ThreadDumpThreadSet threads = runtimeFrom("crlf.log").getThreads();
         assertThat(threads.size(), equalTo(2));
     }
 
     @Test
     public void multipleMonitorsOnSingleStackFrame() throws Exception {
-        ThreadSet monitors = runtimeFrom("multiple-monitors-on-single-frame.log").getThreads();
+        ThreadDumpThreadSet monitors = runtimeFrom("multiple-monitors-on-single-frame.log").getThreads();
 
         // All locks on single frame should be reported. Outermost lock should
         // be at the bottom (first), innermost last.
@@ -758,7 +759,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
         pause(100);
 
-        ProcessThread t = reparse(new JvmRuntimeFactory().currentRuntime()).getThreads().where(
+        ThreadDumpThread t = reparse(new JvmRuntimeFactory().currentRuntime()).getThreads().where(
                 nameIs("parseOutputProducedByJvmRuntimeFactory")
         ).onlyThread();
 
@@ -766,17 +767,17 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertThat(lock, equalTo(ThreadLock.fromInstance(this)));
     }
 
-    private ProcessRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {
+    private ThreadDumpRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {
         return new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), resource));
     }
 
-    private ProcessRuntime runtime(ProcessThread.Builder... builders) {
-        return new ProcessRuntime(new LinkedHashSet<ProcessThread.Builder>(Arrays.asList(builders)));
+    private ThreadDumpRuntime runtime(ThreadDumpThread.Builder... builders) {
+        return new ThreadDumpRuntime(new LinkedHashSet<ThreadDumpThread.Builder>(Arrays.asList(builders)));
     }
 
     private static volatile int syntheticId = 42;
-    private ProcessThread.Builder thread(String name) {
-        return ProcessThread.builder().setName(name)
+    private ThreadDumpThread.Builder thread(String name) {
+        return new ThreadDumpThread.Builder().setName(name)
                 // Preset unique id for purposes of the test as we can not rely
                 // that SUT will correctly initialize IDs. Threads with the
                 // same Ids will otherwise be collapsed into one by java.util.Set.
@@ -785,7 +786,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         ;
     }
 
-    private ProcessThread.Builder daemon(String name) {
+    private ThreadDumpThread.Builder daemon(String name) {
         return thread(name).setDaemon(true);
     }
 
@@ -793,22 +794,22 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         return new ThreadLock(classname, address);
     }
 
-    private TypeSafeMatcher<ProcessRuntime> stacktraceEquals(final StackTrace expected, final String threadName) {
-        return new TypeSafeMatcher<ProcessRuntime>() {
+    private TypeSafeMatcher<ThreadDumpRuntime> stacktraceEquals(final StackTrace expected, final String threadName) {
+        return new TypeSafeMatcher<ThreadDumpRuntime>() {
             @Override
             public void describeTo(Description description) {
                 description.appendText("Runtime with same threads");
             }
 
             @Override
-            protected boolean matchesSafely(ProcessRuntime actual) {
+            protected boolean matchesSafely(ThreadDumpRuntime actual) {
                 if (!doesMatch(expected, trace(actual, threadName))) return false;
 
                 return doesMatch(expected, trace(reparse(actual), threadName));
             }
 
             @Override
-            protected void describeMismatchSafely(ProcessRuntime actual, Description mismatch) {
+            protected void describeMismatchSafely(ThreadDumpRuntime actual, Description mismatch) {
                 final StackTrace originalTrace = trace(actual, threadName);
 
                 // report only the first failure
@@ -840,14 +841,14 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                 }
             }
 
-            private StackTrace trace(ProcessRuntime runtime, String threadName) {
+            private StackTrace trace(ThreadDumpRuntime runtime, String threadName) {
                 return runtime.getThreads().where(nameIs(threadName)).onlyThread().getStackTrace();
             }
         };
     }
 
-    private TypeSafeMatcher<ProcessRuntime> sameThreadsAs(final ProcessRuntime expectedRuntime) {
-        return new TypeSafeMatcher<ProcessRuntime>() {
+    private TypeSafeMatcher<ThreadDumpRuntime> sameThreadsAs(final ThreadDumpRuntime expectedRuntime) {
+        return new TypeSafeMatcher<ThreadDumpRuntime>() {
 
             @Override
             public void describeTo(Description description) {
@@ -855,20 +856,20 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
             }
 
             @Override
-            protected boolean matchesSafely(ProcessRuntime actual) {
+            protected boolean matchesSafely(ThreadDumpRuntime actual) {
                 if (!doesMatch(expectedRuntime, actual)) return false;
 
                 return doesMatch(expectedRuntime, reparse(actual));
             }
 
-            private boolean doesMatch(ProcessRuntime expectedRuntime, ProcessRuntime actual) {
+            private boolean doesMatch(ThreadDumpRuntime expectedRuntime, ThreadDumpRuntime actual) {
                 if (expectedRuntime.getThreads().size() != actual.getThreads().size()) return false;
 
-                for (ProcessThread actualThread: actual.getThreads()) {
-                    final ThreadSet matching = expectedRuntime.getThreads().where(nameIs(actualThread.getName()));
+                for (ThreadDumpThread actualThread: actual.getThreads()) {
+                    final ThreadDumpThreadSet matching = expectedRuntime.getThreads().where(nameIs(actualThread.getName()));
                     if (matching.size() != 1) return false;
 
-                    ProcessThread expectedThread = matching.onlyThread();
+                    ThreadDumpThread expectedThread = matching.onlyThread();
 
                     if (difference(expectedThread, actualThread) != null) return false;
                 }
@@ -877,7 +878,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
             }
 
             @Override
-            protected void describeMismatchSafely(ProcessRuntime actualRuntime, Description mismatch) {
+            protected void describeMismatchSafely(ThreadDumpRuntime actualRuntime, Description mismatch) {
                 // report only first problem
                 if (!doesMatch(expectedRuntime, actualRuntime)) {
                     doDescribe(expectedRuntime, actualRuntime, mismatch);
@@ -887,13 +888,13 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
             }
 
             private void doDescribe(
-                    ProcessRuntime expectedRuntime, ProcessRuntime actualRuntime, Description mismatch
+                    ThreadDumpRuntime expectedRuntime, ThreadDumpRuntime actualRuntime, Description mismatch
             ) throws AssertionError {
-                final ThreadSet expectedThreads = expectedRuntime.getThreads();
-                final ThreadSet actualThreads = actualRuntime.getThreads();
+                final ThreadDumpThreadSet expectedThreads = expectedRuntime.getThreads();
+                final ThreadDumpThreadSet actualThreads = actualRuntime.getThreads();
 
-                for (ProcessThread actual: actualThreads) {
-                    final ThreadSet named = expectedThreads.where(nameIs(actual.getName()));
+                for (ThreadDumpThread actual: actualThreads) {
+                    final ThreadDumpThreadSet named = expectedThreads.where(nameIs(actual.getName()));
 
                     if (named.size() > 1) throw new AssertionError("Several threads named: " + actual.getName());
                     if (named.size() == 0) {
@@ -901,7 +902,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                         return;
                     }
 
-                    ProcessThread expected = named.onlyThread();
+                    ThreadDumpThread expected = named.onlyThread();
                     String difference = difference(expected, actual);
                     if (difference == null) continue; // Equal
 
@@ -914,21 +915,21 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
                 if (expectedThreads.size() == actualThreads.size()) return;
 
-                ThreadSet missing = expectedThreads.ignoring(actualThreads);
+                ThreadDumpThreadSet missing = expectedThreads.ignoring(actualThreads);
                 mismatch.appendText("Missing Threads:\n").appendText(missing.toString());
             }
         };
     }
 
-    private ProcessRuntime reparse(ProcessRuntime actual) {
+    private ThreadDumpRuntime reparse(ProcessRuntime<?, ?, ?> actual) {
         String output = actual.getThreads().toString();
         ByteArrayInputStream stream = new ByteArrayInputStream(output.getBytes(StandardCharsets.UTF_8));
-        ProcessRuntime reparsed = new ThreadDumpFactory().fromStream(stream);
+        ThreadDumpRuntime reparsed = new ThreadDumpFactory().fromStream(stream);
         return reparsed;
     }
 
     // Deep equality for test purposes
-    private String difference(ProcessThread lhs, ProcessThread rhs) {
+    private String difference(ThreadDumpThread lhs, ThreadDumpThread rhs) {
         if (!equals(lhs.getId(), rhs.getId())) return "id";
         if (!equals(lhs.getTid(), rhs.getTid())) return "tid";
         if (!equals(lhs.getNid(), rhs.getNid())) return "nid";

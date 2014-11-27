@@ -43,10 +43,10 @@ import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
 import com.github.olivergondza.dumpling.model.ThreadLock;
-import com.github.olivergondza.dumpling.model.ThreadSet;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 import com.github.olivergondza.dumpling.model.jvm.JvmRuntime;
 import com.github.olivergondza.dumpling.model.jvm.JvmThread;
+import com.github.olivergondza.dumpling.model.jvm.JvmThreadSet;
 
 public class JvmRuntimeFactoryTest {
 
@@ -312,7 +312,7 @@ public class JvmRuntimeFactoryTest {
 
         pause(100);
 
-        ThreadSet monitors = new JvmRuntimeFactory().currentRuntime().getThreads()
+        JvmThreadSet monitors = new JvmRuntimeFactory().currentRuntime().getThreads()
                 .where(nameIs("multipleMonitors"))
         ;
 

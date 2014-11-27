@@ -106,8 +106,8 @@ public class BlockingTreeTest extends AbstractCliTest {
 
     @Test
     public void fullRoot() {
-        Set<Tree> as = runtime.getThreads().where(nameIs("b")).query(new BlockingTree()).getTrees();
-        Set<Tree> expected = new HashSet<Tree>(Arrays.asList(
+        Set<Tree<ThreadDumpThread>> as = runtime.getThreads().where(nameIs("b")).query(new BlockingTree()).getTrees();
+        Set<Tree<ThreadDumpThread>> expected = new HashSet<Tree>(Arrays.asList(
                 new BlockingTree.Tree(b, new BlockingTree.Tree(ba))
         ));
 
@@ -116,8 +116,8 @@ public class BlockingTreeTest extends AbstractCliTest {
 
     @Test
     public void severalChains() {
-        Set<Tree> as = runtime.getThreads().where(nameContains(Pattern.compile("^(aaa|ba)$"))).query(new BlockingTree()).getTrees();
-        Set<Tree> expected = new HashSet<Tree>(Arrays.asList(
+        Set<Tree<ThreadDumpThread>> as = runtime.getThreads().where(nameContains(Pattern.compile("^(aaa|ba)$"))).query(new BlockingTree()).getTrees();
+        Set<Tree<ThreadDumpThread>> expected = new HashSet<Tree>(Arrays.asList(
                 new BlockingTree.Tree(a, new BlockingTree.Tree(aa, new BlockingTree.Tree(aaa))),
                 new BlockingTree.Tree(b, new BlockingTree.Tree(ba))
         ));

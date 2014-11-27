@@ -238,73 +238,73 @@ public class ProcessThread<
             }
         }
 
-        public @Nonnull Builder<BuilderType> setName(String name) {
+        public @Nonnull BuilderType setName(String name) {
             this.name = name;
-            return this;
+            return (BuilderType) this;
         }
 
-        public @Nonnull Builder<BuilderType> setId(long id) {
+        public @Nonnull BuilderType setId(long id) {
             this.id = id;
-            return this;
+            return (BuilderType) this;
         }
 
-        public @Nonnull Builder<BuilderType> setNid(long nid) {
+        public @Nonnull BuilderType setNid(long nid) {
             this.nid = nid;
-            return this;
+            return (BuilderType) this;
         }
 
-        public @Nonnull Builder<BuilderType> setTid(long tid) {
+        public @Nonnull BuilderType setTid(long tid) {
             this.tid = tid;
-            return this;
+            return (BuilderType) this;
         }
 
-        public @Nonnull Builder<BuilderType> setDaemon(boolean daemon) {
+        public @Nonnull BuilderType setDaemon(boolean daemon) {
             this.daemon = daemon;
-            return this;
+            return (BuilderType) this;
         }
 
-        public @Nonnull Builder<BuilderType> setPriority(Integer priority) {
+        public @Nonnull BuilderType setPriority(Integer priority) {
             this.priority = priority;
-            return this;
+            return (BuilderType) this;
         }
 
-        public @Nonnull Builder<BuilderType> setStacktrace(@Nonnull StackTraceElement[] stackTrace) {
+        public @Nonnull BuilderType setStacktrace(@Nonnull StackTraceElement[] stackTrace) {
             this.stackTrace = new StackTrace(stackTrace);
-            return this;
+            return (BuilderType) this;
         }
 
         public @Nonnull StackTrace getStacktrace() {
             return stackTrace;
         }
 
-        public @Nonnull Builder<BuilderType> setThreadStatus(@Nonnull ThreadStatus status) {
+        public @Nonnull BuilderType setThreadStatus(@Nonnull ThreadStatus status) {
             this.status = status;
-            return this;
+            return (BuilderType) this;
         }
 
         public ThreadStatus getThreadStatus() {
             return status;
         }
 
-        public @Nonnull Builder<BuilderType> setWaitingOnLock(ThreadLock lock) {
+        public @Nonnull BuilderType setWaitingOnLock(ThreadLock lock) {
             this.waitingOnLock = lock;
-            return this;
+            return (BuilderType) this;
         }
 
-        public @Nonnull Builder<BuilderType> setAcquiredSynchronizers(List<ThreadLock> synchronizers) {
+        public @Nonnull BuilderType setAcquiredSynchronizers(List<ThreadLock> synchronizers) {
             this.acquiredSynchronizers = Collections.unmodifiableList(synchronizers);
-            return this;
+            return (BuilderType) this;
         }
 
-        public @Nonnull Builder<BuilderType> setAcquiredSynchronizers(ThreadLock... synchronizers) {
+        public @Nonnull BuilderType setAcquiredSynchronizers(ThreadLock... synchronizers) {
             List<ThreadLock> data = new ArrayList<ThreadLock>(synchronizers.length);
             Collections.addAll(data, synchronizers);
             return setAcquiredSynchronizers(data);
         }
 
-        public @Nonnull Builder<BuilderType> setAcquiredMonitors(List<ThreadLock.Monitor> monitors) {
+        public @Nonnull BuilderType setAcquiredMonitors(List<ThreadLock.Monitor> monitors) {
             this.acquiredMonitors = Collections.unmodifiableList(monitors);
-            return this;
+            return (BuilderType) this;
         }
 
         private String getHeader() {
