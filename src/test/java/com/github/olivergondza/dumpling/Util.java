@@ -64,6 +64,15 @@ public class Util {
         return sb.toString();
     }
 
+    public static String multiline(String... lines) {
+        StringBuilder sb = new StringBuilder();
+        for (String line: lines) {
+            sb.append(line).append(NL);
+        }
+
+        return sb.toString();
+    }
+
     public static int currentPid() {
         return Integer.parseInt(ManagementFactory.getRuntimeMXBean().getName().replaceAll("@.*", ""));
     }

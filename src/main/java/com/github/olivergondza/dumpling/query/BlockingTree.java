@@ -92,9 +92,12 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
 
     public static final class Result extends SingleThreadSetQuery.Result {
 
+        private static final Deadlocks DEADLOCKS = new Deadlocks();
+
         private final @Nonnull Set<Tree> trees;
         private final @Nonnull ThreadSet involved;
         private final boolean showStackTraces;
+        private final Deadlocks.Result deadlocks;
 
         private Result(ThreadSet threads, boolean showStackTraces) {
             @Nonnull Set<Tree> roots = new LinkedHashSet<Tree>();
@@ -112,6 +115,13 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
             LinkedHashSet<ProcessThread> involved = new LinkedHashSet<ProcessThread>();
             for (Tree root: trees) {
                 flatten(root, involved);
+            }
+
+            deadlocks = threads.query(DEADLOCKS);
+            for (ThreadSet deadlock: deadlocks.getDeadlocks()) {
+                for (ProcessThread deadlockedThread: deadlock) {
+                    involved.add(deadlockedThread);
+                }
             }
 
             this.involved = threads.derive(involved);
@@ -174,6 +184,11 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
             for (Tree tree: trees) {
                 out.println(tree);
             }
+
+            if (!deadlocks.getDeadlocks().isEmpty()) {
+                out.printf("%n");
+                deadlocks.printResult(out);
+            }
         }
 
         @Override
@@ -183,7 +198,13 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
 
         @Override
         protected void printSummary(PrintStream out) {
-            out.printf("All threads: %d; Roots: %d%n", involved.size(), trees.size());
+            out.printf("All threads: %d; Roots: %d", involved.size(), trees.size());
+            if (!deadlocks.getDeadlocks().isEmpty()) {
+                out.print(' ');
+                deadlocks.printSummary(out);
+            } else {
+                out.println();
+            }
         }
     }
 

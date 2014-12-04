@@ -46,6 +46,7 @@ import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
+import com.github.olivergondza.dumpling.query.BlockingTree.Result;
 import com.github.olivergondza.dumpling.query.BlockingTree.Tree;
 
 public class BlockingTreeTest extends AbstractCliTest {
@@ -131,6 +132,15 @@ public class BlockingTreeTest extends AbstractCliTest {
         ThreadSet expected = runtime.getThreads().where(nameContains(Pattern.compile("^[ab]$")));
 
         assertThat(as, equalTo(expected));
+    }
+
+    @Test
+    public void deadlock() throws Exception {
+        runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock.log"));
+
+        final Result result = runtime.query(new BlockingTree());
+        System.out.println(result);
+        System.out.println(result.getRoots().size());
     }
 
     @Test

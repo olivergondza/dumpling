@@ -38,6 +38,7 @@ import com.github.olivergondza.dumpling.cli.CliCommand;
 import com.github.olivergondza.dumpling.cli.ProcessStream;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
+import com.github.olivergondza.dumpling.model.ThreadLock;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
 /**
@@ -139,10 +140,14 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
 
         @Override
         protected void printResult(PrintStream out) {
+            int i = 1;
             for(ThreadSet deadlock: deadlocks) {
+                out.printf("Deadlock #%d%n", i++);
                 for(ProcessThread thread: deadlock) {
-                    out.print(" - ");
-                    out.print(thread.getName());
+                    out.printf("%s %s%n", thread.getWaitingToLock(), thread.getHeader());
+                    for (ThreadLock lock: thread.getAcquiredLocks()) {
+                        out.printf("\tAcquired %s%n", lock);
+                    }
                 }
             }
         }
@@ -154,9 +159,7 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
 
         @Override
         protected void printSummary(PrintStream out) {
-            out.println();
-            out.print(deadlocks.size());
-            out.println(" deadlocks detected");
+            out.printf("Deadlocks: %d%n", deadlocks.size());
         }
 
         @Override
