@@ -43,9 +43,9 @@ import org.junit.Test;
 import com.github.olivergondza.dumpling.Util;
 import com.github.olivergondza.dumpling.cli.AbstractCliTest;
 import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
-import com.github.olivergondza.dumpling.model.ThreadSet;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpThread;
+import com.github.olivergondza.dumpling.model.dump.ThreadDumpThreadSet;
 import com.github.olivergondza.dumpling.query.BlockingTree.Tree;
 
 public class BlockingTreeTest extends AbstractCliTest {
@@ -73,12 +73,12 @@ public class BlockingTreeTest extends AbstractCliTest {
     @Test
     public void fullForest() {
         Set<Tree<ThreadDumpThread>> full = runtime.query(new BlockingTree()).getTrees();
-        Set<Tree<ThreadDumpThread>> expected = new HashSet<Tree>(Arrays.asList(
-                new BlockingTree.Tree(a,
-                        new BlockingTree.Tree(aa, new BlockingTree.Tree(aaa)),
-                        new BlockingTree.Tree(ab)
+        Set<Tree<ThreadDumpThread>> expected = new HashSet<Tree<ThreadDumpThread>>(Arrays.asList(
+                tree(a,
+                        tree(aa, tree(aaa)),
+                        tree(ab)
                 ),
-                new BlockingTree.Tree(b, new BlockingTree.Tree(ba))
+                tree(b, tree(ba))
         ));
 
         assertThat(full, equalTo(expected));
@@ -87,8 +87,8 @@ public class BlockingTreeTest extends AbstractCliTest {
     @Test
     public void oneChainFromBottom() {
         Set<Tree<ThreadDumpThread>> as = runtime.getThreads().where(nameIs("aaa")).query(new BlockingTree()).getTrees();
-        Set<Tree<ThreadDumpThread>> expected = new HashSet<Tree>(Arrays.asList(
-                new BlockingTree.Tree(a, new BlockingTree.Tree(aa, new BlockingTree.Tree(aaa)))
+        Set<Tree<ThreadDumpThread>> expected = new HashSet<Tree<ThreadDumpThread>>(Arrays.asList(
+                tree(a, tree(aa, tree(aaa)))
         ));
 
         assertThat(as, equalTo(expected));
@@ -97,8 +97,8 @@ public class BlockingTreeTest extends AbstractCliTest {
     @Test
     public void oneChainFromMiddle() {
         Set<Tree<ThreadDumpThread>> as = runtime.getThreads().where(nameIs("aa")).query(new BlockingTree()).getTrees();
-        Set<Tree<ThreadDumpThread>> expected = new HashSet<Tree>(Arrays.asList(
-                new BlockingTree.Tree(a, new BlockingTree.Tree(aa, new BlockingTree.Tree<ThreadDumpThread>(aaa)))
+        Set<Tree<ThreadDumpThread>> expected = new HashSet<Tree<ThreadDumpThread>>(Arrays.asList(
+                tree(a, tree(aa, tree(aaa)))
         ));
 
         assertThat(as, equalTo(expected));
@@ -107,8 +107,8 @@ public class BlockingTreeTest extends AbstractCliTest {
     @Test
     public void fullRoot() {
         Set<Tree<ThreadDumpThread>> as = runtime.getThreads().where(nameIs("b")).query(new BlockingTree()).getTrees();
-        Set<Tree<ThreadDumpThread>> expected = new HashSet<Tree>(Arrays.asList(
-                new BlockingTree.Tree(b, new BlockingTree.Tree(ba))
+        Set<Tree<ThreadDumpThread>> expected = new HashSet<Tree<ThreadDumpThread>>(Arrays.asList(
+                tree(b, tree(ba))
         ));
 
         assertThat(as, equalTo(expected));
@@ -117,18 +117,22 @@ public class BlockingTreeTest extends AbstractCliTest {
     @Test
     public void severalChains() {
         Set<Tree<ThreadDumpThread>> as = runtime.getThreads().where(nameContains(Pattern.compile("^(aaa|ba)$"))).query(new BlockingTree()).getTrees();
-        Set<Tree<ThreadDumpThread>> expected = new HashSet<Tree>(Arrays.asList(
-                new BlockingTree.Tree(a, new BlockingTree.Tree(aa, new BlockingTree.Tree(aaa))),
-                new BlockingTree.Tree(b, new BlockingTree.Tree(ba))
+        Set<Tree<ThreadDumpThread>> expected = new HashSet<Tree<ThreadDumpThread>>(Arrays.asList(
+                tree(a, tree(aa, tree(aaa))),
+                tree(b, tree(ba))
         ));
 
         assertThat(as, equalTo(expected));
     }
 
+    private Tree<ThreadDumpThread> tree(@Nonnull ThreadDumpThread root, @Nonnull Tree<ThreadDumpThread>... leaves) {
+        return new BlockingTree.Tree<ThreadDumpThread>(root, leaves);
+    }
+
     @Test
     public void roots() {
-        ThreadSet as = runtime.query(new BlockingTree()).getRoots();
-        ThreadSet expected = runtime.getThreads().where(nameContains(Pattern.compile("^[ab]$")));
+        ThreadDumpThreadSet as = runtime.query(new BlockingTree()).getRoots();
+        ThreadDumpThreadSet expected = runtime.getThreads().where(nameContains(Pattern.compile("^[ab]$")));
 
         assertThat(as, equalTo(expected));
     }

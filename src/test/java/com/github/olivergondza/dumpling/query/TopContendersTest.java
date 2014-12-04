@@ -44,7 +44,7 @@ public class TopContendersTest extends AbstractCliTest {
     public void trivial() throws Exception {
         ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("producer-consumer.log"));
 
-        TopContenders.Result<ThreadDumpThreadSet, ThreadDumpRuntime, ThreadDumpThread> contenders = runtime.query(new TopContenders());
+        TopContenders.Result<ThreadDumpThreadSet, ThreadDumpRuntime, ThreadDumpThread> contenders = (Result<ThreadDumpThreadSet, ThreadDumpRuntime, ThreadDumpThread>) runtime.query(new TopContenders());
 
         final ThreadDumpThread owning = runtime.getThreads().where(nameIs("owning_thread")).onlyThread();
 
@@ -56,7 +56,7 @@ public class TopContendersTest extends AbstractCliTest {
     public void contenders() throws Exception {
         ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "contention.log"));
 
-        Result contenders = runtime.query(new TopContenders());
+        TopContenders.Result<ThreadDumpThreadSet, ThreadDumpRuntime, ThreadDumpThread> contenders = (Result<ThreadDumpThreadSet, ThreadDumpRuntime, ThreadDumpThread>) runtime.query(new TopContenders());
 
         ThreadDumpThreadSet ts = runtime.getThreads();
         final ThreadDumpThread producerProcessThread = ts.where(nameIs("producer")).onlyThread();

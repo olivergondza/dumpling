@@ -150,7 +150,7 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
          *
          * @return null when there is none.
          */
-        public @CheckForNull ThreadSet<?, ?, ?> blockedBy(ProcessThread<?, ?, ?> thread) {
+        public @CheckForNull SetType blockedBy(ThreadType thread) {
             return contenders.get(thread);
         }
 
