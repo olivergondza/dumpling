@@ -67,7 +67,7 @@ public class ProcessThread {
         }
 
         if (state.status.isBlocked() && state.waitingToLock == null) {
-            throw new IllegalArgumentException("Blocked thread does not declare monitor:\n" + state);
+            throw new IllegalArgumentException("Blocked thread does not declare monitor: >>>\n" + state + "\n<<<\n");
         }
     }
 
