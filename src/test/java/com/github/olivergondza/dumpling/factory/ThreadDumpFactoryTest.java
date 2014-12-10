@@ -44,6 +44,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 
 import org.hamcrest.Description;
+import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.collection.IsEmptyCollection;
 import org.junit.Ignore;
@@ -749,6 +750,23 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
         ThreadLock lock = t.getAcquiredLocks().iterator().next();
         assertThat(lock, equalTo(ThreadLock.fromInstance(this)));
+    }
+
+    // Presumably this is a bug in certain java 6 versions from Oracle
+    @Test
+    public void parseThreadInObjectWaitThatDoesNotDeclareDesiredMonitor() throws Exception {
+        ThreadSet threads = runtimeFrom("in_wait_without_monitor.log").getThreads();
+        ProcessThread blocked = threads.where(nameIs("blocked_without_log")).onlyThread();
+        ProcessThread waiting = threads.where(nameIs("waiting_without_log")).onlyThread();
+        ProcessThread timedWaiting = threads.where(nameIs("timed_waiting_without_log")).onlyThread();
+
+        assertThat(blocked.getWaitingToLock(), equalTo(new ThreadLock("hudson.model.Queue", 17233414264L)));
+        assertThat(waiting.getWaitingToLock(), equalTo(null));
+        assertThat(timedWaiting.getWaitingToLock(), equalTo(null));
+
+        assertThat(blocked.getAcquiredLocks(), Matchers.<ThreadLock>empty());
+        assertThat(waiting.getAcquiredLocks(), Matchers.<ThreadLock>empty());
+        assertThat(timedWaiting.getAcquiredLocks(), Matchers.<ThreadLock>empty());
     }
 
     private ProcessRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {
