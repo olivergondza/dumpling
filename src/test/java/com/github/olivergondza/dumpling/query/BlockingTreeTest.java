@@ -139,8 +139,6 @@ public class BlockingTreeTest extends AbstractCliTest {
         runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock.log"));
 
         final Result result = runtime.query(new BlockingTree());
-        System.out.println(result);
-        System.out.println(result.getRoots().size());
     }
 
     @Test
