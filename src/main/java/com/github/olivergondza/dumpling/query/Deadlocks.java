@@ -95,6 +95,7 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
         private final @Nonnull ThreadSet involved;
 
         private Result(@Nonnull ThreadSet input, boolean showStackTraces) {
+            super(showStackTraces);
             final ProcessRuntime runtime = input.getProcessRuntime();
 
             final HashSet<ThreadSet> deadlocks = new HashSet<ThreadSet>(1);
@@ -123,10 +124,7 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
             }
 
             this.deadlocks = Collections.unmodifiableSet(deadlocks);
-            this.involved = showStackTraces
-                    ? input.derive(involved)
-                    : runtime.getEmptyThreadSet()
-            ;
+            this.involved = input.derive(involved);
         }
 
         /**

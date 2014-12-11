@@ -100,6 +100,7 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
         private final @Nonnegative int blocked;
 
         private Result(ThreadSet threads, boolean showStacktraces) {
+            super(showStacktraces);
             final Set<ProcessThread> involved = new LinkedHashSet<ProcessThread>();
             final Map<ProcessThread, ThreadSet> contenders = new TreeMap<ProcessThread, ThreadSet>(new Comparator<ProcessThread>() {
                 @Override
@@ -126,10 +127,7 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
             }
 
             this.contenders = Collections.unmodifiableMap(contenders);
-            this.involved = showStacktraces
-                    ? threads.derive(involved)
-                    : threads.getProcessRuntime().getEmptyThreadSet()
-            ;
+            this.involved = threads.derive(involved);
             this.blocked = involved.size() - contenders.size();
         }
 

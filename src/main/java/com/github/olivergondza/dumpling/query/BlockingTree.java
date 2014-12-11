@@ -92,19 +92,18 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
 
     public static final class Result extends SingleThreadSetQuery.Result {
 
-        private static final Deadlocks DEADLOCKS = new Deadlocks();
+        private static final @Nonnull Deadlocks DEADLOCKS = new Deadlocks();
 
         private final @Nonnull Set<Tree> trees;
         private final @Nonnull ThreadSet involved;
-        private final boolean showStackTraces;
         private final Deadlocks.Result deadlocks;
 
         private final @Nonnull ThreadSet deadlockedThreads;
 
         private Result(ThreadSet threads, boolean showStackTraces) {
-            this.showStackTraces = showStackTraces;
-            this.deadlocks = threads.query(DEADLOCKS);
-            this.deadlockedThreads = deadlockedThreads();
+            super(showStackTraces);
+            deadlocks = threads.query(DEADLOCKS);
+            deadlockedThreads = deadlocks.involvedThreads();
 
             @Nonnull Set<Tree> roots = new LinkedHashSet<Tree>();
             for (ProcessThread thread: threads.getProcessRuntime().getThreads()) {
@@ -168,17 +167,6 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
             }
         }
 
-        private ThreadSet deadlockedThreads() {
-            HashSet<ProcessThread> set = new HashSet<ProcessThread>();
-            for (ThreadSet dl: deadlocks.getDeadlocks()) {
-                for (ProcessThread d: dl) {
-                    set.add(d);
-                }
-            }
-
-            return deadlocks.involvedThreads().derive(set);
-        }
-
         public @Nonnull Set<Tree> getTrees() {
             return trees;
         }
@@ -211,7 +199,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
 
         @Override
         protected ThreadSet involvedThreads() {
-            return showStackTraces ? involved : null;
+            return involved;
         }
 
         @Override

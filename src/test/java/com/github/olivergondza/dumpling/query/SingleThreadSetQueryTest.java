@@ -39,35 +39,21 @@ public class SingleThreadSetQueryTest {
 
     @Test
     public void noThreadsOutput() {
-        String out = new NoThreads().toString();
+        String out = new Threads(false).toString();
         assertThat(out, equalTo(String.format("RESULT%n%n%nSUMMARY%n")));
     }
 
     @Test
     public void threadsOutput() {
-        String out = new Threads().toString();
+        String out = new Threads(true).toString();
         assertThat(out, equalTo(String.format("RESULT%n%n%n\"THREAD_NAME\" #42%n   java.lang.Thread.State: UNKNOWN%n%n%nSUMMARY%n")));
     }
 
-    private static final class NoThreads extends SingleThreadSetQuery.Result {
-
-        @Override
-        protected void printResult(PrintStream out) {
-            out.println("RESULT");
-        }
-
-        @Override
-        protected ThreadSet involvedThreads() {
-            return null;
-        }
-
-        @Override
-        protected void printSummary(PrintStream out) {
-            out.println("SUMMARY");
-        }
-    }
-
     private static final class Threads extends SingleThreadSetQuery.Result {
+
+        private Threads(boolean showStackTraces) {
+            super(showStackTraces);
+        }
 
         @Override
         protected void printResult(PrintStream out) {
