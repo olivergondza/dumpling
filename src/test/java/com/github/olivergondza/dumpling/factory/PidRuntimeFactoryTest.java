@@ -56,7 +56,7 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
         ProcessThread thread = pidRuntime.getThreads().where(nameIs("process-thread")).onlyThread();
         assertThat(thread.getStatus(), equalTo(ThreadStatus.SLEEPING));
 
-        assertFalse(thread.getAcquiredLocks().isEmpty());
+        assertFalse(thread.toString(), thread.getAcquiredLocks().isEmpty());
         assertThat(
                 thread.getAcquiredLocks().iterator().next().getClassName(),
                 equalTo("java.util.concurrent.locks.ReentrantLock$NonfairSync")
