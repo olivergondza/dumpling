@@ -117,9 +117,11 @@ public class ThreadSet implements Iterable<ProcessThread> {
         return runtime.getThreadSet(blocking);
     }
 
-    public @Nonnull ThreadSet ignoring(@Nonnull ThreadSet actualThreads) {
+    public @Nonnull ThreadSet ignoring(@Nonnull ThreadSet ignoredThreads) {
+        if (threads.isEmpty() || ignoredThreads.isEmpty()) return this;
+
         HashSet<ProcessThread> newThreads = new HashSet<ProcessThread>(threads);
-        newThreads.removeAll(actualThreads.threads);
+        newThreads.removeAll(ignoredThreads.threads);
         return runtime.getThreadSet(newThreads);
     }
 
