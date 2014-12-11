@@ -94,7 +94,7 @@ public class JvmRuntimeFactoryTest {
     }
 
     @Test
-    public void waitingThredStatus() {
+    public void waitingThreadStatus() {
         thread = new Thread(getClass().getName() + " in object wait") {
             @Override
             public synchronized void run() {
@@ -113,7 +113,7 @@ public class JvmRuntimeFactoryTest {
     }
 
     @Test
-    public void timedWaitingThredStatus() {
+    public void timedWaitingThreadStatus() {
         thread = new Thread(getClass().getName() + " in timed object wait") {
             @Override
             public synchronized void run() {
