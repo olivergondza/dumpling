@@ -49,11 +49,11 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
 
     @Test
     public void invokeFactory() {
-        setupFixture();
+        setupSleepingThreadWithLock();
 
         ProcessRuntime pidRuntime = new PidRuntimeFactory().forProcess(Util.currentPid());
 
-        ProcessThread thread = pidRuntime.getThreads().where(nameIs("process-thread")).onlyThread();
+        ProcessThread thread = pidRuntime.getThreads().where(nameIs("sleepingThreadWithLock")).onlyThread();
         assertThat(thread.getStatus(), equalTo(ThreadStatus.SLEEPING));
 
         assertFalse(thread.toString(), thread.getAcquiredLocks().isEmpty());
@@ -65,13 +65,13 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
 
     @Test
     public void invokeCommand() {
-        setupFixture();
+        setupSleepingThreadWithLock();
 
-        stdin("print runtime.threads.where(nameIs('process-thread')).onlyThread().status");
+        stdin("t = runtime.threads.where(nameIs('sleepingThreadWithLock')).onlyThread(); print \"${t.status}:${t.acquiredLocks.collect{it.className}}\"");
         run("groovy", "--in", "process", Integer.toString(Util.currentPid()));
 
         assertThat(err.toString(), equalTo(""));
-        assertThat(out.toString(), equalTo("SLEEPING"));
+        assertThat(out.toString(), equalTo("SLEEPING:[java.util.concurrent.locks.ReentrantLock$NonfairSync]"));
         assertThat(exitValue, equalTo(0));
     }
 
@@ -105,8 +105,8 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
         }
     }
 
-    private Thread setupFixture() {
-        this.t = new Thread("process-thread") {
+    private Thread setupSleepingThreadWithLock() {
+        this.t = new Thread("sleepingThreadWithLock") {
             @Override
             public void run() {
                 new ReentrantLock().lock();
