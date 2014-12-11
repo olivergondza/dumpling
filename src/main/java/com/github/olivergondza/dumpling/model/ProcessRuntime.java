@@ -75,7 +75,7 @@ public class ProcessRuntime {
     /**
      * Instantiate {@link ThreadSet} scoped to this runtime.
      */
-    public @Nonnull ThreadSet getThreadSet(Collection<ProcessThread> threads) {
+    public @Nonnull ThreadSet getThreadSet(@Nonnull Collection<ProcessThread> threads) {
         if (threads.isEmpty()) return emptySet;
 
         Set<ProcessThread> threadSet = threads instanceof Set
@@ -90,7 +90,7 @@ public class ProcessRuntime {
      *
      * @see ThreadSet#query(SingleThreadSetQuery)
      */
-    public <T extends SingleThreadSetQuery.Result> T query(SingleThreadSetQuery<T> query) {
+    public @Nonnull <T extends SingleThreadSetQuery.Result> T query(@Nonnull SingleThreadSetQuery<T> query) {
         return threads.query(query);
     }
 }

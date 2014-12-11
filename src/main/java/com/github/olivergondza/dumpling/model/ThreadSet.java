@@ -131,7 +131,7 @@ public class ThreadSet implements Iterable<ProcessThread> {
      * @param pred Predicate to match.
      * @return {@link ThreadSet} scoped to current runtime containing subset of threads that match the predicate.
      */
-    public @Nonnull ThreadSet where(ProcessThread.Predicate pred) {
+    public @Nonnull ThreadSet where(@Nonnull ProcessThread.Predicate pred) {
         HashSet<ProcessThread> subset = new HashSet<ProcessThread>(size() / 2);
         for (@Nonnull ProcessThread thread: threads) {
             if (pred.isValid(thread)) subset.add(thread);
@@ -143,7 +143,7 @@ public class ThreadSet implements Iterable<ProcessThread> {
     /**
      * Run query using this as an initial thread set.
      */
-    public <T extends SingleThreadSetQuery.Result> T query(SingleThreadSetQuery<T> query) {
+    public @Nonnull <T extends SingleThreadSetQuery.Result> T query(@Nonnull SingleThreadSetQuery<T> query) {
         return query.query(this);
     }
 

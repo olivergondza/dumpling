@@ -413,7 +413,7 @@ public class ProcessThread {
     /**
      * Match thread by name.
      */
-    public static Predicate nameIs(final String name) {
+    public static @Nonnull Predicate nameIs(final @Nonnull String name) {
         return new Predicate() {
             @Override
             public boolean isValid(ProcessThread thread) {
@@ -425,7 +425,7 @@ public class ProcessThread {
     /**
      * Match thread its name contains pattern.
      */
-    public static Predicate nameContains(final Pattern pattern) {
+    public static @Nonnull Predicate nameContains(final @Nonnull Pattern pattern) {
         return new Predicate() {
             @Override
             public boolean isValid(ProcessThread thread) {
@@ -437,7 +437,7 @@ public class ProcessThread {
     /**
      * Match thread its name contains string.
      */
-    public static Predicate nameContains(final String pattern) {
+    public static @Nonnull Predicate nameContains(final @Nonnull String pattern) {
         return new Predicate() {
             @Override
             public boolean isValid(ProcessThread thread) {
@@ -449,7 +449,7 @@ public class ProcessThread {
     /**
      * Match thread that is waiting on lock identified by <tt>className</tt>.
      */
-    public static Predicate waitingOnLock(final String className) {
+    public static @Nonnull Predicate waitingOnLock(final @Nonnull String className) {
         return new Predicate() {
             @Override
             public boolean isValid(ProcessThread thread) {
@@ -462,7 +462,7 @@ public class ProcessThread {
     /**
      * Match thread that has acquired lock identified by <tt>className</tt>.
      */
-    public static Predicate acquiredLock(final String className) {
+    public static @Nonnull Predicate acquiredLock(final @Nonnull String className) {
         return new Predicate() {
             @Override
             public boolean isValid(@Nonnull ProcessThread thread) {
