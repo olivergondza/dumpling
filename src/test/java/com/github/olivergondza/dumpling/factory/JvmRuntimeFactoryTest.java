@@ -178,8 +178,9 @@ public class JvmRuntimeFactoryTest {
     @Test
     public void creatingAndTerminatingThreadsShouldBeHandledGracefully() {
         class Thrd extends Thread {
-            int countdown;
+            private int countdown;
             public Thrd(int countdown) {
+                super("creatingAndTerminatingThreadsShouldBeHandledGracefully thread");
                 this.countdown = countdown;
             }
 
