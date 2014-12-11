@@ -71,6 +71,10 @@ public class ProcessThread {
         }
     }
 
+    public @Nonnull ProcessRuntime getRuntime() {
+        return runtime;
+    }
+
     public @Nonnull String getName() {
         return state.name;
     }
@@ -426,6 +430,18 @@ public class ProcessThread {
             @Override
             public boolean isValid(ProcessThread thread) {
                 return pattern.matcher(thread.getName()).find();
+            }
+        };
+    }
+
+    /**
+     * Match thread its name contains string.
+     */
+    public static Predicate nameContains(final String pattern) {
+        return new Predicate() {
+            @Override
+            public boolean isValid(ProcessThread thread) {
+                return thread.getName().contains(pattern);
             }
         };
     }

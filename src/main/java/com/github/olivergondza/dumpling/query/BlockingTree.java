@@ -56,7 +56,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
     }
 
     /**
-     * @param threads Only only tree branches that contain threads in this set.
+     * @param threads Only show tree branches that contain threads in this set.
      * Provide all threads in runtime to analyze whole runtime.
      */
     @Override
@@ -99,25 +99,32 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
         private final boolean showStackTraces;
         private final Deadlocks.Result deadlocks;
 
+        private final @Nonnull ThreadSet deadlockedThreads;
+
         private Result(ThreadSet threads, boolean showStackTraces) {
+            this.showStackTraces = showStackTraces;
+            this.deadlocks = threads.query(DEADLOCKS);
+            this.deadlockedThreads = deadlockedThreads();
+
             @Nonnull Set<Tree> roots = new LinkedHashSet<Tree>();
             for (ProcessThread thread: threads.getProcessRuntime().getThreads()) {
-                if (thread.getWaitingToLock() == null && !thread.getAcquiredLocks().isEmpty()) {
-                    if (!thread.getBlockedThreads().isEmpty()) {
-                        roots.add(new Tree(thread, buildDown(thread)));
-                    }
-                }
+                // consider only unblocked threads or possibly deadlocked ones
+                if (thread.getWaitingToLock() != null && !deadlockedThreads.contains(thread)) continue;
+                // No thread can be blocked by this
+                if (thread.getAcquiredLocks().isEmpty()) continue;
+                // No blocked and not-deadlocked threads to report
+                if (thread.getBlockedThreads().ignoring(deadlockedThreads).isEmpty()) continue;
+
+                roots.add(new Tree(thread, buildDown(thread)));
             }
 
             this.trees = Collections.unmodifiableSet(filter(roots, threads));
-            this.showStackTraces = showStackTraces;
 
             LinkedHashSet<ProcessThread> involved = new LinkedHashSet<ProcessThread>();
             for (Tree root: trees) {
                 flatten(root, involved);
             }
 
-            deadlocks = threads.query(DEADLOCKS);
             for (ThreadSet deadlock: deadlocks.getDeadlocks()) {
                 for (ProcessThread deadlockedThread: deadlock) {
                     involved.add(deadlockedThread);
@@ -129,7 +136,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
 
         private @Nonnull Set<Tree> buildDown(ProcessThread thread) {
             @Nonnull Set<Tree> newTrees = new LinkedHashSet<Tree>();
-            for(ProcessThread t: thread.getBlockedThreads()) {
+            for(ProcessThread t: thread.getBlockedThreads().ignoring(deadlockedThreads)) {
                 newTrees.add(new Tree(t, buildDown(t)));
             }
 
@@ -159,6 +166,17 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
             for (Tree leaf: tree.getLeaves()) {
                 flatten(leaf, accumulator);
             }
+        }
+
+        private ThreadSet deadlockedThreads() {
+            HashSet<ProcessThread> set = new HashSet<ProcessThread>();
+            for (ThreadSet dl: deadlocks.getDeadlocks()) {
+                for (ProcessThread d: dl) {
+                    set.add(d);
+                }
+            }
+
+            return deadlocks.involvedThreads().derive(set);
         }
 
         public @Nonnull Set<Tree> getTrees() {
