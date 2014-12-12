@@ -35,8 +35,6 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -59,8 +57,6 @@ import com.github.olivergondza.dumpling.model.ThreadStatus;
  * @author ogondza
  */
 public class ThreadDumpFactory implements CliRuntimeFactory {
-
-    private static final Logger LOGGER = Logger.getLogger("ThreadDumpFactory");
 
     private static final StackTraceElement WAIT_TRACE_ELEMENT = StackTrace.nativeElement("java.lang.Object", "wait");
 
@@ -130,7 +126,6 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
             String singleThread = scanner.next();
             ProcessThread.Builder thread = thread(singleThread);
             if (thread == null) continue;
-            LOGGER.log(Level.INFO, "Succesfully read: " + singleThread);
             threads.add(thread);
         }
 

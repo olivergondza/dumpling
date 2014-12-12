@@ -56,10 +56,6 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
         ProcessThread thread = pidRuntime.getThreads().where(nameIs("sleepingThreadWithLock")).onlyThread();
         assertThat(thread.getStatus(), equalTo(ThreadStatus.SLEEPING));
 
-        if (thread.getAcquiredLocks().isEmpty()) {
-            ProcessThread jt = new JvmRuntimeFactory().currentRuntime().getThreads().where(nameIs("sleepingThreadWithLock")).onlyThread();
-            fail("PID factory thread:\n" + thread + "\nJVM factory thread:\n" + jt);
-        }
         assertFalse(thread.toString(), thread.getAcquiredLocks().isEmpty());
         assertThat(
                 thread.getAcquiredLocks().iterator().next().getClassName(),
@@ -110,22 +106,15 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
     }
 
     private Thread setupSleepingThreadWithLock() {
-        final ReentrantLock lock = new ReentrantLock();
         this.t = new Thread("sleepingThreadWithLock") {
             @Override
             public void run() {
-                lock.lock();
-                System.out.println("Locked: " + lock.isLocked());
-                System.out.println("Fair: " + lock.isFair());
+                new ReentrantLock().lock();
                 pause(10000);
             }
         };
         this.t.start();
-        //pause(1000);
-        for (int i = 0; i < 100; i++) {
-            System.out.println(new JvmRuntimeFactory().currentRuntime().getThreads().where(nameIs("sleepingThreadWithLock")).onlyThread());
-            System.out.println("Locked: " + lock.isLocked());
-        }
+        pause(3000);
         return this.t;
     }
 
