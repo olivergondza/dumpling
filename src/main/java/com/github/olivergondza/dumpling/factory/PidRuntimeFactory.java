@@ -24,6 +24,8 @@
 package com.github.olivergondza.dumpling.factory;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
 
@@ -43,6 +45,8 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
  * @author ogondza
  */
 public class PidRuntimeFactory implements CliRuntimeFactory {
+
+    private static final Logger LOGGER = Logger.getLogger("PidRuntimeFactory");
 
     private final @Nonnull String javaHome;
 
@@ -65,6 +69,7 @@ public class PidRuntimeFactory implements CliRuntimeFactory {
     }
 
     public @Nonnull ProcessRuntime forProcess(int pid) {
+        LOGGER.log(Level.INFO, "Using jstack: " + jstackBinary());
         ProcessBuilder pb = new ProcessBuilder(jstackBinary(), "-l", Integer.toString(pid));
         try {
             Process process = pb.start();
