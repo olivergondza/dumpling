@@ -110,10 +110,13 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
     }
 
     private Thread setupSleepingThreadWithLock() {
+        final ReentrantLock lock = new ReentrantLock();
         this.t = new Thread("sleepingThreadWithLock") {
             @Override
             public void run() {
-                new ReentrantLock().lock();
+                lock.lock();
+                System.out.println("Locked: " + lock.isLocked());
+                System.out.println("Fair: " + lock.isFair());
                 pause(10000);
             }
         };
@@ -121,6 +124,7 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
         //pause(1000);
         for (int i = 0; i < 100; i++) {
             System.out.println(new JvmRuntimeFactory().currentRuntime().getThreads().where(nameIs("sleepingThreadWithLock")).onlyThread());
+            System.out.println("Locked: " + lock.isLocked());
         }
         return this.t;
     }
