@@ -106,15 +106,18 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
     }
 
     private Thread setupSleepingThreadWithLock() {
+        final ReentrantLock lock = new ReentrantLock();
         this.t = new Thread("sleepingThreadWithLock") {
             @Override
             public void run() {
-                new ReentrantLock().lock();
+                lock.lock();
                 pause(10000);
             }
         };
         this.t.start();
-        pause(3000);
+        while(!lock.isLocked()) {
+            pause(1000);
+        }
         return this.t;
     }
 
