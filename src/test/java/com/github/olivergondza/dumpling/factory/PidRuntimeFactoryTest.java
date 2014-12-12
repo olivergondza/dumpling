@@ -118,7 +118,10 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
             }
         };
         this.t.start();
-        pause(1000);
+        //pause(1000);
+        for (int i = 0; i < 100; i++) {
+            System.out.println(new JvmRuntimeFactory().currentRuntime().getThreads().where(nameIs("sleepingThreadWithLock")).onlyThread());
+        }
         return this.t;
     }
 
