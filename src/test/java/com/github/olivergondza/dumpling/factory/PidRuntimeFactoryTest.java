@@ -23,6 +23,7 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
+import static com.github.olivergondza.dumpling.Util.only;
 import static com.github.olivergondza.dumpling.Util.pause;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -58,7 +59,7 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
 
         assertFalse(thread.toString(), thread.getAcquiredLocks().isEmpty());
         assertThat(
-                thread.getAcquiredLocks().iterator().next().getClassName(),
+                only(thread.getAcquiredLocks()).getClassName(),
                 equalTo("java.util.concurrent.locks.ReentrantLock$NonfairSync")
         );
     }

@@ -23,11 +23,13 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
+import static com.github.olivergondza.dumpling.Util.only;
 import static com.github.olivergondza.dumpling.Util.pause;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -98,11 +100,16 @@ public class ThreadDumpFactoryVendorTest {
         assertThat(main.getStatus(), equalTo(ThreadStatus.BLOCKED));
         assertThat(other.getStatus(), equalTo(ThreadStatus.BLOCKED));
 
-        assertThat(main.getWaitingToLock(), equalTo(other.getAcquiredMonitors().iterator().next()));
-        assertThat(other.getWaitingToLock(), equalTo(main.getAcquiredMonitors().iterator().next()));
+        assertThat(main.getWaitingToLock(), equalTo(only(other.getAcquiredMonitors())));
+        assertThat(other.getWaitingToLock(), equalTo(only(main.getAcquiredMonitors())));
 
         assertThat(other.getAcquiredSynchronizers(), Matchers.<ThreadLock>empty());
         assertThat(main.getAcquiredSynchronizers(), Matchers.<ThreadLock>empty());
+
+        assertThat(main.getBlockingThread(), equalTo(other));
+        assertThat(other.getBlockingThread(), equalTo(main));
+        assertThat(main.getBlockedThreads().onlyThread(), equalTo(other));
+        assertThat(other.getBlockedThreads().onlyThread(), equalTo(main));
     }
 
     @Test
@@ -112,8 +119,8 @@ public class ThreadDumpFactoryVendorTest {
         assertThat(main.getStatus(), equalTo(ThreadStatus.PARKED));
         assertThat(other.getStatus(), equalTo(ThreadStatus.PARKED));
 
-        assertThat(main.getWaitingToLock(), equalTo(other.getAcquiredSynchronizers().iterator().next()));
-        assertThat(other.getWaitingToLock(), equalTo(main.getAcquiredSynchronizers().iterator().next()));
+        assertThat(main.getWaitingToLock(), equalTo(only(other.getAcquiredSynchronizers())));
+        assertThat(other.getWaitingToLock(), equalTo(only(main.getAcquiredSynchronizers())));
 
         assertThat(other.getAcquiredMonitors(), Matchers.<ThreadLock>empty());
         assertThat(main.getAcquiredMonitors(), Matchers.<ThreadLock>empty());
@@ -127,12 +134,24 @@ public class ThreadDumpFactoryVendorTest {
         assertThat(main.getStatus(), equalTo(ThreadStatus.SLEEPING));
         assertThat(reacquiring.getStatus(), equalTo(ThreadStatus.BLOCKED));
 
-        assertThat(main.getAcquiredLocks().iterator().next(), equalTo(reacquiring.getWaitingToLock()));
+        assertThat(only(main.getAcquiredLocks()), equalTo(reacquiring.getWaitingToLock()));
         assertThat(reacquiring.getAcquiredLocks().size(), equalTo(2));
         assertThat(
                 reacquiring.getStackTrace().getElement(0),
                 equalTo(StackTrace.nativeElement("java.lang.Object", "wait"))
         );
+    }
+
+    @Test
+    public void ignoreWaitLock() {
+        ProcessThread main = sut.thread("main");
+        assertThat(main.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
+
+        assertThat(main.getWaitingToLock(), nullValue());
+        assertThat(only(main.getAcquiredLocks()).getClassName(), equalTo("java.lang.Integer"));
+
+        assertTrue(main.getBlockedThreads().isEmpty());
+        assertThat(main.getBlockingThread(), nullValue());
     }
 
     private static final class Runner implements MethodRule {

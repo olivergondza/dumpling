@@ -27,6 +27,7 @@ import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Iterator;
 
 import javax.annotation.Nonnull;
 
@@ -75,5 +76,15 @@ public class Util {
 
     public static int currentPid() {
         return Integer.parseInt(ManagementFactory.getRuntimeMXBean().getName().replaceAll("@.*", ""));
+    }
+
+    public static <T> T only(Iterable<T> set) {
+        Iterator<T> it = set.iterator();
+        T elem = it.next();
+        if (elem == null || it.hasNext()) throw new AssertionError(
+                "One set element exected: " + set
+        );
+
+        return elem;
     }
 }

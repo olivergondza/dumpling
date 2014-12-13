@@ -23,12 +23,12 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
+import static com.github.olivergondza.dumpling.Util.only;
 import static com.github.olivergondza.dumpling.Util.pause;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -522,35 +522,6 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     }
 
     @Test
-    public void lockRelationshipsShouldBePreserved() throws Exception {
-
-        ThreadSet threads = new ThreadDumpFactory().fromFile(Util.resourceFile("producer-consumer.log")).getThreads();
-
-        ProcessThread blocked = threads.where(nameIs("blocked_thread")).onlyThread();
-        ProcessThread owning = threads.where(nameIs("owning_thread")).onlyThread();
-
-        assertTrue(owning.getBlockingThreads().isEmpty());
-        assertEquals(threads.where(nameIs("blocked_thread")), owning.getBlockedThreads());
-
-        assertEquals(threads.where(nameIs("owning_thread")), blocked.getBlockingThreads());
-        assertTrue(blocked.getBlockedThreads().isEmpty());
-    }
-
-    @Test
-    public void doNotIncludeSelfToBlockedOrBlockingThreads() throws Exception {
-
-        ThreadSet threads = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "self-lock.log")).getThreads();
-
-        ProcessThread handler = threads.where(nameIs("Reference Handler")).onlyThread();
-        ProcessThread finalizer = threads.where(nameIs("Finalizer")).onlyThread();
-
-        assertTrue(handler.getBlockedThreads().isEmpty());
-        assertTrue(handler.getBlockingThreads().isEmpty());
-        assertTrue(finalizer.getBlockedThreads().isEmpty());
-        assertTrue(finalizer.getBlockingThreads().isEmpty());
-    }
-
-    @Test
     public void preserveThreadOrder() throws Exception {
 
         ThreadSet threads = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "self-lock.log")).getThreads();
@@ -748,8 +719,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                 nameIs("parseOutputProducedByJvmRuntimeFactory")
         ).onlyThread();
 
-        ThreadLock lock = t.getAcquiredLocks().iterator().next();
-        assertThat(lock, equalTo(ThreadLock.fromInstance(this)));
+        assertThat(only(t.getAcquiredLocks()), equalTo(ThreadLock.fromInstance(this)));
     }
 
     // Presumably this is a bug in certain java 6 versions from Oracle
