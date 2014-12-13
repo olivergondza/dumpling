@@ -158,6 +158,18 @@ public class ProcessThread {
         return locks;
     }
 
+    public @Nonnull Set<ThreadLock> getAcquiredMonitors() {
+        LinkedHashSet<ThreadLock> locks = new LinkedHashSet<ThreadLock>(state.acquiredMonitors.size());
+        for (Monitor m: state.acquiredMonitors) {
+            locks.add(m.getLock());
+        }
+        return locks;
+    }
+
+    public @Nonnull Set<ThreadLock> getAcquiredSynchronizers() {
+        return new LinkedHashSet<ThreadLock>(state.acquiredSynchronizers);
+    }
+
     /**
      * Get threads that are waiting for lock held by this thread.
      */

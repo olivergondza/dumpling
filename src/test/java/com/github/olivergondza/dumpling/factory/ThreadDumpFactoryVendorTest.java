@@ -61,9 +61,6 @@ import com.github.olivergondza.dumpling.model.ThreadStatus;
  */
 public class ThreadDumpFactoryVendorTest {
 
-    // This expects PidRuntimeFactory delegates to ThreadDumpFactory
-    private static final PidRuntimeFactory prf = new PidRuntimeFactory();
-
     public @Rule Runner sut = new Runner();
 
     @Test
@@ -94,64 +91,56 @@ public class ThreadDumpFactoryVendorTest {
         );
     }
 
+    @Test
+    public void monitorDeadlock() {
+        ProcessThread main = sut.thread("main");
+        ProcessThread other = sut.thread("other");
+        assertThat(main.getStatus(), equalTo(ThreadStatus.BLOCKED));
+        assertThat(other.getStatus(), equalTo(ThreadStatus.BLOCKED));
 
-// TODO https://github.com/olivergondza/dumpling/issues/32
-//  @Test
-//  public void waitingToReacquireMonitorAfterWait() {
-//      final Object lock = new Object();
-//      Thread thread = new Thread("waitingToReacquireMonitorAfterWait") {
-//          @Override
-//          public void run() {
-//              synchronized (lock) {
-//                  try {
-//                      lock.wait();
-//                  } catch (InterruptedException ex) {
-//                      // Noop
-//                  }
-//              }
-//          }
-//      };
-//      thread.start();
-//      pause(500);
-//
-//      synchronized (lock) {
-//
-//          lock.notify(); // Unblock the thread
-//
-//          pause(100000);
-//      }
-//  }
+        assertThat(main.getWaitingToLock(), equalTo(other.getAcquiredMonitors().iterator().next()));
+        assertThat(other.getWaitingToLock(), equalTo(main.getAcquiredMonitors().iterator().next()));
 
-//  @Test
-//  public void waitingToReacquireMonitorAfterWait() {
-//      final Object lock = new Object();
-//      final Object lock2 = new Object();
-//      final Object lock3 = new Object();
-//      Thread thread = new Thread("waitingToReacquireMonitorAfterWait") {
-//          @Override
-//          public void run() {
-//              synchronized (lock) { synchronized (lock2) { synchronized (lock3) { synchronized (lock2) { synchronized (lock) {
-//                  try {
-//                      lock3.wait();
-//                  } catch (InterruptedException ex) {
-//                      // Noop
-//                  }
-//              }}}}}
-//          }
-//      };
-//      thread.start();
-//      pause(500000);
-//
-//      synchronized (lock) {
-//
-//          lock.notify(); // Unblock the thread
-//
-//          pause(100000);
-//      }
-//  }
+        assertThat(other.getAcquiredSynchronizers(), Matchers.<ThreadLock>empty());
+        assertThat(main.getAcquiredSynchronizers(), Matchers.<ThreadLock>empty());
+    }
+
+    @Test
+    public void synchronizerDeadlock() {
+        ProcessThread main = sut.thread("main");
+        ProcessThread other = sut.thread("other");
+        assertThat(main.getStatus(), equalTo(ThreadStatus.PARKED));
+        assertThat(other.getStatus(), equalTo(ThreadStatus.PARKED));
+
+        assertThat(main.getWaitingToLock(), equalTo(other.getAcquiredSynchronizers().iterator().next()));
+        assertThat(other.getWaitingToLock(), equalTo(main.getAcquiredSynchronizers().iterator().next()));
+
+        assertThat(other.getAcquiredMonitors(), Matchers.<ThreadLock>empty());
+        assertThat(main.getAcquiredMonitors(), Matchers.<ThreadLock>empty());
+    }
+
+    @Test
+    public void reacquireMonitorAfterWait() {
+        ProcessThread reacquiring = sut.thread("reacquiring");
+        ProcessThread main = sut.thread("main");
+
+        assertThat(main.getStatus(), equalTo(ThreadStatus.SLEEPING));
+        assertThat(reacquiring.getStatus(), equalTo(ThreadStatus.BLOCKED));
+
+        assertThat(main.getAcquiredLocks().iterator().next(), equalTo(reacquiring.getWaitingToLock()));
+        assertThat(reacquiring.getAcquiredLocks().size(), equalTo(2));
+        assertThat(
+                reacquiring.getStackTrace().getElement(0),
+                equalTo(StackTrace.nativeElement("java.lang.Object", "wait"))
+        );
+    }
 
     private static final class Runner implements MethodRule {
+        // This expects PidRuntimeFactory delegates to ThreadDumpFactory
+        private static final PidRuntimeFactory prf = new PidRuntimeFactory();
+
         private Process process;
+        private ProcessRuntime runtime = null;
 
         @Override
         public Statement apply(final Statement base, FrameworkMethod method, Object target) {
@@ -193,13 +182,14 @@ public class ThreadDumpFactoryVendorTest {
         }
 
         public ProcessRuntime runtime() {
+            if (runtime != null) return runtime;
 
             try {
                 int exit = process.exitValue();
                 throw reportProblem(exit);
             } catch (IllegalThreadStateException ex) {
                 // Still running as expected
-                return waitForInitialized(process);
+                return runtime = waitForInitialized(process);
             }
         }
 
@@ -229,16 +219,15 @@ public class ThreadDumpFactoryVendorTest {
             int pid = getPid(process);
             ProcessRuntime runtime = prf.forProcess(pid);
             for (int i = 0; i < 10; i++) {
+                pause(500);
 
                 ProcessThread main = runtime.getThreads().where(nameIs("main")).onlyThread();
 
                 for (StackTraceElement elem: main.getStackTrace().getElements()) {
                     if ("dumpling-script".equals(elem.getClassName()) && "run".equals(elem.getMethodName())) {
-                        return runtime;
+                        return prf.forProcess(pid);
                     }
                 }
-
-                pause(500);
 
                 runtime = prf.forProcess(pid);
             }
