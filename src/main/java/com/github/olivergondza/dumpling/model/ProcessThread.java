@@ -447,9 +447,17 @@ public class ProcessThread {
     }
 
     /**
+     * @deprecated Renamed to waitingToLock.
+     */
+    @Deprecated
+    public static @Nonnull Predicate waitingOnLock(final @Nonnull String className) {
+        return waitingOnLock(className);
+    }
+
+    /**
      * Match thread that is waiting on lock identified by <tt>className</tt>.
      */
-    public static @Nonnull Predicate waitingOnLock(final @Nonnull String className) {
+    public static @Nonnull Predicate waitingToLock(final @Nonnull String className) {
         return new Predicate() {
             @Override
             public boolean isValid(ProcessThread thread) {

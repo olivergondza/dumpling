@@ -25,7 +25,7 @@ package com.github.olivergondza.dumpling.model;
 
 import static com.github.olivergondza.dumpling.model.ProcessThread.acquiredLock;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
-import static com.github.olivergondza.dumpling.model.ProcessThread.waitingOnLock;
+import static com.github.olivergondza.dumpling.model.ProcessThread.waitingToLock;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -77,7 +77,7 @@ public class ProcessTheadTest {
     @Test
     public void filterByLocks() throws Exception {
         ThreadSet threads = factory.fromFile(Util.resourceFile("producer-consumer.log")).getThreads();
-        assertThat(threads.where(nameIs("blocked_thread")), equalTo(threads.where(waitingOnLock("hudson.model.Queue"))));
+        assertThat(threads.where(nameIs("blocked_thread")), equalTo(threads.where(waitingToLock("hudson.model.Queue"))));
         assertThat(threads.where(nameIs("owning_thread")), equalTo(threads.where(acquiredLock("hudson.model.Queue"))));
     }
 }
