@@ -238,7 +238,7 @@ public class ProcessThread {
 
     public static class Builder implements Cloneable {
 
-        private String name;
+        private @Nonnull String name = "";
         private boolean daemon;
         // priority might not be present in threaddump
         private Integer priority;
@@ -263,7 +263,7 @@ public class ProcessThread {
             }
         }
 
-        public @Nonnull Builder setName(String name) {
+        public @Nonnull Builder setName(@Nonnull String name) {
             this.name = name;
             return this;
         }
