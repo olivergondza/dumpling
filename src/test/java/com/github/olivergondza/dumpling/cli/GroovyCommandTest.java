@@ -25,7 +25,10 @@ package com.github.olivergondza.dumpling.cli;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.not;
 
+import java.io.File;
+import java.io.PrintWriter;
 import java.net.URISyntaxException;
 
 import org.junit.Test;
@@ -121,6 +124,31 @@ public class GroovyCommandTest extends AbstractCliTest {
         assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), equalTo("false"));
         assertThat(this, succeeded());
+    }
+
+    @Test
+    public void runScriptThatDoesNotExist() {
+        run("groovy", "--script", "no_such_file");
+        assertThat(out.toString(), equalTo(""));
+        assertThat(err.toString(), equalTo("no_such_file (No such file or directory)\n"));
+        assertThat(exitValue, not(equalTo(0)));
+    }
+
+    @Test
+    public void runScriptThatDoesExist() throws Exception {
+        File file = File.createTempFile("dumpling-GroovyCommandTest", "script");
+        try {
+            PrintWriter writer = new PrintWriter(file);
+            writer.println("print 'groovy out'; return 42;");
+            writer.close();
+
+            run("groovy", "--script", file.getAbsolutePath());
+            assertThat(out.toString(), equalTo("groovy out"));
+            assertThat(err.toString(), equalTo(""));
+            assertThat(exitValue, equalTo(42));
+        } finally {
+            file.delete();
+        }
     }
 
     private void invoke(String script) {
