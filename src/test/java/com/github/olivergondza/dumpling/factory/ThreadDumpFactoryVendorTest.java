@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 import javax.annotation.Nonnull;
 
@@ -46,6 +47,7 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
 
 import com.github.olivergondza.dumpling.Util;
+import com.github.olivergondza.dumpling.cli.CommandFailedException;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.StackTrace;
@@ -77,6 +79,14 @@ public class ThreadDumpFactoryVendorTest {
     public void waiting() {
         ProcessThread main = sut.thread("main");
         assertThat(main.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
+        assertThat(main.getAcquiredLocks(), Matchers.<ThreadLock>empty());
+        assertThat(main.getWaitingToLock(), nullValue());
+    }
+
+    @Test
+    public void waitingTimed() {
+        ProcessThread main = sut.thread("main");
+        assertThat(main.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT_TIMED));
         assertThat(main.getAcquiredLocks(), Matchers.<ThreadLock>empty());
         assertThat(main.getWaitingToLock(), nullValue());
     }
@@ -154,6 +164,79 @@ public class ThreadDumpFactoryVendorTest {
         assertThat(main.getBlockingThread(), nullValue());
     }
 
+    @Test
+    public void parked() {
+        ProcessThread main = sut.thread("main");
+        assertThat(main.getStatus(), equalTo(ThreadStatus.PARKED));
+        assertThat(main.getAcquiredLocks(), Matchers.<ThreadLock>empty());
+        assertThat(main.getWaitingToLock(), nullValue());
+        assertThat(
+                main.getStackTrace().getElement(0),
+                equalTo(StackTrace.nativeElement("sun.misc.Unsafe", "park"))
+        );
+    }
+
+    @Test
+    public void parkedTimed() {
+        ProcessThread main = sut.thread("main");
+        assertThat(main.getStatus(), equalTo(ThreadStatus.PARKED_TIMED));
+        assertThat(main.getAcquiredLocks(), Matchers.<ThreadLock>empty());
+        assertThat(main.getWaitingToLock(), nullValue());
+        assertThat(
+                main.getStackTrace().getElement(0),
+                equalTo(StackTrace.nativeElement("sun.misc.Unsafe", "park"))
+        );
+    }
+
+    @Test
+    public void parkedWithBlocker() {
+        ProcessThread main = sut.thread("main");
+        assertThat(main.getStatus(), equalTo(ThreadStatus.PARKED));
+        assertThat(main.getAcquiredLocks(), Matchers.<ThreadLock>empty());
+        assertThat(main.getWaitingToLock().getClassName(), equalTo("java.lang.Object"));
+        assertThat(
+                main.getStackTrace().getElement(0),
+                equalTo(StackTrace.nativeElement("sun.misc.Unsafe", "park"))
+        );
+    }
+
+    @Test
+    public void parkedTimedWithBlocker() {
+        ProcessThread main = sut.thread("main");
+        assertThat(main.getStatus(), equalTo(ThreadStatus.PARKED_TIMED));
+        assertThat(main.getAcquiredLocks(), Matchers.<ThreadLock>empty());
+        assertThat(main.getWaitingToLock().getClassName(), equalTo("java.lang.Object"));
+        assertThat(
+                main.getStackTrace().getElement(0),
+                equalTo(StackTrace.nativeElement("sun.misc.Unsafe", "park"))
+        );
+    }
+
+    @Test
+    public void threadNameWithQuotes() {
+        ProcessThread t = sut.thread("a\"thread\"");
+        assertThat(t.getName(), equalTo("a\"thread\""));
+    }
+
+    @Test
+    public void threadNameWithLinebreak() {
+        String name = "thread" + System.getProperty("line.separator", "\n") + "name";
+        ProcessThread t = sut.thread(name);
+        assertThat(t.getName(), equalTo(name));
+    }
+
+    @Test
+    public void multipleMonitorsOnSingleStackFrame() {
+        ProcessThread main = sut.thread("main");
+        assertThat(main.getAcquiredLocks(), equalTo(main.getAcquiredMonitors()));
+
+        // Stack depth is not exposed, checking just the order
+        ArrayList<ThreadLock> lockList = new ArrayList<ThreadLock>(main.getAcquiredLocks());
+        assertThat(lockList.get(0).getClassName(), equalTo("java.lang.Double"));
+        assertThat(lockList.get(1).getClassName(), equalTo("java.lang.Integer"));
+        assertThat(lockList.get(2).getClassName(), equalTo("java.lang.Object"));
+    }
+
     private static final class Runner implements MethodRule {
         // This expects PidRuntimeFactory delegates to ThreadDumpFactory
         private static final PidRuntimeFactory prf = new PidRuntimeFactory();
@@ -208,7 +291,13 @@ public class ThreadDumpFactoryVendorTest {
                 throw reportProblem(exit);
             } catch (IllegalThreadStateException ex) {
                 // Still running as expected
-                return runtime = waitForInitialized(process);
+                try {
+
+                    return runtime = waitForInitialized(process);
+                } catch (CommandFailedException e) {
+                    int exit = process.exitValue();
+                    throw reportProblem(exit);
+                }
             }
         }
 

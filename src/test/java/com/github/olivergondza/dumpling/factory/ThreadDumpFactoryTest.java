@@ -550,19 +550,6 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     }
 
     @Test
-    public void parseParkedLocks() throws Exception {
-
-        ThreadSet threads = runtimeFrom("oraclejdk-1.7.0_51.log").getThreads();
-
-        ProcessThread parking = threads.where(nameIs("ConnectionValidator")).onlyThread();
-
-        assertThat(parking.getStatus(), equalTo(ThreadStatus.PARKED_TIMED));
-        assertThat(parking.getWaitingToLock().getClassName(), equalTo(
-                "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject"
-        ));
-    }
-
-    @Test
     public void parseStacktraceContaining$() throws Exception {
 
         ThreadSet threads = runtimeFrom("oraclejdk-1.7.0_51.log").getThreads();
@@ -604,38 +591,6 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     }
 
     @Test
-    public void monitorOwnerInObjectWait() throws Exception {
-        ThreadSet threads = runtimeFrom("in-object-wait.log").getThreads();
-
-        ProcessThread reEntering = threads.where(nameIs("waitingToReacquireMonitorAfterWait")).onlyThread();
-        assertThat(reEntering.getStatus(), equalTo(ThreadStatus.BLOCKED));
-        assertThat(reEntering.getWaitingToLock(), equalTo(new ThreadLock("java.lang.Object", 33677620560L)));
-        assertThat(reEntering.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
-
-        ProcessThread owning = threads.where(nameIs("main")).onlyThread();
-        final Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(
-                new ThreadLock("java.lang.Object", 33677473560L)
-        ));
-        assertThat(owning.getStatus(), equalTo(ThreadStatus.SLEEPING));
-        assertThat(owning.getAcquiredLocks(), equalTo(locks));
-        assertThat(owning.getWaitingToLock(), equalTo(null));
-
-        ProcessThread waiting = threads.where(nameIs("monitorOwnerInObjectWait")).onlyThread();
-        assertThat(waiting.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
-        assertThat(waiting.getWaitingToLock(), equalTo(null));
-        assertThat(waiting.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
-
-        ProcessThread nested = threads.where(nameIs("waiting_in_nested_synchronized")).onlyThread();
-        assertThat(nested.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
-        final Set<ThreadLock> nestedLocks = new HashSet<ThreadLock>(Arrays.asList(
-                new ThreadLock("java.lang.Object", 33677621640L),
-                new ThreadLock("java.lang.Object", 33677621656L)
-        ));
-        assertThat(nested.getAcquiredLocks(), equalTo(nestedLocks));
-        assertThat(nested.getWaitingToLock(), equalTo(null));
-    }
-
-    @Test
     public void ownableSynchronizers() throws Exception {
         ProcessRuntime threads = runtimeFrom("ownable-synchronizers.log");
         checkOwnableSynchronizers(threads);
@@ -657,26 +612,6 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertThat(waiting.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
 
         assertThat(waiting.getBlockingThread(), equalTo(owning));
-    }
-
-    @Test
-    public void threadNameWithQuotes() throws Exception {
-        ProcessThread quotes = runtimeFrom("quoted.log").getThreads().onlyThread();
-        assertThat(quotes.getName(), equalTo("\"o\""));
-        assertThat(quotes.getStatus(), equalTo(ThreadStatus.SLEEPING));
-        assertThat(quotes.getPriority(), equalTo(10));
-        assertThat(quotes.getTid(), equalTo(139651066363904L));
-        assertThat(quotes.getNid(), equalTo(19257L));
-    }
-
-    @Test
-    public void threadNameWithLinebreak() throws Exception {
-        ProcessThread quotes = runtimeFrom("linebreaked.log").getThreads().onlyThread();
-        assertThat(quotes.getName(), equalTo("Thread\nName\nWith\nLinebreaks"));
-        assertThat(quotes.getStatus(), equalTo(ThreadStatus.SLEEPING));
-        assertThat(quotes.getPriority(), equalTo(10));
-        assertThat(quotes.getTid(), equalTo(139680862656512L));
-        assertThat(quotes.getNid(), equalTo(18973L));
     }
 
     @Test
