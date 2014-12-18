@@ -51,6 +51,8 @@ import com.github.olivergondza.dumpling.model.ThreadStatus;
  */
 public class JvmRuntimeFactory {
 
+    private ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+
     public @Nonnull ProcessRuntime currentRuntime() {
         Set<Thread> threads = Thread.getAllStackTraces().keySet();
         Map<Long, ThreadInfo> infos = infos();
@@ -58,13 +60,14 @@ public class JvmRuntimeFactory {
         HashSet<ProcessThread.Builder> state = new HashSet<ProcessThread.Builder>(threads.size());
 
         for (Thread thread: threads) {
+            final ThreadStatus status = status(thread);
             Builder builder = ProcessThread.builder()
                     .setName(thread.getName())
                     .setId(thread.getId())
                     .setDaemon(thread.isDaemon())
                     .setPriority(thread.getPriority())
                     .setStacktrace(thread.getStackTrace())
-                    .setThreadStatus(status(thread))
+                    .setThreadStatus(status)
             ;
 
             ThreadInfo info = infos.get(thread.getId());
@@ -73,8 +76,20 @@ public class JvmRuntimeFactory {
 
             builder.setAcquiredMonitors(monitors(info));
             builder.setAcquiredSynchronizers(locks(info));
-            LockInfo lock = info.getLockInfo();
-            if (lock != null) builder.setWaitingToLock(lock(lock));
+            LockInfo lockInfo = info.getLockInfo();
+            if (lockInfo != null) {
+                ThreadLock lock = lock(lockInfo);
+                if (status.isBlocked() || status.isParked()) {
+                    builder.setWaitingToLock(lock);
+                } else if (status.isWaiting()) {
+                    builder.setWaitingOnLock(lock);
+                } else {
+                    throw new AssertionError(
+                            String.format("Thread declares lock while %s: %n%s%n", status, info)
+                    );
+                }
+            }
+
 
             state.add(builder);
         }
@@ -83,8 +98,7 @@ public class JvmRuntimeFactory {
     }
 
     private Map<Long, ThreadInfo> infos() {
-        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-        Map<Long, ThreadInfo> infos= new HashMap<Long, ThreadInfo>();
+        Map<Long, ThreadInfo> infos = new HashMap<Long, ThreadInfo>();
         for (ThreadInfo info: threadMXBean.dumpAllThreads(true, true)) {
             infos.put(info.getThreadId(), info);
         }

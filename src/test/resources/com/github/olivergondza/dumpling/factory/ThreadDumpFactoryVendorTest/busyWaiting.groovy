@@ -1,4 +1,3 @@
-boolean state = false;
-for (;;) {
-    state = !state;
+for (int i = 0; ; i++) {
+    ;
 }

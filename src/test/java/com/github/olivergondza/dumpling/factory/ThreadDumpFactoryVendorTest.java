@@ -81,6 +81,7 @@ public class ThreadDumpFactoryVendorTest {
         assertThat(main.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
         assertThat(main.getAcquiredLocks(), Matchers.<ThreadLock>empty());
         assertThat(main.getWaitingToLock(), nullValue());
+        assertThat(main.getWaitingOnLock().getClassName(), equalTo("java.lang.Object"));
     }
 
     @Test
@@ -89,6 +90,7 @@ public class ThreadDumpFactoryVendorTest {
         assertThat(main.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT_TIMED));
         assertThat(main.getAcquiredLocks(), Matchers.<ThreadLock>empty());
         assertThat(main.getWaitingToLock(), nullValue());
+        assertThat(main.getWaitingOnLock().getClassName(), equalTo("java.lang.Object"));
     }
 
     @Test
@@ -162,6 +164,7 @@ public class ThreadDumpFactoryVendorTest {
 
         assertTrue(main.getBlockedThreads().isEmpty());
         assertThat(main.getBlockingThread(), nullValue());
+        assertThat(main.getWaitingOnLock().getClassName(), equalTo("java.lang.Double"));
     }
 
     @Test
@@ -170,6 +173,7 @@ public class ThreadDumpFactoryVendorTest {
         assertThat(main.getStatus(), equalTo(ThreadStatus.PARKED));
         assertThat(main.getAcquiredLocks(), Matchers.<ThreadLock>empty());
         assertThat(main.getWaitingToLock(), nullValue());
+        assertThat(main.getWaitingOnLock(), nullValue());
         assertThat(
                 main.getStackTrace().getElement(0),
                 equalTo(StackTrace.nativeElement("sun.misc.Unsafe", "park"))
@@ -182,6 +186,7 @@ public class ThreadDumpFactoryVendorTest {
         assertThat(main.getStatus(), equalTo(ThreadStatus.PARKED_TIMED));
         assertThat(main.getAcquiredLocks(), Matchers.<ThreadLock>empty());
         assertThat(main.getWaitingToLock(), nullValue());
+        assertThat(main.getWaitingOnLock(), nullValue());
         assertThat(
                 main.getStackTrace().getElement(0),
                 equalTo(StackTrace.nativeElement("sun.misc.Unsafe", "park"))
@@ -288,7 +293,7 @@ public class ThreadDumpFactoryVendorTest {
 
             try {
                 int exit = process.exitValue();
-                throw reportProblem(exit);
+                throw reportProblem(exit, null);
             } catch (IllegalThreadStateException ex) {
                 // Still running as expected
                 try {
@@ -296,12 +301,12 @@ public class ThreadDumpFactoryVendorTest {
                     return runtime = waitForInitialized(process);
                 } catch (CommandFailedException e) {
                     int exit = process.exitValue();
-                    throw reportProblem(exit);
+                    throw reportProblem(exit, e);
                 }
             }
         }
 
-        private Error reportProblem(int exit) {
+        private Error reportProblem(int exit, Exception cause) {
             StringBuilder out = new StringBuilder();
             StringBuilder err = new StringBuilder();
             try {
@@ -319,7 +324,8 @@ public class ThreadDumpFactoryVendorTest {
 
             return new AssertionError(
                     "Process under test terminated prematurelly. Exit code: "
-                    + exit + "\nSTDOUT: " + out + "\nSTDERR: " + err
+                    + exit + "\nSTDOUT: " + out + "\nSTDERR: " + err,
+                    cause
             );
         }
 

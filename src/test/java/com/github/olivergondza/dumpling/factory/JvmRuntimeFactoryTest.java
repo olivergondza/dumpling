@@ -23,11 +23,13 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
+import static com.github.olivergondza.dumpling.Util.only;
 import static com.github.olivergondza.dumpling.Util.pause;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -38,6 +40,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.hamcrest.Matchers;
 import org.hamcrest.collection.IsEmptyCollection;
 import org.junit.Test;
 
@@ -95,43 +98,63 @@ public class JvmRuntimeFactoryTest {
 
     @Test
     public void waitingThreadStatus() {
-        thread = new Thread(getClass().getName() + " in object wait") {
-            @Override
-            public synchronized void run() {
-                try {
-                    wait();
-                } catch (InterruptedException ex) {
-                    // Ignore
-                }
-            }
-        };
+        thread = new WaitingThreadStatus();
         thread.start();
 
         assertStatusIs(ThreadStatus.IN_OBJECT_WAIT, thread);
         assertStateIs(Thread.State.WAITING, thread);
         assertVerbIs("waiting on", thread);
+        ProcessThread pt = forThread(runtime(), thread);
+        assertThat(pt.getAcquiredLocks(), Matchers.<ThreadLock>empty());
+        assertThat(pt.getWaitingOnLock().getClassName(), equalTo(getClass().getCanonicalName() + "$WaitingThreadStatus"));
+        assertThat(pt.getWaitingToLock(), nullValue());
+    }
+
+    private static final class WaitingThreadStatus extends Thread {
+        private WaitingThreadStatus() {
+            super("JvmRuntimeFactoryTest#waitingThreadStatus");
+        }
+
+        @Override
+        public synchronized void run() {
+            try {
+                wait();
+            } catch (InterruptedException ex) {
+                // Ignore
+            }
+        }
     }
 
     @Test
     public void timedWaitingThreadStatus() {
-        thread = new Thread(getClass().getName() + " in timed object wait") {
-            @Override
-            public synchronized void run() {
-                try {
-                    wait(10000);
-                } catch (InterruptedException ex) {
-                    // Ignore
-                }
-            }
-        };
+        thread = new TimedWaiting();
         thread.start();
 
         assertStatusIs(ThreadStatus.IN_OBJECT_WAIT_TIMED, thread);
         assertStateIs(Thread.State.TIMED_WAITING, thread);
+        ProcessThread pt = forThread(runtime(), thread);
+        assertThat(pt.getAcquiredLocks(), Matchers.<ThreadLock>empty());
+        assertThat(pt.getWaitingOnLock().getClassName(), equalTo(getClass().getCanonicalName() + "$TimedWaiting"));
+        assertThat(pt.getWaitingToLock(), nullValue());
+    }
+
+    private static final class TimedWaiting extends Thread {
+        private TimedWaiting() {
+            super("JvmRuntimeFactoryTest#timedWaitingThreadStatus");
+        }
+
+        @Override
+        public synchronized void run() {
+            try {
+                wait(10000);
+            } catch (InterruptedException ex) {
+                // Ignore
+            }
+        }
     }
 
     @Test
-    public void parkedThreadStatus() {
+    public void parkedThreadStatus() throws Exception {
         thread = new Thread(getClass().getName() + " parked") {
             @Override
             public void run() {
@@ -142,6 +165,10 @@ public class JvmRuntimeFactoryTest {
 
         assertStatusIs(ThreadStatus.PARKED, thread);
         assertStateIs(Thread.State.WAITING, thread);
+        ProcessThread pt = forThread(runtime(), thread);
+        assertThat(pt.getAcquiredLocks(), Matchers.<ThreadLock>empty());
+        assertThat(pt.getWaitingOnLock(), nullValue());
+        assertThat(pt.getWaitingToLock(), nullValue());
     }
 
     @Test
@@ -156,6 +183,10 @@ public class JvmRuntimeFactoryTest {
 
         assertStatusIs(ThreadStatus.PARKED_TIMED, thread);
         assertStateIs(Thread.State.TIMED_WAITING, thread);
+        ProcessThread pt = forThread(runtime(), thread);
+        assertThat(pt.getAcquiredLocks(), Matchers.<ThreadLock>empty());
+        assertThat(pt.getWaitingOnLock(), nullValue());
+        assertThat(pt.getWaitingToLock(), nullValue());
     }
 
     @Test
@@ -275,16 +306,14 @@ public class JvmRuntimeFactoryTest {
             Thread.sleep(100); // Wait until blocked
 
             ProcessRuntime runtime = new JvmRuntimeFactory().currentRuntime();
-            ProcessThread current = runtime.getThreads().where(nameIs(Thread.currentThread().getName())).onlyThread();
+            ProcessThread owner = runtime.getThreads().where(nameIs(Thread.currentThread().getName())).onlyThread();
             ProcessThread blocked = runtime.getThreads().where(nameIs("ownableSynchronizers")).onlyThread();
 
-            assertThat(current.getStatus(), equalTo(ThreadStatus.RUNNABLE));
+            assertThat(owner.getStatus(), equalTo(ThreadStatus.RUNNABLE));
             assertThat(blocked.getStatus(), equalTo(ThreadStatus.PARKED));
 
-            Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(blocked.getWaitingToLock()));
-            assertThat(current.getAcquiredLocks(), equalTo(locks));
-
-            assertThat(blocked.getBlockingThread(), equalTo(current));
+            assertThat(only(owner.getAcquiredLocks()), equalTo(blocked.getWaitingToLock()));
+            assertThat(blocked.getBlockingThread(), equalTo(owner));
         } finally {
             thread.interrupt();
             lock.unlock();

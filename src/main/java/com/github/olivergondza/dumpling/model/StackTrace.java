@@ -144,23 +144,6 @@ public class StackTrace {
         return true;
     }
 
-    /**
-     * Approximate correct waiting verb for stack trace element.
-     *
-     * Waiting verb can not be estimated using thread status as it might not be
-     * in sync with stacktrace/lock information. Waiting verb is whatever precedes
-     * the lock information in threaddump ("waiting on", "waiting to lock" etc.).
-     * This method yields reasonable result only for stacktrace of non-runnable thread.
-     *
-     * Here for the lack of better place.
-     */
-    /*package*/ static String waitingVerb(StackTraceElement element) {
-        if (parking.equals(element)) return "parking to wait for";
-        if (sleeping.equals(element)) return "waiting on";
-        if (waiting.equals(element)) return "waiting on";
-
-        return "waiting to lock";
-    }
     private static final StackTraceElement parking = StackTrace.nativeElement("sun.misc.Unsafe", "park");
     private static final StackTraceElement sleeping = StackTrace.nativeElement("java.lang.Thread", "sleep");
     private static final StackTraceElement waiting = StackTrace.nativeElement("java.lang.Object", "wait", "Object.java");

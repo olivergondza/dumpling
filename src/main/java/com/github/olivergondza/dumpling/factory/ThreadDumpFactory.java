@@ -159,7 +159,6 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
         List<ThreadLock.Monitor> monitors = new ArrayList<ThreadLock.Monitor>();
         List<ThreadLock> synchronizers = new ArrayList<ThreadLock>();
         ThreadLock waitingToLock = null; // Block waiting on monitor
-        // TODO propagate waiting on into model
         ThreadLock waitingOnLock = null; // in Object.wait()
         int depth = -1;
 
@@ -228,13 +227,14 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
                 waitingOnLock = null;
             } else if (!builder.getThreadStatus().isWaiting()) {
 
-                throw new AssertionError("Thread dump reports 'waiting on' while not blocked nor waiting: " + string);
+                throw new AssertionError("Thread dump reports 'waiting on' while not waiting: " + string);
             }
         }
 
         builder.setAcquiredMonitors(monitors);
         builder.setAcquiredSynchronizers(synchronizers);
         builder.setWaitingToLock(waitingToLock);
+        builder.setWaitingOnLock(waitingOnLock);
 
         return builder;
     }

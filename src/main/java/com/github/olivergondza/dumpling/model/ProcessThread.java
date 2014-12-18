@@ -134,12 +134,8 @@ public class ProcessThread {
         return state.stackTrace;
     }
 
-    /**
-     * @deprecated Renamed to {@link #getWaitingToLock()}.
-     */
-    @Deprecated
     public @CheckForNull ThreadLock getWaitingOnLock() {
-        return state.waitingToLock;
+        return state.waitingOnLock;
     }
 
     public @CheckForNull ThreadLock getWaitingToLock() {
@@ -259,6 +255,7 @@ public class ProcessThread {
         private @Nonnull StackTrace stackTrace = new StackTrace();
         private @Nonnull ThreadStatus status = ThreadStatus.UNKNOWN;
         private @CheckForNull ThreadLock waitingToLock;
+        private @CheckForNull ThreadLock waitingOnLock;
         private @Nonnull List<ThreadLock.Monitor> acquiredMonitors = Collections.emptyList();
         private @Nonnull List<ThreadLock> acquiredSynchronizers = Collections.emptyList();
 
@@ -323,12 +320,9 @@ public class ProcessThread {
             return status;
         }
 
-        /**
-         * @deprecated Renamed to {@link #setWaitingToLock(ThreadLock)}.
-         */
-        @Deprecated
         public @Nonnull Builder setWaitingOnLock(ThreadLock lock) {
-            return setWaitingToLock(lock);
+            this.waitingOnLock = lock;
+            return this;
         }
 
         public @Nonnull Builder setWaitingToLock(ThreadLock lock) {
@@ -378,9 +372,15 @@ public class ProcessThread {
             for (StackTraceElement traceLine: stackTrace.getElements()) {
                 sb.append(NL).append("\tat ").append(traceLine);
 
-                if (waitingToLock != null && depth == 0) {
-                    String verb = StackTrace.waitingVerb(traceLine);
-                    sb.append(NL).append("\t- ").append(verb).append(' ').append(waitingToLock);
+                if (depth == 0) {
+                    if (waitingToLock != null) {
+                        String verb = waitingVerb(traceLine);
+                        sb.append(NL).append("\t- ").append(verb).append(' ').append(waitingToLock);
+                    }
+                    if (waitingOnLock != null) {
+                        String verb = waitingVerb(traceLine);
+                        sb.append(NL).append("\t- ").append(verb).append(' ').append(waitingOnLock);
+                    }
                 }
 
                 for (ThreadLock monitor: getMonitorsByDepth(depth)) {
@@ -398,6 +398,14 @@ public class ProcessThread {
             }
 
             return sb.toString();
+        }
+
+        private final String waitingVerb(StackTraceElement traceLine) {
+            if (status.isParked()) return "parking to wait for";
+            if (status.isWaiting()) return "waiting on";
+            if (status.isBlocked()) return "waiting to lock";
+
+            throw new AssertionError(status + " thread can not declare a lock");
         }
 
         private StringBuilder headerBuilder() {
@@ -459,11 +467,16 @@ public class ProcessThread {
     }
 
     /**
-     * @deprecated Renamed to waitingToLock.
+     * Match waiting thread waiting for given thread to be notified.
      */
-    @Deprecated
     public static @Nonnull Predicate waitingOnLock(final @Nonnull String className) {
-        return waitingOnLock(className);
+        return new Predicate() {
+            @Override
+            public boolean isValid(ProcessThread thread) {
+                final ThreadLock lock = thread.getWaitingOnLock();
+                return lock != null && lock.getClassName().equals(className);
+            }
+        };
     }
 
     /**
