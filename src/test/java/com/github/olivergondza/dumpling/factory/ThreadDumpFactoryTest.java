@@ -603,16 +603,28 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     // Thread state and locks might not be consistent with each other.
     // Can not assume that, for instance, thread waiting to acquire lock is not runnable
     @Test
+    @Ignore // Dumpling now rejects inconsistent models not to fail later or provide confusing results
     public void inconsistentThreadStateAndLockInformation() throws Exception {
-        ProcessThread thread = runtimeFrom("inconsistent-locks-and-state.log").getThreads().onlyThread();
+        ThreadSet threads = runtimeFrom("inconsistent-locks-and-state.log").getThreads();
+        ProcessThread parking = threads.where(nameIs("runnable-parking-to-wait")).onlyThread();
 
-        assertThat(thread.getStatus(), equalTo(ThreadStatus.RUNNABLE));
-        ThreadLock expectedLock = new ThreadLock(
+        assertThat(parking.getStatus(), equalTo(ThreadStatus.RUNNABLE));
+        assertThat(parking.getWaitingToLock(), equalTo(new ThreadLock(
                 "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject", 21032260640L
-        );
-        assertThat(thread.getWaitingToLock(), equalTo(expectedLock));
+        )));
         // Based on stacktrace - not thread status
-        assertThat(thread.toString(), containsString("parking to wait for"));
+        assertThat(parking.toString(), containsString("parking to wait for"));
+
+        ProcessThread blocked = threads.where(nameIs("blocked-without-monitor")).onlyThread();
+    }
+
+    @Test
+    public void runnableInObjectWait() throws Exception {
+        ProcessThread runnable = runtimeFrom("runnable-in-object-wait.log").getThreads().onlyThread();
+        assertThat(runnable.getStatus(), equalTo(ThreadStatus.RUNNABLE));
+        assertThat(only(runnable.getAcquiredLocks()), equalTo(new ThreadLock(
+                "hudson.remoting.UserRequest", 22040315832L
+        )));
     }
 
     @Test

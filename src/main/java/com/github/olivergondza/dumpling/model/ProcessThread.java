@@ -374,11 +374,11 @@ public class ProcessThread {
 
                 if (depth == 0) {
                     if (waitingToLock != null) {
-                        String verb = waitingVerb(traceLine);
+                        String verb = waitingVerb();
                         sb.append(NL).append("\t- ").append(verb).append(' ').append(waitingToLock);
                     }
                     if (waitingOnLock != null) {
-                        String verb = waitingVerb(traceLine);
+                        String verb = waitingVerb();
                         sb.append(NL).append("\t- ").append(verb).append(' ').append(waitingOnLock);
                     }
                 }
@@ -400,12 +400,12 @@ public class ProcessThread {
             return sb.toString();
         }
 
-        private final String waitingVerb(StackTraceElement traceLine) {
+        private final String waitingVerb() {
             if (status.isParked()) return "parking to wait for";
             if (status.isWaiting()) return "waiting on";
             if (status.isBlocked()) return "waiting to lock";
 
-            throw new AssertionError(status + " thread can not declare a lock");
+            throw new AssertionError(status + " thread can not declare a lock: " + name);
         }
 
         private StringBuilder headerBuilder() {

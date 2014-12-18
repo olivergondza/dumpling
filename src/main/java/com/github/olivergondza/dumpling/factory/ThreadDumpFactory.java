@@ -205,8 +205,10 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
             depth++;
         }
 
+        ThreadStatus status = builder.getThreadStatus();
+
         // Probably a bug in JVM/jstack but let's see what we can do
-        if (waitingOnLock == null && WAIT_TRACE_ELEMENT.equals(builder.getStacktrace().getElement(0))) {
+        if (waitingOnLock == null && !status.isRunnable() && WAIT_TRACE_ELEMENT.equals(builder.getStacktrace().getElement(0))) {
             HashSet<ThreadLock> acquiredLocks = new HashSet<ThreadLock>(monitors.size());
             for (Monitor m: monitors) {
                 acquiredLocks.add(m.getLock());
@@ -225,11 +227,15 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
 
                 waitingToLock = waitingOnLock;
                 waitingOnLock = null;
-            } else if (!builder.getThreadStatus().isWaiting()) {
-
-                throw new AssertionError("Thread dump reports 'waiting on' while not waiting: " + string);
             }
         }
+
+        if (waitingToLock != null && !status.isBlocked() && !status.isParked()) throw new AssertionError(
+                status + " thread declares waitingTo lock:\n" + string
+        );
+        if (waitingOnLock != null && !status.isWaiting()) throw new AssertionError(
+                status + " thread declares waitingOn lock:\n" + string
+        );
 
         builder.setAcquiredMonitors(monitors);
         builder.setAcquiredSynchronizers(synchronizers);
