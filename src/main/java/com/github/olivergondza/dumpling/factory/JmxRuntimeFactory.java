@@ -130,9 +130,10 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
             ProcessThread.Builder builder = new ProcessThread.Builder()
                     .setName((String) thread.get("threadName"))
                     .setId((Long) thread.get("threadId"))
-                    .setThreadStatus(ThreadStatus.fromState(state))
                     .setStacktrace(getStackTrace(thread))
             ;
+
+            builder.setThreadStatus(ThreadStatus.fromState(state, builder.getStacktrace().head()));
 
             final List<ThreadLock.Monitor> monitors = getMonitors(thread);
             final List<ThreadLock> synchonizers = getSynchronizers(thread);

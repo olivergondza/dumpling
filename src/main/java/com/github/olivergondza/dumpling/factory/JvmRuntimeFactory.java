@@ -28,7 +28,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,19 +59,23 @@ public class JvmRuntimeFactory {
         HashSet<ProcessThread.Builder> state = new HashSet<ProcessThread.Builder>(threads.size());
 
         for (Thread thread: threads) {
-            final ThreadStatus status = status(thread);
-            Builder builder = ProcessThread.builder()
-                    .setName(thread.getName())
-                    .setId(thread.getId())
-                    .setDaemon(thread.isDaemon())
-                    .setPriority(thread.getPriority())
-                    .setStacktrace(thread.getStackTrace())
-                    .setThreadStatus(status)
-            ;
-
             ThreadInfo info = infos.get(thread.getId());
             // The thread was terminated between Thread.getAllStackTraces() and ThreadMXBean.getThreadInfo()
             if (info == null) continue;
+
+            Builder builder = ProcessThread.builder()
+                    .setName(info.getThreadName())
+                    .setId(info.getThreadId())
+                    .setDaemon(thread.isDaemon())
+                    .setPriority(thread.getPriority())
+                    .setStacktrace(info.getStackTrace())
+            ;
+
+            final ThreadStatus status = ThreadStatus.fromState(
+                    info.getThreadState(), builder.getStacktrace().head()
+            );
+
+            builder.setThreadStatus(status);
 
             builder.setAcquiredMonitors(monitors(info));
             builder.setAcquiredSynchronizers(locks(info));
@@ -89,7 +92,6 @@ public class JvmRuntimeFactory {
                     );
                 }
             }
-
 
             state.add(builder);
         }
@@ -138,35 +140,7 @@ public class JvmRuntimeFactory {
         return new ThreadLock(info.getClassName(), info.getIdentityHashCode());
     }
 
-    private @Nonnull ThreadStatus status(Thread thread) {
-
-        try {
-            int code = threadStatus.getInt(thread);
-            return ThreadStatus.valueOf(code);
-        } catch (IllegalArgumentException ex) {
-
-            throw new UnsupportedJreException(ex);
-        } catch (IllegalAccessException ex) {
-
-            throw new UnsupportedJreException(ex);
-        } catch (NullPointerException ex) {
-
-            throw new UnsupportedJreException(ex);
-        }
-    }
-
-    private static Field threadStatus;
-    static {
-        try {
-            threadStatus = Thread.class.getDeclaredField("threadStatus");
-            threadStatus.setAccessible(true);
-        } catch (NoSuchFieldException ex) {
-           // Ignore in initialization. NullPointerException will be thrown when accessing.
-        } catch (SecurityException ex) {
-           // Ignore in initialization. IllegalAccessException will be thrown when accessing.
-        }
-    }
-
+    // Not used for now
     private final static class UnsupportedJreException extends RuntimeException {
         public UnsupportedJreException(Throwable cause) {
             super(

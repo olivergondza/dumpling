@@ -102,6 +102,13 @@ public class StackTrace {
     }
 
     /**
+     * Get innermost stack frame or null when there is no trace attached.
+     */
+    public @CheckForNull StackTraceElement head() {
+        return getElement(0);
+    }
+
+    /**
      * Get all the stack trace elements.
      */
     public @Nonnull List<StackTraceElement> getElements() {
@@ -143,8 +150,4 @@ public class StackTrace {
         if (!Arrays.equals(elements, other.elements)) return false;
         return true;
     }
-
-    private static final StackTraceElement parking = StackTrace.nativeElement("sun.misc.Unsafe", "park");
-    private static final StackTraceElement sleeping = StackTrace.nativeElement("java.lang.Thread", "sleep");
-    private static final StackTraceElement waiting = StackTrace.nativeElement("java.lang.Object", "wait", "Object.java");
 }

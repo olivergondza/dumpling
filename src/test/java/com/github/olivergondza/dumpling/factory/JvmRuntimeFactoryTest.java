@@ -222,17 +222,21 @@ public class JvmRuntimeFactoryTest {
             }
         }
 
-        int originalCount = new JvmRuntimeFactory().currentRuntime().getThreads().size();
+        int originalCount = runtime().getThreads().size();
 
         new Thrd(10).start();
         new Thrd(10).start();
         new Thrd(10).start();
         new Thrd(10).start();
         new Thrd(10).start();
+        new Thrd(10).start();
+        new Thrd(10).start();
+        new Thrd(10).start();
+
 
         ProcessRuntime runtime;
         do {
-            runtime = new JvmRuntimeFactory().currentRuntime();
+            runtime = runtime();
 
         } while (runtime.getThreads().size() > originalCount);
     }
@@ -241,9 +245,7 @@ public class JvmRuntimeFactoryTest {
     public void testThreadAttributes() {
         Thread expected = Thread.currentThread();
 
-        ProcessThread actual = new JvmRuntimeFactory().currentRuntime()
-                .getThreads().where(nameIs(expected.getName())).onlyThread()
-        ;
+        ProcessThread actual = runtime().getThreads().where(nameIs(expected.getName())).onlyThread();
 
         assertThat(expected.getName(), equalTo(actual.getName()));
         assertThat(expected.getState(), equalTo(actual.getState()));
@@ -273,7 +275,7 @@ public class JvmRuntimeFactoryTest {
         synchronized(lock) {
 
             // Waiting thread is not supposed to own the thread
-            ProcessRuntime runtime = new JvmRuntimeFactory().currentRuntime();
+            ProcessRuntime runtime = runtime();
             ProcessThread waiting = runtime.getThreads().where(nameIs("monitorOwnerOnObjectWait")).onlyThread();
             assertThat(waiting.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
             assertThat(waiting.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
@@ -305,7 +307,7 @@ public class JvmRuntimeFactoryTest {
             thread.start();
             Thread.sleep(100); // Wait until blocked
 
-            ProcessRuntime runtime = new JvmRuntimeFactory().currentRuntime();
+            ProcessRuntime runtime = runtime();
             ProcessThread owner = runtime.getThreads().where(nameIs(Thread.currentThread().getName())).onlyThread();
             ProcessThread blocked = runtime.getThreads().where(nameIs("ownableSynchronizers")).onlyThread();
 
@@ -342,9 +344,7 @@ public class JvmRuntimeFactoryTest {
 
         pause(100);
 
-        ThreadSet monitors = new JvmRuntimeFactory().currentRuntime().getThreads()
-                .where(nameIs("multipleMonitors"))
-        ;
+        ThreadSet monitors = runtime().getThreads().where(nameIs("multipleMonitors"));
 
         // All locks on single frame should be reported. Outermost lock should
         // be at the bottom (first), innermost last.
@@ -367,10 +367,12 @@ public class JvmRuntimeFactoryTest {
     }
 
     private void assertVerbIs(String verb, Thread thread) {
+        pause(100);
         assertThat(forThread(runtime(), thread).toString(), containsString("- " + verb));
     }
 
     private ThreadStatus statusOf(Thread thread) {
+        pause(100);
         final ProcessThread processThread = forThread(runtime(), thread);
         if (processThread == null) throw new AssertionError(
                 "No process thread in runtime for " + thread.getName()
@@ -379,7 +381,6 @@ public class JvmRuntimeFactoryTest {
     }
 
     private ProcessRuntime runtime() {
-        pause(100);
         return new JvmRuntimeFactory().currentRuntime();
     }
 

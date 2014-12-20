@@ -84,7 +84,7 @@ public enum ThreadStatus {
      * Description used in thread dump.
      */
     private final @Nonnull String name;
-    private final int code;
+    @Deprecated private final int code;
 
     /**
      * Matching java.lang.Thread.State.
@@ -174,7 +174,8 @@ public enum ThreadStatus {
         return this == TERMINATED;
     }
 
-    public static @Nonnull ThreadStatus valueOf(int code) {
+
+    @Deprecated public static @Nonnull ThreadStatus valueOf(int code) {
         for (ThreadStatus status: values()) {
             if (status.code == code) return status;
         }
@@ -196,11 +197,35 @@ public enum ThreadStatus {
         }
     }
 
-    public static @Nonnull ThreadStatus fromState(Thread.State state) {
+    @Deprecated public static @Nonnull ThreadStatus fromState(Thread.State state) {
         for (ThreadStatus value: values()) {
             if (value.state.equals(state)) return value;
         }
 
         throw new AssertionError("No matching ThreadState");
+    }
+
+    public static @Nonnull ThreadStatus fromState(@Nonnull Thread.State state, @Nonnull StackTraceElement head) {
+        switch (state) {
+            case NEW: return NEW;
+            case RUNNABLE: return RUNNABLE;
+            case BLOCKED: return BLOCKED;
+            case WAITING: return waitingState(false, head); // Not exact
+            case TIMED_WAITING: return waitingState(true, head); // Not exact
+            case TERMINATED: return TERMINATED;
+            default: return UNKNOWN;
+        }
+    }
+
+    private static @Nonnull ThreadStatus waitingState(boolean timed, @Nonnull StackTraceElement head) {
+        if ("sleep".equals(head.getMethodName()) && "java.lang.Thread".equals(head.getClassName())) return SLEEPING;
+        if ("wait".equals(head.getMethodName()) && "java.lang.Object".equals(head.getClassName())) {
+            return timed ? IN_OBJECT_WAIT_TIMED : IN_OBJECT_WAIT;
+        }
+        if ("park".equals(head.getMethodName()) && "sun.misc.Unsafe".equals(head.getClassName())) {
+            return timed ? PARKED_TIMED : PARKED;
+        }
+
+        throw new AssertionError("Unable to infer ThreadStatus from WAITING state in " + head);
     }
 }
