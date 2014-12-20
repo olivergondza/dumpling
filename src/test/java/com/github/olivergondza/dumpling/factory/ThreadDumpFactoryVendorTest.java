@@ -322,11 +322,12 @@ public class ThreadDumpFactoryVendorTest {
                 throw new RuntimeException(ex);
             }
 
-            return new AssertionError(
+            AssertionError error = new AssertionError(
                     "Process under test terminated prematurelly. Exit code: "
-                    + exit + "\nSTDOUT: " + out + "\nSTDERR: " + err,
-                    cause
+                    + exit + "\nSTDOUT: " + out + "\nSTDERR: " + err
             );
+            error.initCause(cause);
+            return error;
         }
 
         private ProcessRuntime waitForInitialized(Process process) {
