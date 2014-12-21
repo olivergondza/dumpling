@@ -10,7 +10,7 @@ Match thread by name.
 Match thread its name contains pattern.
 ### [nameContains](./apidocs/com/github/olivergondza/dumpling/model/ProcessThread.html#nameContains(java.lang.String))
 Match thread its name contains string.
-### [waitingOnLock](./apidocs/com/github/olivergondza/dumpling/model/ProcessThread.html#waitingOnLock(java.lang.String))
+### [<del>waitingOnLock</del> (Renamed to waitingToLock.)](./apidocs/com/github/olivergondza/dumpling/model/ProcessThread.html#waitingOnLock(java.lang.String))
 
 ### [waitingToLock](./apidocs/com/github/olivergondza/dumpling/model/ProcessThread.html#waitingToLock(java.lang.String))
 Match thread that is waiting on lock identified by <tt>className</tt>.
