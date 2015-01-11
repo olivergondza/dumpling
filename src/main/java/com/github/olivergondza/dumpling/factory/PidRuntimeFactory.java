@@ -70,10 +70,13 @@ public class PidRuntimeFactory implements CliRuntimeFactory {
         try {
             Process process = pb.start();
 
+            // Start consuming the output without waiting for process completion not to block both processes.
+            ProcessRuntime runtime = new ThreadDumpFactory().fromStream(process.getInputStream());
+
             int ret = process.waitFor();
             validateResult(process, ret);
 
-            return new ThreadDumpFactory().fromStream(process.getInputStream());
+            return runtime;
         } catch (IOException ex) {
 
             throw new CommandFailedException("Unable to invoke jstack: " + ex.getMessage(), ex);
