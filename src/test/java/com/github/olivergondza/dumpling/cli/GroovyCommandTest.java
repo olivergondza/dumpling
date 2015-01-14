@@ -139,11 +139,11 @@ public class GroovyCommandTest extends AbstractCliTest {
         File file = File.createTempFile("dumpling-GroovyCommandTest", "script");
         try {
             PrintWriter writer = new PrintWriter(file);
-            writer.println("print 'groovy out'; return 42;");
+            writer.println("println 'groovy out'; return 42;");
             writer.close();
 
             run("groovy", "--script", file.getAbsolutePath());
-            assertThat(out.toString(), equalTo("groovy out"));
+            assertThat(out.toString(), equalTo("groovy out\n42\n"));
             assertThat(err.toString(), equalTo(""));
             assertThat(exitValue, equalTo(42));
         } finally {
