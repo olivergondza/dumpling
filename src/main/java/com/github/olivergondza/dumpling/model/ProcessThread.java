@@ -134,10 +134,20 @@ public class ProcessThread {
         return state.stackTrace;
     }
 
+    /**
+     * Monitor thread is waiting to be notified.
+     *
+     * @return null is the thread is not in {@link Object#wait()}.
+     */
     public @CheckForNull ThreadLock getWaitingOnLock() {
         return state.waitingOnLock;
     }
 
+    /**
+     * Monitor thread is waiting to acquire.
+     *
+     * @return null then the thread is not <tt>BLOCKED</tt> acquiring the monitor.
+     */
     public @CheckForNull ThreadLock getWaitingToLock() {
         return state.waitingToLock;
     }
