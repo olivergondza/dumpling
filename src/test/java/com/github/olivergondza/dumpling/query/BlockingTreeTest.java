@@ -150,6 +150,27 @@ public class BlockingTreeTest extends AbstractCliTest {
     }
 
     @Test
+    public void handleThreadsBlockedOnDeadlocks() throws Exception {
+        runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock-and-friends.log"));
+        ThreadSet ts = runtime.getThreads();
+
+        Set<Tree> expected = new HashSet<Tree>(Arrays.asList(
+                new BlockingTree.Tree(
+                        ts.where(nameContains("ajp-127.0.0.1-8009-103")).onlyThread(),
+                        new BlockingTree.Tree(
+                                ts.where(nameContains("ajp-127.0.0.1-8009-46")).onlyThread(),
+                                new BlockingTree.Tree(
+                                        ts.where(nameContains("ajp-127.0.0.1-8009-94")).onlyThread()
+                                )
+                        )
+                )
+        ));
+
+        final Result result = runtime.query(new BlockingTree());
+        assertThat(result.getTrees(), equalTo(expected));
+    }
+
+    @Test
     public void cliQuery() {
         run("blocking-tree", "--in", "threaddump", blockingTreeLog.getAbsolutePath());
         assertThat(err.toString(), equalTo(""));

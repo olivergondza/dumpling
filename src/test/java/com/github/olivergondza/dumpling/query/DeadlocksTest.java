@@ -39,6 +39,7 @@ import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
+import com.github.olivergondza.dumpling.query.Deadlocks.Result;
 
 public class DeadlocksTest extends AbstractCliTest {
 
@@ -114,6 +115,19 @@ public class DeadlocksTest extends AbstractCliTest {
                 assertTrue(thread.getName().matches("Deadlock thread [AB]"));
             }
         }
+    }
+
+    @Test
+    public void doNotReportThreadsNotPartOfTheCycle() throws Exception {
+        ProcessRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock-and-friends.log"));
+        Result result = runtime.query(new Deadlocks());
+        Set<ThreadSet> deadlocks = result.getDeadlocks();
+        assertThat("Deadlock count", deadlocks.size(), equalTo(1));
+
+        ThreadSet deadlock = deadlocks.iterator().next();
+        assertThat(deadlock.size(), equalTo(2));
+
+        assertThat("Involved thread count", result.involvedThreads().size(), equalTo(2));
     }
 
     @Test

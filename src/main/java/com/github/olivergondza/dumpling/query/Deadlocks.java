@@ -24,9 +24,11 @@
 package com.github.olivergondza.dumpling.query;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -96,23 +98,23 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
 
         private Result(@Nonnull ThreadSet input, boolean showStackTraces) {
             super(showStackTraces);
-            final ProcessRuntime runtime = input.getProcessRuntime();
 
-            final HashSet<ThreadSet> deadlocks = new HashSet<ThreadSet>(1);
+            final LinkedHashSet<ThreadSet> deadlocks = new LinkedHashSet<ThreadSet>(1);
             final LinkedHashSet<ProcessThread> involved = new LinkedHashSet<ProcessThread>(2);
             // No need to visit threads more than once
             final Set<ProcessThread> analyzed = new HashSet<ProcessThread>(input.size());
 
             for (ProcessThread thread: input) {
 
-                Set<ProcessThread> cycleCandidate = new LinkedHashSet<ProcessThread>(2);
+                ArrayList<ProcessThread> cycleCandidate = new ArrayList<ProcessThread>(2);
                 for (ProcessThread blocking = thread.getBlockingThread(); blocking != null; blocking = blocking.getBlockingThread()) {
                     if (analyzed.contains(thread)) break;
 
-                    if (cycleCandidate.contains(blocking)) {
-                        // Cycle detected - record deadlock and break the cycle traversing.
-                        deadlocks.add(input.derive(cycleCandidate));
-                        involved.addAll(cycleCandidate);
+                    int beginning = cycleCandidate.indexOf(blocking);
+                    if (beginning != -1) {
+                        List<ProcessThread> cycle = cycleCandidate.subList(beginning, cycleCandidate.size());
+                        deadlocks.add(input.derive(cycle));
+                        involved.addAll(cycle);
                         analyzed.addAll(cycleCandidate);
                         break;
                     }
