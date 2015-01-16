@@ -140,11 +140,20 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
         protected void printResult(PrintStream out) {
             int i = 1;
             for(ThreadSet deadlock: deadlocks) {
-                out.printf("Deadlock #%d%n", i++);
+                HashSet<ThreadLock> involvedLocks = new HashSet<ThreadLock>(deadlock.size());
                 for(ProcessThread thread: deadlock) {
-                    out.printf("%s %s%n", thread.getWaitingToLock(), thread.getHeader());
+                    involvedLocks.add(thread.getWaitingToLock());
+                }
+
+                out.printf("%nDeadlock #%d:%n", i++);
+                for(ProcessThread thread: deadlock) {
+                    out.println(thread.getHeader());
+                    out.printf("\tBlocked by %s%n", thread.getWaitingToLock());
+
                     for (ThreadLock lock: thread.getAcquiredLocks()) {
-                        out.printf("\tAcquired %s%n", lock);
+
+                        char mark = involvedLocks.contains(lock) ? '*' : ' ';
+                        out.printf("\tAcquired %c %s%n", mark, lock);
                     }
                 }
             }
