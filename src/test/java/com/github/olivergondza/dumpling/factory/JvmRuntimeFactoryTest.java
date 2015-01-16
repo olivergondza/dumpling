@@ -158,7 +158,9 @@ public class JvmRuntimeFactoryTest {
         thread = new Thread(getClass().getName() + " parked") {
             @Override
             public void run() {
-                LockSupport.park();
+                for (;;) {
+                    LockSupport.park();
+                }
             }
         };
         thread.start();
@@ -176,7 +178,9 @@ public class JvmRuntimeFactoryTest {
         thread = new Thread(getClass().getName() + " parked timed") {
             @Override
             public void run() {
-                LockSupport.parkNanos(1000000000L);
+                for (;;) {
+                    LockSupport.parkNanos(1000000000L);
+                }
             }
         };
         thread.start();
