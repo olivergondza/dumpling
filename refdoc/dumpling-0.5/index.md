@@ -2,9 +2,9 @@
 layout: "default"
 tag: "dumpling-0.5"
 title: "Reference documentation for dumpling-0.5"
-
-
-prefix: dumpling-0.5/
+category: refdoc
+prio: 5
+prefix:
 # used to generate version specific refdoc
 ---
 
