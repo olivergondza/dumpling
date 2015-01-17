@@ -25,7 +25,6 @@ package com.github.olivergondza.dumpling.model;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -80,7 +79,7 @@ public class ProcessRuntime {
 
         Set<ProcessThread> threadSet = threads instanceof Set
                 ? (Set<ProcessThread>) threads
-                : new HashSet<ProcessThread>(threads)
+                : new LinkedHashSet<ProcessThread>(threads)
         ;
         return new ThreadSet(this, threadSet);
     }
