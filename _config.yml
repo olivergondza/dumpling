@@ -1,6 +1,6 @@
 # Site settings
 title: Dumpling
-description: "DSL based threaddump analyzer"
+description: "Scriptable threaddump analyzer"
 baseurl: "/dumpling"
 url: "http://username.github.io/dumpling/"
 github_repo: "dumpling"
