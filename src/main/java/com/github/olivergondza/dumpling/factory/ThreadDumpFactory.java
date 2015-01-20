@@ -59,6 +59,7 @@ import com.github.olivergondza.dumpling.model.ThreadStatus;
 public class ThreadDumpFactory implements CliRuntimeFactory {
 
     private static final StackTraceElement WAIT_TRACE_ELEMENT = StackTrace.nativeElement("java.lang.Object", "wait");
+    private static final StackTraceElement PARK_TRACE_ELEMENT = StackTrace.nativeElement("sun.misc.Unsafe", "park");
 
     private static final String NL = "(?:\\r\\n|\\n)";
     private static final String LOCK_SUBPATTERN = "<0x(\\w+)> \\(a ([^\\)]+)\\)";
@@ -66,10 +67,9 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
     private static final Pattern THREAD_DELIMITER = Pattern.compile(NL + NL + "(?!\\s)");
     private static final Pattern STACK_TRACE_ELEMENT_LINE = Pattern.compile(" *at (\\S+)\\.(\\S+)\\(([^:]+?)(\\:\\d+)?\\)");
     private static final Pattern ACQUIRED_LINE = Pattern.compile("- locked " + LOCK_SUBPATTERN);
-    private static final Pattern WAITING_ON_LINE = Pattern.compile("- waiting on " + LOCK_SUBPATTERN); // In Object.wait()
     // Oracle/OpenJdk puts unnecessary space after 'parking to wait for'
-    // Omit 'waiting on' as it is not a monitor that blocks the thread
-    private static final Pattern WAITING_TO_LOCK_LINE = Pattern.compile("- (?:waiting to lock|parking to wait for ?) " + LOCK_SUBPATTERN);
+    private static final Pattern WAITING_ON_LINE = Pattern.compile("- (?:waiting on|parking to wait for ?) " + LOCK_SUBPATTERN);
+    private static final Pattern WAITING_TO_LOCK_LINE = Pattern.compile("- waiting to lock " + LOCK_SUBPATTERN);
     private static final Pattern OWNABLE_SYNCHRONIZER_LINE = Pattern.compile("- " + LOCK_SUBPATTERN);
     private static final Pattern THREAD_HEADER = Pattern.compile(
             "^\"(.*)\" ([^\\n\\r]+)(?:" + NL + "\\s+java.lang.Thread.State: ([^\\n\\r]+)(?:" + NL + "(.+))?)?",
@@ -206,9 +206,10 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
         }
 
         ThreadStatus status = builder.getThreadStatus();
+        StackTraceElement innerFrame = builder.getStacktrace().getElement(0);
 
         // Probably a bug in JVM/jstack but let's see what we can do
-        if (waitingOnLock == null && !status.isRunnable() && WAIT_TRACE_ELEMENT.equals(builder.getStacktrace().getElement(0))) {
+        if (waitingOnLock == null && !status.isRunnable() && WAIT_TRACE_ELEMENT.equals(innerFrame)) {
             HashSet<ThreadLock> acquiredLocks = new HashSet<ThreadLock>(monitors.size());
             for (Monitor m: monitors) {
                 acquiredLocks.add(m.getLock());
@@ -228,6 +229,14 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
                 waitingToLock = waitingOnLock;
                 waitingOnLock = null;
             }
+        }
+
+        // https://github.com/olivergondza/dumpling/issues/43
+        if (waitingOnLock != null && status.isRunnable() && PARK_TRACE_ELEMENT.equals(innerFrame)) {
+            // Presumably when entering or leaving the parked state.
+            // Remove the lock instead of fixing the thread status as there is
+            // no general way to tell PARKED and PARKED_TIMED apart.
+            waitingOnLock = null;
         }
 
         if (waitingToLock != null && !status.isBlocked() && !status.isParked()) throw new AssertionError(

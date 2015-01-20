@@ -28,6 +28,7 @@ import static com.github.olivergondza.dumpling.Util.pause;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
@@ -692,6 +693,18 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertThat(blocked.getAcquiredLocks(), Matchers.<ThreadLock>empty());
         assertThat(waiting.getAcquiredLocks(), Matchers.<ThreadLock>empty());
         assertThat(timedWaiting.getAcquiredLocks(), Matchers.<ThreadLock>empty());
+    }
+
+    // Presumably this is a bug in certain java 6 versions from Oracle
+    @Test
+    public void runnableThreadInUnsafePark() throws Exception {
+        ThreadSet threads = runtimeFrom("runnable_in_unsafe_park.log").getThreads();
+        ProcessThread runnable = threads.where(nameIs("runnable")).onlyThread();
+
+        assertThat(runnable.getStatus(), equalTo(ThreadStatus.RUNNABLE));
+        assertThat(runnable.getAcquiredLocks(), Matchers.<ThreadLock>empty());
+        assertThat(runnable.getWaitingOnLock(), nullValue());
+        assertThat(runnable.getWaitingToLock(), nullValue());
     }
 
     private ProcessRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {
