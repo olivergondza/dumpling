@@ -646,10 +646,9 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertThat(owning.getWaitingToLock(), equalTo(null));
 
         assertThat(waiting.getStatus(), equalTo(ThreadStatus.PARKED));
-        assertThat(waiting.getWaitingToLock(), equalTo(lock));
+        assertThat(waiting.getWaitingOnLock(), equalTo(lock));
+        assertThat(waiting.getWaitingToLock(), nullValue());
         assertThat(waiting.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
-
-        assertThat(waiting.getBlockingThread(), equalTo(owning));
     }
 
     @Test

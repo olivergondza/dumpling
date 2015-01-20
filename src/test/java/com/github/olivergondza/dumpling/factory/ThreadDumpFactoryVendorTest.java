@@ -131,8 +131,8 @@ public class ThreadDumpFactoryVendorTest {
         assertThat(main.getStatus(), equalTo(ThreadStatus.PARKED));
         assertThat(other.getStatus(), equalTo(ThreadStatus.PARKED));
 
-        assertThat(main.getWaitingToLock(), equalTo(only(other.getAcquiredSynchronizers())));
-        assertThat(other.getWaitingToLock(), equalTo(only(main.getAcquiredSynchronizers())));
+        assertThat(main.getWaitingOnLock(), equalTo(only(other.getAcquiredSynchronizers())));
+        assertThat(other.getWaitingOnLock(), equalTo(only(main.getAcquiredSynchronizers())));
 
         assertThat(other.getAcquiredMonitors(), Matchers.<ThreadLock>empty());
         assertThat(main.getAcquiredMonitors(), Matchers.<ThreadLock>empty());
@@ -198,7 +198,7 @@ public class ThreadDumpFactoryVendorTest {
         ProcessThread main = sut.thread("main");
         assertThat(main.getStatus(), equalTo(ThreadStatus.PARKED));
         assertThat(main.getAcquiredLocks(), Matchers.<ThreadLock>empty());
-        assertThat(main.getWaitingToLock().getClassName(), equalTo("java.lang.Object"));
+        assertThat(main.getWaitingOnLock().getClassName(), equalTo("java.lang.Object"));
         assertThat(
                 main.getStackTrace().getElement(0),
                 equalTo(StackTrace.nativeElement("sun.misc.Unsafe", "park"))
@@ -210,7 +210,7 @@ public class ThreadDumpFactoryVendorTest {
         ProcessThread main = sut.thread("main");
         assertThat(main.getStatus(), equalTo(ThreadStatus.PARKED_TIMED));
         assertThat(main.getAcquiredLocks(), Matchers.<ThreadLock>empty());
-        assertThat(main.getWaitingToLock().getClassName(), equalTo("java.lang.Object"));
+        assertThat(main.getWaitingOnLock().getClassName(), equalTo("java.lang.Object"));
         assertThat(
                 main.getStackTrace().getElement(0),
                 equalTo(StackTrace.nativeElement("sun.misc.Unsafe", "park"))

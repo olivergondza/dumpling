@@ -239,10 +239,10 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
             waitingOnLock = null;
         }
 
-        if (waitingToLock != null && !status.isBlocked() && !status.isParked()) throw new AssertionError(
+        if (waitingToLock != null && !status.isBlocked()) throw new AssertionError(
                 status + " thread declares waitingTo lock:\n" + string
         );
-        if (waitingOnLock != null && !status.isWaiting()) throw new AssertionError(
+        if (waitingOnLock != null && !status.isWaiting() && !status.isParked()) throw new AssertionError(
                 status + " thread declares waitingOn lock:\n" + string
         );
 
