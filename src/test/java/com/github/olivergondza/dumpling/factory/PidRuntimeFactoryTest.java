@@ -53,7 +53,7 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
     public void invokeFactory() throws Exception {
         setupSleepingThreadWithLock();
 
-        ProcessRuntime pidRuntime = new PidRuntimeFactory().forProcess(Util.currentPid());
+        ProcessRuntime pidRuntime = new PidRuntimeFactory().fromProcess(Util.currentPid());
 
         ProcessThread thread = pidRuntime.getThreads().where(nameIs("sleepingThreadWithLock")).onlyThread();
         assertThat(thread.getStatus(), equalTo(ThreadStatus.SLEEPING));
@@ -88,7 +88,7 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
     @Test
     public void notAJavaProcess() throws Exception {
         try {
-            new PidRuntimeFactory().forProcess(299);
+            new PidRuntimeFactory().fromProcess(299);
             fail("No exception thrown");
         } catch(CommandFailedException ex) {
             assertThat(ex.getMessage(), containsString("jstack failed with code "));

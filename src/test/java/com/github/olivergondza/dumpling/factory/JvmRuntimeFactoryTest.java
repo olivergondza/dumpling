@@ -154,7 +154,7 @@ public class JvmRuntimeFactoryTest {
     }
 
     @Test
-    public void parkedThreadStatus() throws Exception {
+    public void parkedThreadStatus() {
         thread = new Thread(getClass().getName() + " parked") {
             @Override
             public void run() {
@@ -190,6 +190,48 @@ public class JvmRuntimeFactoryTest {
         ProcessThread pt = forThread(runtime(), thread);
         assertThat(pt.getAcquiredLocks(), Matchers.<ThreadLock>empty());
         assertThat(pt.getWaitingOnLock(), nullValue());
+        assertThat(pt.getWaitingToLock(), nullValue());
+    }
+
+    @Test
+    public void parkedThreadWithBlockerStatus() {
+        final Object blocker = new Object();
+        thread = new Thread(getClass().getName() + " parked") {
+            @Override
+            public void run() {
+                for (;;) {
+                    LockSupport.park(blocker);
+                }
+            }
+        };
+        thread.start();
+
+        assertStatusIs(ThreadStatus.PARKED, thread);
+        assertStateIs(Thread.State.WAITING, thread);
+        ProcessThread pt = forThread(runtime(), thread);
+        assertThat(pt.getAcquiredLocks(), Matchers.<ThreadLock>empty());
+        assertThat(pt.getWaitingOnLock(), equalTo(ThreadLock.fromInstance(blocker)));
+        assertThat(pt.getWaitingToLock(), nullValue());
+    }
+
+    @Test
+    public void parkedTimedThreadWithBlockerStatus() {
+        final Object blocker = new Object();
+        thread = new Thread(getClass().getName() + " parked timed") {
+            @Override
+            public void run() {
+                for (;;) {
+                    LockSupport.parkNanos(blocker, 1000000000L);
+                }
+            }
+        };
+        thread.start();
+
+        assertStatusIs(ThreadStatus.PARKED_TIMED, thread);
+        assertStateIs(Thread.State.TIMED_WAITING, thread);
+        ProcessThread pt = forThread(runtime(), thread);
+        assertThat(pt.getAcquiredLocks(), Matchers.<ThreadLock>empty());
+        assertThat(pt.getWaitingOnLock(), equalTo(ThreadLock.fromInstance(blocker)));
         assertThat(pt.getWaitingToLock(), nullValue());
     }
 
@@ -318,7 +360,7 @@ public class JvmRuntimeFactoryTest {
             assertThat(owner.getStatus(), equalTo(ThreadStatus.RUNNABLE));
             assertThat(blocked.getStatus(), equalTo(ThreadStatus.PARKED));
 
-            assertThat(only(owner.getAcquiredLocks()), equalTo(blocked.getWaitingToLock()));
+            assertThat(only(owner.getAcquiredLocks()), equalTo(blocked.getWaitingOnLock()));
             assertThat(blocked.getBlockingThread(), equalTo(owner));
         } finally {
             thread.interrupt();

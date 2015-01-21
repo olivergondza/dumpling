@@ -82,9 +82,9 @@ public class JvmRuntimeFactory {
             LockInfo lockInfo = info.getLockInfo();
             if (lockInfo != null) {
                 ThreadLock lock = lock(lockInfo);
-                if (status.isBlocked() || status.isParked()) {
+                if (status.isBlocked()) {
                     builder.setWaitingToLock(lock);
-                } else if (status.isWaiting()) {
+                } else if (status.isWaiting() || status.isParked()) {
                     builder.setWaitingOnLock(lock);
                 } else {
                     throw new AssertionError(

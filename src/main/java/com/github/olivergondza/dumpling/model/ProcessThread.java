@@ -207,9 +207,15 @@ public class ProcessThread {
      * @return Blocking thread or null if not block by a thread.
      */
     public @CheckForNull ProcessThread getBlockingThread() {
+        if (state.waitingToLock == null && state.waitingOnLock == null) {
+            return null;
+        }
+
         for (ProcessThread thread: runtime.getThreads()) {
             if (thread == this) continue;
-            if (thread.getAcquiredLocks().contains(state.waitingToLock)) {
+            Set<ThreadLock> acquired = thread.getAcquiredLocks();
+            if (acquired.isEmpty()) continue;
+            if (acquired.contains(state.waitingToLock) || acquired.contains(state.waitingOnLock)) {
                 return thread;
             }
         }
