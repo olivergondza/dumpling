@@ -32,6 +32,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.After;
@@ -49,7 +50,7 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
     private Thread t;
 
     @Test
-    public void invokeFactory() {
+    public void invokeFactory() throws Exception {
         setupSleepingThreadWithLock();
 
         ProcessRuntime pidRuntime = new PidRuntimeFactory().forProcess(Util.currentPid());
@@ -85,7 +86,7 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
     }
 
     @Test
-    public void notAJavaProcess() {
+    public void notAJavaProcess() throws Exception {
         try {
             new PidRuntimeFactory().forProcess(299);
             fail("No exception thrown");
@@ -96,13 +97,13 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
     }
 
     @Test
-    public void jstackNotExecutable() {
+    public void jstackNotExecutable() throws Exception {
         PidRuntimeFactory factory = new PidRuntimeFactory(System.getProperty("java.home") + "/no_such_dir/");
         try {
-            factory.forProcess(Util.currentPid());
+            factory.fromProcess(Util.currentPid());
             fail("No exception thrown");
-        } catch(CommandFailedException ex) {
-            assertThat(ex.getMessage(), containsString("Unable to invoke jstack: Cannot run program"));
+        } catch(IOException ex) {
+            assertThat(ex.getMessage(), containsString("Cannot run program"));
         }
     }
 

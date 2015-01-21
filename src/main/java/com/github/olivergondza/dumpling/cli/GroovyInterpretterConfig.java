@@ -92,7 +92,7 @@ public class GroovyInterpretterConfig {
         }
 
         public ProcessRuntime process(int pid ) throws Exception {
-            return new PidRuntimeFactory().forProcess(pid);
+            return new PidRuntimeFactory().fromProcess(pid);
         }
 
         public ProcessRuntime jmx(int pid) throws Exception {

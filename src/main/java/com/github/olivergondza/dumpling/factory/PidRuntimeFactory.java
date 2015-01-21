@@ -64,31 +64,48 @@ public class PidRuntimeFactory implements CliRuntimeFactory {
         return "Create runtime from running process identified by PID.";
     }
 
-    // TODO Expose real Exceptions
+    /**
+     * @deprecated Use {@link #fromProcess(int)} instead.
+     */
+    @Deprecated
     public @Nonnull ProcessRuntime forProcess(int pid) {
-        ProcessBuilder pb = new ProcessBuilder(jstackBinary(), "-l", Integer.toString(pid));
         try {
-            Process process = pb.start();
-
-            // Start consuming the output without waiting for process completion not to block both processes.
-            ProcessRuntime runtime = new ThreadDumpFactory().fromStream(process.getInputStream());
-
-            int ret = process.waitFor();
-            validateResult(process, ret);
-
-            return runtime;
+            return fromProcess(pid);
         } catch (IOException ex) {
-
             throw new CommandFailedException("Unable to invoke jstack: " + ex.getMessage(), ex);
         } catch (InterruptedException ex) {
-
             throw new CommandFailedException("jstack invocation interrupted: " + ex.getMessage(), ex);
         }
     }
 
+    /**
+     * @param pid Process id to examine.
+     * @throws IOException When jstack invocation failed.
+     * @throws InterruptedException When jstack invocation was interrupted.
+     */
+    public @Nonnull ProcessRuntime fromProcess(int pid) throws IOException, InterruptedException {
+        ProcessBuilder pb = new ProcessBuilder(jstackBinary(), "-l", Integer.toString(pid));
+
+        Process process = pb.start();
+
+        // Start consuming the output without waiting for process completion not to block both processes.
+        ProcessRuntime runtime = new ThreadDumpFactory().fromStream(process.getInputStream());
+
+        int ret = process.waitFor();
+        validateResult(process, ret);
+
+        return runtime;
+    }
+
     @Override
     public @Nonnull ProcessRuntime createRuntime(String locator, ProcessStream streams) throws CommandFailedException {
-        return forProcess(pid(locator));
+        try {
+            return fromProcess(pid(locator));
+        } catch (IOException ex) {
+            throw new CommandFailedException("Unable to invoke jstack: " + ex.getMessage(), ex);
+        } catch (InterruptedException ex) {
+            throw new CommandFailedException("jstack invocation interrupted: " + ex.getMessage(), ex);
+        }
     }
 
     private void validateResult(Process process, int ret) throws IOException {

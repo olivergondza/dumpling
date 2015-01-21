@@ -47,7 +47,6 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
 
 import com.github.olivergondza.dumpling.Util;
-import com.github.olivergondza.dumpling.cli.CommandFailedException;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.StackTrace;
@@ -299,7 +298,10 @@ public class ThreadDumpFactoryVendorTest {
                 try {
 
                     return runtime = waitForInitialized(process);
-                } catch (CommandFailedException e) {
+                } catch (IOException e) {
+                    int exit = process.exitValue();
+                    throw reportProblem(exit, e);
+                } catch (InterruptedException e) {
                     int exit = process.exitValue();
                     throw reportProblem(exit, e);
                 }
@@ -330,9 +332,9 @@ public class ThreadDumpFactoryVendorTest {
             return error;
         }
 
-        private ProcessRuntime waitForInitialized(Process process) {
+        private ProcessRuntime waitForInitialized(Process process) throws IOException, InterruptedException {
             int pid = getPid(process);
-            ProcessRuntime runtime = prf.forProcess(pid);
+            ProcessRuntime runtime = prf.fromProcess(pid);
             for (int i = 0; i < 10; i++) {
                 pause(500);
 
@@ -340,11 +342,11 @@ public class ThreadDumpFactoryVendorTest {
 
                 for (StackTraceElement elem: main.getStackTrace().getElements()) {
                     if ("dumpling-script".equals(elem.getClassName()) && "run".equals(elem.getMethodName())) {
-                        return prf.forProcess(pid);
+                        return prf.fromProcess(pid);
                     }
                 }
 
-                runtime = prf.forProcess(pid);
+                runtime = prf.fromProcess(pid);
             }
 
             throw new AssertionError("Process under test not initialized in time: " + runtime.getThreads());
