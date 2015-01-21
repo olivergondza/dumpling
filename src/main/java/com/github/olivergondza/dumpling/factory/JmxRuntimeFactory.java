@@ -125,7 +125,7 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
         HashSet<Builder> builders = new HashSet<ProcessThread.Builder>(threads.length);
 
         for (CompositeData thread: threads) {
-            State state = Thread.State.valueOf((String) thread.get("threadState"));
+            @Nonnull State state = Thread.State.valueOf((String) thread.get("threadState"));
 
             ProcessThread.Builder builder = new ProcessThread.Builder()
                     .setName((String) thread.get("threadName"))
@@ -175,7 +175,7 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
         return synchonizers;
     }
 
-    private ThreadLock createLock(CompositeData rm) {
+    private @Nonnull ThreadLock createLock(CompositeData rm) {
         return new ThreadLock(
                 (String) rm.get("className"),
                 (Integer) rm.get("identityHashCode")
@@ -243,7 +243,7 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
         }
 
         private AssertionError assertionError(String msg, Throwable cause) {
-            AssertionError ex = new AssertionError("Unable to invoke " + CONNECTOR_CLASS_NAME);
+            AssertionError ex = new AssertionError(msg);
             ex.initCause(cause);
             return ex;
         }
