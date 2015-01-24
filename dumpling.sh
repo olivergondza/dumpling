@@ -26,7 +26,7 @@ function download() {
   metadata_url="https://oss.sonatype.org/content/repositories/releases/com/github/olivergondza/dumpling/maven-metadata.xml"
   latest=`wget --no-check-certificate $metadata_url -O - 2> /dev/null | grep \<latest\> | sed -e "s/<[^>]*>//g" -e "s/\s*//"`
   jar_url="https://oss.sonatype.org/content/repositories/releases/com/github/olivergondza/dumpling/$latest/dumpling-$latest-shaded.jar"
-  echo "Downloading Dumpling $latest now..."
+  echo "Downloading Dumpling $latest now..." >&2
   wget --no-check-certificate -nv -O $1 $jar_url || rm $1
 }
 
@@ -34,7 +34,7 @@ dir="$( cd "$( dirname "$0" )" && pwd )"
 
 if [ `ls $dir/target/dumpling-*-shaded.jar 2> /dev/null | wc -l` != 1 ]; then
   if [ -f $dir/pom.xml -a -d $dir/src/ ]; then
-    echo "No war found, building it now..."
+    echo "No war found, building it now..." >&2
     mvn clean package -DskipTests -f "$dir/pom.xml" > /dev/null
     jar=`ls $dir/target/dumpling-*-shaded.jar | head -n 1`
   else
