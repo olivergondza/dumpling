@@ -156,4 +156,95 @@ public class GroovyRuntimeTest extends AbstractCliTest {
         assertThat(err.toString(), containsString("stderr content"));
         assertThat(out.toString(), containsString("stdout content"));
     }
+
+    @Theory
+    public void groovyGrep(String command) {
+        stdin("print D.load.jvm.threads.grep().getClass()" + Util.NL);
+        run(command);
+
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), containsString("class com.github.olivergondza.dumpling.model.ThreadSet"));
+        assertThat(this, succeeded());
+    }
+
+    @Theory
+    public void groovyGrepWithArg(String command) {
+        stdin("print D.load.jvm.threads.grep { it.name == 'blocked_thread' }.getClass()" + Util.NL);
+        run(command);
+
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), containsString("class com.github.olivergondza.dumpling.model.ThreadSet"));
+        assertThat(this, succeeded());
+    }
+
+    @Theory
+    public void groovyFindAll(String command) {
+        stdin("print D.load.jvm.threads.findAll().getClass()" + Util.NL);
+        run(command);
+
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), containsString("class com.github.olivergondza.dumpling.model.ThreadSet"));
+        assertThat(this, succeeded());
+    }
+
+    @Theory
+    public void groovyFindAllWithArg(String command) {
+        stdin("print D.load.jvm.threads.findAll { it.name == 'blocked_thread' }.getClass()" + Util.NL);
+        run(command);
+
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), containsString("class com.github.olivergondza.dumpling.model.ThreadSet"));
+        assertThat(this, succeeded());
+    }
+
+    @Theory
+    public void groovyAsImmutable(String command) {
+        stdin("print D.load.jvm.threads.asImmutable().getClass()" + Util.NL);
+        run(command);
+
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), containsString("class com.github.olivergondza.dumpling.model.ThreadSet"));
+        assertThat(this, succeeded());
+    }
+
+    @Theory
+    public void groovyIntersect(String command) {
+        stdin("rt = D.load.jvm; print rt.threads.intersect(rt.threads).getClass()" + Util.NL);
+        run(command);
+
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), containsString("class com.github.olivergondza.dumpling.model.ThreadSet"));
+        assertThat(this, succeeded());
+    }
+
+    @Theory
+    public void groovyPlus(String command) {
+        stdin("rt = D.load.jvm; threadSum = rt.threads + rt.threads; print threadSum.getClass()" + Util.NL);
+        run(command);
+
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), containsString("class com.github.olivergondza.dumpling.model.ThreadSet"));
+        assertThat(this, succeeded());
+    }
+
+    @Theory
+    public void groovyToSet(String command) {
+        stdin("print D.load.jvm.threads.toSet().getClass()" + Util.NL);
+        run(command);
+
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), containsString("class com.github.olivergondza.dumpling.model.ThreadSet"));
+        assertThat(this, succeeded());
+    }
+
+    @Theory
+    public void stateFilter(String command) {
+        String choices = "it.status.new || it.status.runnable || it.status.sleeping || it.status.waiting || it.status.parked || it.status.blocked || it.status.terminated";
+        stdin("print D.load.jvm.threads.grep { " + choices + " }.empty" + Util.NL);
+        run(command);
+
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), containsString("false"));
+        assertThat(this, succeeded());
+    }
 }

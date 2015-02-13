@@ -32,6 +32,7 @@ import java.util.Collection;
 import javax.annotation.Nonnull;
 
 import com.github.olivergondza.dumpling.factory.JmxRuntimeFactory;
+import com.github.olivergondza.dumpling.factory.JvmRuntimeFactory;
 import com.github.olivergondza.dumpling.factory.PidRuntimeFactory;
 import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
@@ -124,6 +125,10 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
 
         public ProcessRuntime jmx(@Nonnull String connection) throws Exception {
             return new JmxRuntimeFactory().createRuntime(connection, streams);
+        }
+
+        public ProcessRuntime getJvm() {
+            return new JvmRuntimeFactory().currentRuntime();
         }
     }
 }
