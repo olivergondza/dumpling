@@ -22,6 +22,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# CLI Dumpling wrapper for unix. Read more: https://olivergondza.github.io/dumpling/cli.html
+
 function download() {
   metadata_url="https://oss.sonatype.org/content/repositories/releases/com/github/olivergondza/dumpling/maven-metadata.xml"
   latest=`wget --no-check-certificate $metadata_url -O - 2> /dev/null | grep \<latest\> | sed -e "s/<[^>]*>//g" -e "s/\s*//"`
