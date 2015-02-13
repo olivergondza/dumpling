@@ -26,6 +26,7 @@ package com.github.olivergondza.dumpling.cli;
 import groovy.lang.Binding;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -89,7 +90,7 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
     }
 
     @SuppressWarnings("unused")
-    private static final class CliApiEntryPoint {
+    /*package*/ static class CliApiEntryPoint {
 
         private final @Nonnull ProcessStream streams;
 
@@ -111,19 +112,19 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
             this.streams = streams;
         }
 
-        public ProcessRuntime threaddump(@Nonnull String filename) throws Exception {
+        public ProcessRuntime threaddump(@Nonnull String filename) throws IOException {
             return new ThreadDumpFactory().fromFile(new File(filename));
         }
 
-        public ProcessRuntime process(int pid ) throws Exception {
+        public ProcessRuntime process(int pid) throws IOException, InterruptedException {
             return new PidRuntimeFactory().fromProcess(pid);
         }
 
-        public ProcessRuntime jmx(int pid) throws Exception {
+        public ProcessRuntime jmx(int pid) {
             return new JmxRuntimeFactory().forLocalProcess(pid);
         }
 
-        public ProcessRuntime jmx(@Nonnull String connection) throws Exception {
+        public ProcessRuntime jmx(@Nonnull String connection) {
             return new JmxRuntimeFactory().createRuntime(connection, streams);
         }
 
