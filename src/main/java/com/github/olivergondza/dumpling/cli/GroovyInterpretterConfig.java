@@ -36,7 +36,7 @@ import com.github.olivergondza.dumpling.factory.PidRuntimeFactory;
 import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 
-public class GroovyInterpretterConfig {
+/*package*/ class GroovyInterpretterConfig {
 
     /*package*/ Collection<String> getStarImports() {
         return Arrays.asList(
@@ -54,21 +54,23 @@ public class GroovyInterpretterConfig {
     /**
      * Default binding to be used in groovy interpreters.
      *
-     * Properties prefixed with '$' are considered special and should not be overwritten by interpreters.
+     * Dumpling exposed API is available via <tt>D</tt> property.
      */
     /*package*/ Binding getDefaultBinding(@Nonnull ProcessStream stream) {
         Binding binding = new Binding();
         binding.setProperty("out", stream.out());
         binding.setProperty("err", stream.err());
 
+        binding.setProperty("D", new CliApiEntryPoint(ProcessStream.system()));
+
         binding.setProperty("load", new Load(stream)); // Compatibility
-        binding.setProperty("$load", new LoadCommand());
+        binding.setProperty("$load", new LoadCommand(stream)); // Compatibility
 
         return binding;
     }
 
     /**
-     * @deprecated Use <tt>load.threaddump(String)</tt> instead.
+     * @deprecated Use <tt>D.load.threaddump(String)</tt> instead.
      */
     @Deprecated
     @SuppressWarnings("unused")
@@ -80,14 +82,35 @@ public class GroovyInterpretterConfig {
         }
 
         public ProcessRuntime call(String filename) throws Exception {
-            stream.err().println("load(String) command is deprecated. Use '$load.threaddump(String)' instead.");
+            stream.err().println("load(String) command is deprecated. Use 'D.load.threaddump(String)' instead.");
             return new ThreadDumpFactory().fromFile(new File(filename));
         }
     }
 
     @SuppressWarnings("unused")
+    private static final class CliApiEntryPoint {
+
+        private final @Nonnull ProcessStream streams;
+
+        public CliApiEntryPoint(@Nonnull ProcessStream streams) {
+            this.streams = streams;
+        }
+
+        public @Nonnull LoadCommand getLoad() {
+            return new LoadCommand(streams);
+        }
+    }
+
+    @SuppressWarnings("unused")
     private static final class LoadCommand {
-        public ProcessRuntime threaddump(String filename) throws Exception {
+
+        private final @Nonnull ProcessStream streams;
+
+        public LoadCommand(@Nonnull ProcessStream streams) {
+            this.streams = streams;
+        }
+
+        public ProcessRuntime threaddump(@Nonnull String filename) throws Exception {
             return new ThreadDumpFactory().fromFile(new File(filename));
         }
 
@@ -99,8 +122,8 @@ public class GroovyInterpretterConfig {
             return new JmxRuntimeFactory().forLocalProcess(pid);
         }
 
-        public ProcessRuntime jmx(String connection) throws Exception {
-            return new JmxRuntimeFactory().createRuntime(connection, ProcessStream.system());
+        public ProcessRuntime jmx(@Nonnull String connection) throws Exception {
+            return new JmxRuntimeFactory().createRuntime(connection, streams);
         }
     }
 }
