@@ -92,6 +92,13 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
         }
     }
 
+    /**
+     * Deadlock detection result.
+     *
+     * A set of all deadlocks found. Involved threads are all threads that are part of any deadlock.
+     *
+     * @author ogondza
+     */
     public final static class Result extends SingleThreadSetQuery.Result {
         private final @Nonnull Set<ThreadSet> deadlocks;
         private final @Nonnull ThreadSet involved;

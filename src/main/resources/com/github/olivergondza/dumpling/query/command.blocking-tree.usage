@@ -1,6 +1,12 @@
-Visualize blocked threads using tree hierarchy. Non-blocked threads are the roots of tree hierarchies where parent-child relationship represents blocking-blocked situation. Leaves of such trees represents blocked but not blocking threads. Only either blocked or blocking threads are reported.
+Output format:
+
+Thread blockage is visualized using tree hierarchy. Non-blocked threads are the roots of tree hierarchies where parent-child relationship represents blocking-blocked situation. Leaves of such trees represents blocked but not blocking threads. Only either blocked or blocking threads are reported.
 
 The example output contains headers of 2 threads where one is owning on monitor and the other is blocked trying to acquire it:
 
     "owning_thread" prio=10 tid=47759910742016 nid=24496
         "blocked_thread" prio=10 tid=47088345200640 nid=32297
+
+Deadlock handling:
+
+Deadlock chains are not part of reported trees, though deadlocked threads are considered as potential blocking roots. In such case only non-deadlocked threads are reported as blocked children. Full deadlock report is presented under blocking trees.

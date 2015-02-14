@@ -1,1 +1,15 @@
-Print sets of threads that form deadlocks.
+Output format:
+
+All detected deadlocks are reported separately. Threads in one deadlock are reported with all related locks.
+
+    Deadlock #1:
+    "ThreadA" daemon prio=10 tid=1481750528 nid=27336
+        Waiting to <0x40dce6960> (a hudson.model.ListView)
+        Acquired   <0x40dce0d68> (a hudson.plugins.nested_view.NestedView)
+        Acquired   <0x49c5f7990> (a hudson.model.FreeStyleProject)
+        Acquired * <0x404325338> (a hudson.model.Hudson)
+    "ThreadB" daemon prio=10 tid=47091108077568 nid=17982
+        Waiting to <0x404325338> (a hudson.model.Hudson)
+        Acquired * <0x40dce6960> (a hudson.model.ListView)
+
+Monitor thread is waiting to is listed first with "Waiting to" label, acquired monitor that block other thread's progress is highlighted using '*'.

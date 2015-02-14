@@ -90,6 +90,11 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
         }
     }
 
+    /**
+     * Forest of all blocking trees found.
+     *
+     * @author ogondza
+     */
     public static final class Result extends SingleThreadSetQuery.Result {
 
         private static final @Nonnull Deadlocks DEADLOCKS = new Deadlocks();
@@ -167,6 +172,11 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
             }
         }
 
+        /**
+         * All trees detected.
+         *
+         * Empty, when there are no blocked/blocking threads.
+         */
         public @Nonnull Set<Tree> getTrees() {
             return trees;
         }
