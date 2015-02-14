@@ -29,11 +29,8 @@ import static org.hamcrest.Matchers.not;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.net.URISyntaxException;
 
 import org.junit.Test;
-
-import com.github.olivergondza.dumpling.Util;
 
 public class GroovyCommandTest extends AbstractCliTest {
 
@@ -59,15 +56,6 @@ public class GroovyCommandTest extends AbstractCliTest {
             assertThat(exitValue, equalTo(42));
         } finally {
             file.delete();
-        }
-    }
-
-    private void invoke(String script) {
-        stdin(script);
-        try {
-            run("groovy", "--in", "threaddump", Util.resourceFile("producer-consumer.log").getAbsolutePath());
-        } catch (URISyntaxException ex) {
-            throw new AssertionError(ex);
         }
     }
 }
