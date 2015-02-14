@@ -69,7 +69,7 @@ public abstract class AbstractCliTest {
 
     protected void stdin(String string) {
         try {
-            in = new ByteArrayInputStream(string.getBytes("UTF-8"));
+            in = new ByteArrayInputStream(String.format(string).getBytes("UTF-8"));
         } catch (UnsupportedEncodingException ex) {
             throw new AssertionError(ex);
         }

@@ -38,22 +38,6 @@ import com.github.olivergondza.dumpling.Util;
 public class GroovyCommandTest extends AbstractCliTest {
 
     @Test
-    public void executeScript() {
-        invoke("print runtime.threads.size()");
-        assertThat(err.toString(), equalTo(""));
-        assertThat(this, succeeded());
-        assertThat(out.toString(), equalTo("8"));
-    }
-
-    @Test
-    public void filter() {
-        invoke("runtime.threads.where(nameIs('owning_thread')).collect { it.name }");
-        assertThat(err.toString(), equalTo(""));
-        assertThat(this, succeeded());
-        assertThat(out.toString().trim(), equalTo("[owning_thread]"));
-    }
-
-    @Test
     public void runScriptThatDoesNotExist() {
         run("groovy", "--script", "no_such_file");
         assertThat(out.toString(), equalTo(""));

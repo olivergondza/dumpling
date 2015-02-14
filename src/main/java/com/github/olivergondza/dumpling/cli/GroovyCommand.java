@@ -33,6 +33,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 
+import javax.annotation.Nonnull;
+
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.kohsuke.args4j.CmdLineException;
@@ -69,7 +71,8 @@ public class GroovyCommand implements CliCommand {
     public int run(ProcessStream process) throws CmdLineException {
         Binding binding = CONFIG.getDefaultBinding(process);
         if (runtime != null) {
-            binding.setProperty("runtime", runtime);
+            binding.setProperty("runtime", runtime); // Compatibility
+            binding.setProperty("D", new RuntimeEntryPoint(process, runtime));
         }
 
         CompilerConfiguration cc = new CompilerConfiguration();
@@ -108,5 +111,26 @@ public class GroovyCommand implements CliCommand {
         }
 
         return new InputStreamReader(scriptStream);
+    }
+
+    /**
+     * Entry point decorated with 'current' runtime.
+     *
+     * This is served instead of 'D' in case there is explicit runtime specified.
+     *
+     * @author ogondza
+     */
+    private static final class RuntimeEntryPoint extends GroovyInterpretterConfig.CliApiEntryPoint {
+
+        private final @Nonnull ProcessRuntime runtime;
+
+        public RuntimeEntryPoint(@Nonnull ProcessStream streams, @Nonnull ProcessRuntime runtime) {
+            super(streams);
+            this.runtime = runtime;
+        }
+
+        /*package*/ ProcessRuntime getRuntime() {
+            return runtime;
+        }
     }
 }
