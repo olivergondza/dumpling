@@ -40,6 +40,7 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
+import com.github.olivergondza.dumpling.cli.GroovyInterpretterConfig.ApiDoc;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 
 /**
@@ -72,7 +73,7 @@ public class GroovyCommand implements CliCommand {
         Binding binding = CONFIG.getDefaultBinding(process);
         if (runtime != null) {
             binding.setProperty("runtime", runtime); // Compatibility
-            binding.setProperty("D", new RuntimeEntryPoint(process, runtime));
+            binding.setProperty("D", new RuntimeEntryPoint(process, runtime, "D"));
         }
 
         CompilerConfiguration cc = new CompilerConfiguration();
@@ -124,12 +125,13 @@ public class GroovyCommand implements CliCommand {
 
         private final @Nonnull ProcessRuntime runtime;
 
-        public RuntimeEntryPoint(@Nonnull ProcessStream streams, @Nonnull ProcessRuntime runtime) {
-            super(streams);
+        public RuntimeEntryPoint(@Nonnull ProcessStream streams, @Nonnull ProcessRuntime runtime, @Nonnull String property) {
+            super(streams, property);
             this.runtime = runtime;
         }
 
-        /*package*/ ProcessRuntime getRuntime() {
+        @ApiDoc(text = "Current runtime passed via `--in` option (`groovy` only).")
+        public @Nonnull ProcessRuntime getRuntime() {
             return runtime;
         }
     }
