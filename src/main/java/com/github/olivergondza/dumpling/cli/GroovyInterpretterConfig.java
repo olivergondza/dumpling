@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import com.github.olivergondza.dumpling.factory.JmxRuntimeFactory;
 import com.github.olivergondza.dumpling.factory.JvmRuntimeFactory;
@@ -63,12 +64,12 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
      *
      * Dumpling exposed API is available via <tt>D</tt> property.
      */
-    /*package*/ Binding getDefaultBinding(@Nonnull ProcessStream stream) {
+    /*package*/ Binding getDefaultBinding(@Nonnull ProcessStream stream, @Nullable ProcessRuntime runtime) {
         Binding binding = new Binding();
         binding.setProperty("out", stream.out());
         binding.setProperty("err", stream.err());
 
-        binding.setProperty("D", new CliApiEntryPoint(ProcessStream.system(), "D"));
+        binding.setProperty("D", new CliApiEntryPoint(ProcessStream.system(), runtime, "D"));
 
         binding.setProperty("load", new Load(stream)); // Compatibility
         binding.setProperty("$load", new LoadCommand(stream, "$load")); // Compatibility
@@ -180,14 +181,21 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
     /*package*/ static class CliApiEntryPoint extends CliApi {
 
         private final @Nonnull ProcessStream streams;
+        private final @Nullable ProcessRuntime runtime;
 
-        public CliApiEntryPoint(@Nonnull ProcessStream streams, @Nonnull String property) {
+        public CliApiEntryPoint(@Nonnull ProcessStream streams, @Nullable ProcessRuntime runtime, @Nonnull String property) {
             super(property + '.');
             this.streams = streams;
+            this.runtime = runtime;
         }
 
         public @Nonnull LoadCommand getLoad() {
             return new LoadCommand(streams, initIndent + "load.");
+        }
+
+        @ApiDoc(text = "Current runtime passed via `--in` option. null if not provided.")
+        public @Nullable ProcessRuntime getRuntime() {
+            return runtime;
         }
     }
 
@@ -229,7 +237,7 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
-    /*public*/ static @interface ApiDoc {
+    private static @interface ApiDoc {
         String text();
     }
 }

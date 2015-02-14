@@ -44,7 +44,7 @@ public class Util {
 
     public static File resourceFile(String resource) throws URISyntaxException {
         URL res = Util.class.getResource(resource);
-        if (res == null) throw new AssertionError("Resource does not exist: " + Util.class.getSimpleName() + "/" + resource);
+        if (res == null) throw new AssertionError("Resource does not exist: " + resource);
 
         return new File(res.toURI());
     }

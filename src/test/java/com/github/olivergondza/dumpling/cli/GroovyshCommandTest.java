@@ -24,6 +24,7 @@
 package com.github.olivergondza.dumpling.cli;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 import java.io.File;
 
@@ -37,11 +38,21 @@ public class GroovyshCommandTest extends AbstractCliTest {
     @Test
     public void test() throws Exception {
         File file = Util.resourceFile(ThreadDumpFactoryTest.class, "openjdk-1.7.0_60.log");
-        stdin("load('" + file.getAbsolutePath() + "').threads.size();" + Util.NL);
+        stdin("load('" + file.getAbsolutePath() + "').threads.size();%n");
         run("groovysh");
 
         assertThat(out.toString(), containsString(" 35%n"));
         assertThat(this, succeeded());
         assertThat(err.toString(), containsString("load(String) command is deprecated. Use 'D.load.threaddump(String)"));
+    }
+
+    @Test
+    public void useInputRuntime() throws Exception {
+        stdin("D.runtime.threads.size()%n");
+        run("groovysh", "--in", "threaddump", Util.resourceFile("deadlock.log").getAbsolutePath());
+
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), containsString(" 18%n"));
+        assertThat(this, succeeded());
     }
 }

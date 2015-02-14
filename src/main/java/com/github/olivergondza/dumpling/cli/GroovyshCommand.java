@@ -33,6 +33,9 @@ import javax.annotation.Nonnull;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
 import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.Option;
+
+import com.github.olivergondza.dumpling.model.ProcessRuntime;
 
 /**
  * Run groovysh with imported Dumpling to investigate threaddump interactively.
@@ -44,6 +47,9 @@ import org.kohsuke.args4j.CmdLineException;
 public class GroovyshCommand implements CliCommand {
 
     private static final GroovyInterpretterConfig CONFIG = new GroovyInterpretterConfig();
+
+    @Option(name = "-i", aliases = {"--in"}, usage = "Input for process runtime")
+    private ProcessRuntime runtime;
 
     @Override
     public String getName() {
@@ -63,7 +69,7 @@ public class GroovyshCommand implements CliCommand {
         // Do not use .inputrc as jline does not interpret it correctly: https://github.com/jline/jline2/issues/51
         System.setProperty("jline.inputrc", "~/.no.inputrc");
 
-        Groovysh groovysh = new Groovysh(this.getClass().getClassLoader(), CONFIG.getDefaultBinding(process), io);
+        Groovysh groovysh = new Groovysh(this.getClass().getClassLoader(), CONFIG.getDefaultBinding(process, runtime), io);
 
         groovysh.getImports().addAll(getImports());
 
