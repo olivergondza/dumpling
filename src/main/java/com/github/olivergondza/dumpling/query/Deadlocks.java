@@ -150,7 +150,7 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result> {
                 out.printf("%nDeadlock #%d:%n", i++);
                 for(ProcessThread thread: deadlock) {
                     out.println(thread.getHeader());
-                    out.printf("\tBlocked by %s%n", thread.getWaitingToLock());
+                    out.printf("\tWaiting to %s%n", thread.getWaitingToLock());
 
                     for (ThreadLock lock: thread.getAcquiredLocks()) {
 
