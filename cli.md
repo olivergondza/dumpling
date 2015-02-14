@@ -50,8 +50,6 @@ groovy:000> rt.query(new Deadlocks())
 groovy:000>
 ```
 
-`groovysh` command does not accept `--in` option. Threaddumps must be loaded explicitly using `D.load.<factory>` functions.
-
 ## `D` object
 
 All groovy scripts run from cli (using `groovy` or `groovysh` command) have following exposed:
