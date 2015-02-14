@@ -17,7 +17,7 @@ $ wget {{page.dumpling-sh-url}}
 $ chmod +x dumpling.sh
 ```
 
-Then run `./dumpling.sh help [<command>]` to see what it offers.
+Then run `./dumpling.sh help [<command>]` to list available commands.
 
 ## Batch processing
 
@@ -31,7 +31,7 @@ $ ./dumpling.sh blocking-tree --in jmx localhost:4242
 Run custom groovy query:
 
 ```bash
-$ ./dumpling.sh groovy --in threaddump jstack-crash.log <<< "runtime.threads.grep { it.status.waiting }"
+$ ./dumpling.sh groovy --in threaddump jstack-crash.log <<< "D.runtime.threads.grep { it.status.waiting }"
 ```
 
 ## Interactive investigation
@@ -40,7 +40,7 @@ For interactive investigation there is `groovysh` command to open the shell, loa
 
 ```groovy
 $ ./dumpling.sh groovysh
-groovy:000> rt = load("jstack-crash.log")
+groovy:000> rt = D.load.threaddump("jstack-crash.log")
 ===> com.github.olivergondza.dumpling.model.ProcessRuntime@6555694
 groovy:000> rt.query(new Deadlocks())
 ===>
@@ -55,4 +55,4 @@ groovy:000>
 Note that capturing runtime from current JVM don not make sense when using
 Dumpling from CLI.
 
-Continue to [Dumpling DSL Tutorial](./tutorial.html).
+Continue to [Dumpling DSL Tutorial](./tutorial.html) or [Dumpling reference documentation](./refdoc/).

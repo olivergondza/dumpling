@@ -41,4 +41,4 @@ new ThreadDumpFactory().fromFile(new File("jstack-crash.log"));
 new JvmRuntimeFactory().currentRuntime();
 ```
 
-Continue to [Dumpling DSL Tutorial](./tutorial.html).
+Continue to [Dumpling DSL Tutorial](./tutorial.html) or [Dumpling reference documentation](./refdoc/).
