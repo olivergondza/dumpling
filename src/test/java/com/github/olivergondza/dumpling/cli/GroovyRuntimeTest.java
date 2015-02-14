@@ -267,4 +267,14 @@ public class GroovyRuntimeTest extends AbstractCliTest {
         assertThat(out.toString(), containsString("false"));
         assertThat(this, succeeded());
     }
+
+    @Theory
+    public void cliArguments(String command) {
+        stdin("print \"${D.args[1]} ${D.args[0]}!\"%n");
+        run(command, "World", "Hello");
+
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), containsString("Hello World!"));
+        assertThat(this, succeeded());
+    }
 }

@@ -31,10 +31,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
@@ -55,6 +58,9 @@ public class GroovyCommand implements CliCommand {
     @Option(name = "-s", aliases = {"--script"}, usage = "Script to execute")
     private File script;
 
+    @Argument(metaVar = "SCRIPT_ARGS", multiValued = true, usage = "Arguments to be passed to the script")
+    private List<String> args = new ArrayList<String>();
+
     @Override
     public String getName() {
         return "groovy";
@@ -67,7 +73,7 @@ public class GroovyCommand implements CliCommand {
 
     @Override
     public int run(ProcessStream process) throws CmdLineException {
-        Binding binding = CONFIG.getDefaultBinding(process, runtime);
+        Binding binding = CONFIG.getDefaultBinding(process, args, runtime);
         if (runtime != null) {
             binding.setProperty("runtime", runtime); // Compatibility
         }

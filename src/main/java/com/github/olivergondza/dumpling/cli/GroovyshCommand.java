@@ -27,11 +27,13 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
+import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
@@ -51,6 +53,9 @@ public class GroovyshCommand implements CliCommand {
     @Option(name = "-i", aliases = {"--in"}, usage = "Input for process runtime")
     private ProcessRuntime runtime;
 
+    @Argument(metaVar = "SCRIPT_ARGS", multiValued = true, usage = "Arguments to be passed to the script")
+    private List<String> args = new ArrayList<String>();
+
     @Override
     public String getName() {
         return "groovysh";
@@ -69,7 +74,7 @@ public class GroovyshCommand implements CliCommand {
         // Do not use .inputrc as jline does not interpret it correctly: https://github.com/jline/jline2/issues/51
         System.setProperty("jline.inputrc", "~/.no.inputrc");
 
-        Groovysh groovysh = new Groovysh(this.getClass().getClassLoader(), CONFIG.getDefaultBinding(process, runtime), io);
+        Groovysh groovysh = new Groovysh(this.getClass().getClassLoader(), CONFIG.getDefaultBinding(process, args, runtime), io);
 
         groovysh.getImports().addAll(getImports());
 
