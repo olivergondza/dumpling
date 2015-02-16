@@ -4,18 +4,6 @@ layout: default
 ---
 [Reference documentation for dumpling-0.6](.)
 # {{page.title}}
-### [`deadlocks`](./apidocs/com/github/olivergondza/dumpling/query/Deadlocks.Command.html)
-
-<pre style='word-wrap: break-word'>
-Detect cycles of blocked threads
-
-Usage: ./dumpling.sh deadlocks [--show-stack-traces] -i (--in) KIND LOCATOR
- --show-stack-traces    : List stack traces of all threads involved
- -i (--in) KIND LOCATOR : Input for process runtime
-
-Print sets of threads that form deadlocks.
-
-</pre>
 ### [`top-contenders`](./apidocs/com/github/olivergondza/dumpling/query/TopContenders.Command.html)
 
 <pre style='word-wrap: break-word'>
@@ -26,6 +14,18 @@ Usage: ./dumpling.sh top-contenders [--show-stack-traces] -i (--in) KIND LOCATOR
  -i (--in) KIND LOCATOR : Input for process runtime
 
 List blocking threads and threads they block. The list is sorted by the number of blocked threads.
+
+</pre>
+### [`deadlocks`](./apidocs/com/github/olivergondza/dumpling/query/Deadlocks.Command.html)
+
+<pre style='word-wrap: break-word'>
+Detect cycles of blocked threads
+
+Usage: ./dumpling.sh deadlocks [--show-stack-traces] -i (--in) KIND LOCATOR
+ --show-stack-traces    : List stack traces of all threads involved
+ -i (--in) KIND LOCATOR : Input for process runtime
+
+Print sets of threads that form deadlocks.
 
 </pre>
 ### [`blocking-tree`](./apidocs/com/github/olivergondza/dumpling/query/BlockingTree.Command.html)

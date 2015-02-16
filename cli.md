@@ -54,12 +54,6 @@ groovy:000>
 
 All groovy scripts run from cli (using `groovy` or `groovysh` command) have following exposed:
 
-- `D.runtime`: Current runtime passed vi `--in` option (`groovy` only).
-- `D.load.threaddump(String)`: Load runtime from threaddump.
-- `D.load.process(int)`: Load runtime from process identified by PID.
-- `D.load.jmx(int)`: Load runtime via JMX from process identified by PID.
-- `D.load.jmx(String)`: Load runtime via JMX using JMX connection string.
-
 Note that before Dumpling 0.7 `D.load` was exposed simply as `load` and `D.runtime` as `runtime`.
 
 Continue to [Dumpling DSL Tutorial](./tutorial.html) or [Dumpling reference documentation](./refdoc/).

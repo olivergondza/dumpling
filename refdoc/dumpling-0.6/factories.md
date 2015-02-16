@@ -4,6 +4,8 @@ layout: default
 ---
 [Reference documentation for dumpling-0.6](.)
 # {{page.title}}
+### [JvmRuntimeFactory](./apidocs/com/github/olivergondza/dumpling/factory/JvmRuntimeFactory.html)
+Create ProcessRuntime from state of current JVM process.
 ### [PidRuntimeFactory](./apidocs/com/github/olivergondza/dumpling/factory/PidRuntimeFactory.html)
 Create ProcessRuntime from running local process.
 
@@ -11,11 +13,9 @@ Create ProcessRuntime from running local process.
 
  This implementations invokes jstack binary and delegates to ThreadDumpFactory so it shares its features
  and limitations.
-### [ThreadDumpFactory](./apidocs/com/github/olivergondza/dumpling/factory/ThreadDumpFactory.html)
-Instantiate ProcessRuntime from threaddump produced by <tt>jstack</tt> or similar tool.
 ### [JmxRuntimeFactory](./apidocs/com/github/olivergondza/dumpling/factory/JmxRuntimeFactory.html)
 Create runtime from running process via JMX interface.
 
  A process can be identified by process ID or by host and port combination.
-### [JvmRuntimeFactory](./apidocs/com/github/olivergondza/dumpling/factory/JvmRuntimeFactory.html)
-Create ProcessRuntime from state of current JVM process.
+### [ThreadDumpFactory](./apidocs/com/github/olivergondza/dumpling/factory/ThreadDumpFactory.html)
+Instantiate ProcessRuntime from threaddump produced by <tt>jstack</tt> or similar tool.

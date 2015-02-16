@@ -13,11 +13,15 @@ for tag in `git tag | grep dumpling- | grep -v '\-SNAPSHOT'`; do
     mkdir -p $target
     git checkout $tag $source_paths
 
+    if [ ! -d $target/apidocs -o ! -f $target/index.md ]; then
+        mvn -e clean package -DskipTests=true
+    fi
+
     if [ ! -d $target/apidocs ]; then
         # Insert generic javadoc configuration
         sed -i -e "/<.build>/r pom.xml.javadoc" pom.xml
         perl -0 -pi -e "s|<build>.*</build>||gs" pom.xml
-        mvn -e clean site
+        mvn -e site
         mv target/site/apidocs $target/
     fi
 
