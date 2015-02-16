@@ -1,3 +1,1 @@
-There are several commands predefined:
-
-  load(String): Load runtime threaddump from file.
+All Dumpling DSL classes and methods are imported. "D" property is exposed to access useful data/functions.

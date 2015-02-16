@@ -1,7 +1,3 @@
-Execute groovy script provided on stdin against runtime. All Dumpling DSL classes and methods are imported. Available variables:
-
-  runtime: ProcessRuntime instance provided using --in option
-  out: PrintStream for stdout
-  err: PrintStream for stderr
+All Dumpling DSL classes and methods are imported. "D" property is exposed to access useful data/functions.
 
 Script return value is used as a command exit value in case it is an Integer or Boolean.
