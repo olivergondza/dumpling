@@ -2,6 +2,8 @@
 
 refdoc="refdoc"
 
+source_paths="src/main/ pom.xml dumpling.sh"
+
 prio=0
 for tag in `git tag | grep dumpling- | grep -v '\-SNAPSHOT'`; do
     target="$refdoc/$tag"
@@ -9,7 +11,7 @@ for tag in `git tag | grep dumpling- | grep -v '\-SNAPSHOT'`; do
     ((prio++))
 
     mkdir -p $target
-    git checkout $tag src/main/ pom.xml
+    git checkout $tag $source_paths
 
     if [ ! -d $target/apidocs ]; then
         # Insert generic javadoc configuration
@@ -35,5 +37,5 @@ done
 cp _includes/refdoc.index $refdoc/index.md
 sed -i -e "s/TAG/$tag/" -e "s/prio: PRIO//" -e "s|prefix:|prefix: $tag/|" -e "s/category: refdoc//" $refdoc/index.md
 
-git checkout gh-pages
-git rm -rf --ignore-unmatch src/main/ pom.xml
+git checkout -q gh-pages
+git rm -rfq --ignore-unmatch $source_paths
