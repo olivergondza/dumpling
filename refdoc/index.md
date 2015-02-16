@@ -1,10 +1,10 @@
 ---
 layout: "default"
-tag: "dumpling-0.7"
-title: "Reference documentation for dumpling-0.7"
+tag: "dumpling-0.6"
+title: "Reference documentation for dumpling-0.6"
 
 
-prefix: dumpling-0.7/
+prefix: dumpling-0.6/
 # used to generate version specific refdoc
 ---
 
@@ -40,8 +40,6 @@ Predicates to filter threads available from groovy. To be used with `ThreadSet.w
 threads.where(nameIs('a_thread'))
 ```
 {% assign version = page.tag | remove_first : "dumpling-" %}
-{{version}}
-
 {% if version >= "0.7" %}
 <a name="cliExports">
 ## [Groovy CLI exposed API]({{page.prefix}}cliExports.html)
