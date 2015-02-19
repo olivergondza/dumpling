@@ -21,7 +21,7 @@ Then run `./dumpling.sh help [<command>]` to list available commands.
 
 ## Batch processing
 
-When using Dumpling CLI, `--in` option is conventionally used to choose a *factory implementation* and a *locator* (yes, an option with 2 values). Run one of Dumpling predefined queries against threaddump.
+When using Dumpling CLI, `--in` option is conventionally used to choose a *factory implementation* and a *locator* (yes, an option with 2 values) in order to create runtime to inspect. Run one of Dumpling predefined queries against runtime obtained from different sources.
 
 ```bash
 $ ./dumpling.sh deadlocks --in process 4242
