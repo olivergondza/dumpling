@@ -194,7 +194,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory<ThreadDumpRuntime> {
         // Eliminate self lock that is presented in threaddumps when in Object.wait()
         if (
                 (builder.getThreadStatus().isWaiting() || builder.getThreadStatus() == ThreadStatus.BLOCKED) &&
-                builder.getStacktrace().getElemens().get(0).equals(StackTrace.nativeElement("java.lang.Object", "wait"))
+                builder.getStacktrace().getElement(0).equals(StackTrace.nativeElement("java.lang.Object", "wait"))
         ) {
             // Sometimes there are threads that are in Object.wait() and
             // (TIMED_)WAITING, yet does not declare to wait on self monitor

@@ -160,10 +160,10 @@ public class DeadlocksTest extends AbstractCliTest {
     }
 
     @Test
-    public void typeSafeQuerying() throws Exception {
+    public void typeSafeQuerying() {
         JvmRuntime runtime = new JvmRuntimeFactory().currentRuntime();
 
-        runtime.query(new Deadlocks()).getDeadlocks().iterator().next().forCurrentThread();
+        new Deadlocks().query(runtime.getThreads()).getDeadlocks().iterator().next().forCurrentThread();
     }
 
     private void assertLongListing(String out) {
@@ -179,7 +179,7 @@ public class DeadlocksTest extends AbstractCliTest {
     }
 
     private Set<JvmThreadSet> deadlocks(JvmRuntime runtime) {
-        return runtime.getThreads().query(new Deadlocks()).getDeadlocks();
+        return new Deadlocks().query(runtime.getThreads()).getDeadlocks();
     }
 
     private JvmRuntime runtime() {
