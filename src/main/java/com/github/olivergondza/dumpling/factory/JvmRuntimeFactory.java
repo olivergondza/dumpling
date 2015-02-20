@@ -87,8 +87,8 @@ public class JvmRuntimeFactory {
                 } else if (status.isWaiting() || status.isParked()) {
                     builder.setWaitingOnLock(lock);
                 } else {
-                    throw new AssertionError(
-                            String.format("Thread declares lock while %s: %n%s%n", status, info)
+                    throw new IllegalRuntimeStateException(
+                            "Thread declares lock while %s: %n%s%n", status, info
                     );
                 }
             }

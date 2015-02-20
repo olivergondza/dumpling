@@ -30,6 +30,7 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
+import com.github.olivergondza.dumpling.factory.IllegalRuntimeStateException;
 import com.github.olivergondza.dumpling.query.SingleThreadSetQuery;
 
 /**
@@ -47,8 +48,8 @@ public class ProcessRuntime {
 
         int buildersSize = builders.size();
         int threadsSize = threads.size();
-        if (buildersSize != threadsSize) throw new AssertionError(
-                String.format("%d builders produced %d threads", buildersSize, threadsSize)
+        if (buildersSize != threadsSize) throw new IllegalRuntimeStateException(
+                "%d builders produced %d threads", buildersSize, threadsSize
         );
     }
 

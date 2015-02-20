@@ -174,8 +174,8 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
 
             Matcher waitingToMatcher = WAITING_TO_LOCK_LINE.matcher(line);
             if (waitingToMatcher.find()) {
-                if (waitingToLock != null) throw new AssertionError(
-                        "Waiting to lock reported several times per single thread: " + string
+                if (waitingToLock != null) throw new IllegalRuntimeStateException(
+                        "Waiting to lock reported several times per single thread: %s", string
                 );
                 waitingToLock = createLock(waitingToMatcher);
                 continue;
@@ -183,8 +183,8 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
 
             Matcher waitingOnMatcher = WAITING_ON_LINE.matcher(line);
             if (waitingOnMatcher.find()) {
-                if (waitingOnLock != null) throw new AssertionError(
-                        "Waiting on lock reported several times per single thread: " + string
+                if (waitingOnLock != null) throw new IllegalRuntimeStateException(
+                        "Waiting on lock reported several times per single thread: %s", string
                 );
                 waitingOnLock = createLock(waitingOnMatcher);
                 continue;
@@ -239,11 +239,11 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
             waitingOnLock = null;
         }
 
-        if (waitingToLock != null && !status.isBlocked()) throw new AssertionError(
-                status + " thread declares waitingTo lock:\n" + string
+        if (waitingToLock != null && !status.isBlocked()) throw new IllegalRuntimeStateException(
+                "%s thread declares waitingTo lock: >>>\n%s\n<<<\n", status, string
         );
-        if (waitingOnLock != null && !status.isWaiting() && !status.isParked()) throw new AssertionError(
-                status + " thread declares waitingOn lock:\n" + string
+        if (waitingOnLock != null && !status.isWaiting() && !status.isParked()) throw new IllegalRuntimeStateException(
+                "%s thread declares waitingOn lock: >>>\n%s\n<<<\n", status, string
         );
 
         builder.setAcquiredMonitors(monitors);

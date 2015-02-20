@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
+import com.github.olivergondza.dumpling.factory.IllegalRuntimeStateException;
 import com.github.olivergondza.dumpling.model.ThreadLock.Monitor;
 
 /**
@@ -59,15 +60,17 @@ public class ProcessThread {
     }
 
     private void checkSanity() {
-        if (state.name == null || state.name.isEmpty()) throw new IllegalArgumentException("Thread name not set");
-        if (state.status == null) throw new IllegalArgumentException("Thread status not set");
+        if (state.name == null || state.name.isEmpty()) throw new IllegalRuntimeStateException("Thread name not set");
+        if (state.status == null) throw new IllegalRuntimeStateException("Thread status not set");
 
         if (state.id == null && state.tid == null && state.nid == null) {
-            throw new IllegalArgumentException("No thread identifier set");
+            throw new IllegalRuntimeStateException("No thread identifier set");
         }
 
         if (state.status.isBlocked() && state.waitingToLock == null) {
-            throw new IllegalArgumentException("Blocked thread does not declare monitor: >>>\n" + state + "\n<<<\n");
+            throw new IllegalRuntimeStateException(
+                    "Blocked thread does not declare monitor: >>>\n%s\n<<<\n", state
+            );
         }
     }
 
