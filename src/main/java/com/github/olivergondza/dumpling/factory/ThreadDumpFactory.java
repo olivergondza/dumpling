@@ -59,7 +59,6 @@ import com.github.olivergondza.dumpling.model.ThreadStatus;
 public class ThreadDumpFactory implements CliRuntimeFactory {
 
     private static final StackTraceElement WAIT_TRACE_ELEMENT = StackTrace.nativeElement("java.lang.Object", "wait");
-    private static final StackTraceElement PARK_TRACE_ELEMENT = StackTrace.nativeElement("sun.misc.Unsafe", "park");
 
     private static final String NL = "(?:\\r\\n|\\n)";
     private static final String LOCK_SUBPATTERN = "<0x(\\w+)> \\(a ([^\\)]+)\\)";
@@ -232,7 +231,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
         }
 
         // https://github.com/olivergondza/dumpling/issues/43
-        if (waitingOnLock != null && status.isRunnable() && PARK_TRACE_ELEMENT.equals(innerFrame)) {
+        if (waitingOnLock != null && status.isRunnable()) {
             // Presumably when entering or leaving the parked state.
             // Remove the lock instead of fixing the thread status as there is
             // no general way to tell PARKED and PARKED_TIMED apart.
