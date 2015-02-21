@@ -24,9 +24,11 @@
 package com.github.olivergondza.dumpling.query;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -38,6 +40,7 @@ import com.github.olivergondza.dumpling.cli.CliCommand;
 import com.github.olivergondza.dumpling.cli.ProcessStream;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
+import com.github.olivergondza.dumpling.model.ThreadLock;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
 /**
@@ -54,6 +57,9 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result<?,
         return this;
     }
 
+    /**
+     * @param threads Include only cycles that contain at least one of input threads.
+     */
     @Override
     public @Nonnull <
             SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
@@ -90,6 +96,13 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result<?,
         }
     }
 
+    /**
+     * Deadlock detection result.
+     *
+     * A set of all deadlocks found. Involved threads are all threads that are part of any deadlock.
+     *
+     * @author ogondza
+     */
     public final static class Result<
             SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
             RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>,
@@ -99,6 +112,8 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result<?,
         private final @Nonnull SetType involved;
 
         private Result(@Nonnull SetType input, boolean showStackTraces) {
+            super(showStackTraces);
+
             final HashSet<SetType> deadlocks = new HashSet<SetType>(1);
             final LinkedHashSet<ThreadType> involved = new LinkedHashSet<ThreadType>(2);
             // No need to visit threads more than once
@@ -106,14 +121,15 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result<?,
 
             for (ThreadType thread: input) {
 
-                Set<ThreadType> cycleCandidate = new LinkedHashSet<ThreadType>(2);
+                ArrayList<ThreadType> cycleCandidate = new ArrayList<ThreadType>(2);
                 for (ThreadType blocking = thread.getBlockingThread(); blocking != null; blocking = blocking.getBlockingThread()) {
                     if (analyzed.contains(thread)) break;
 
-                    if (cycleCandidate.contains(blocking)) {
-                        // Cycle detected - record deadlock and break the cycle traversing.
-                        deadlocks.add(input.derive(cycleCandidate));
-                        involved.addAll(cycleCandidate);
+                    int beginning = cycleCandidate.indexOf(blocking);
+                    if (beginning != -1) {
+                        List<ThreadType> cycle = cycleCandidate.subList(beginning, cycleCandidate.size());
+                        deadlocks.add(input.derive(cycle));
+                        involved.addAll(cycle);
                         analyzed.addAll(cycleCandidate);
                         break;
                     }
@@ -125,10 +141,7 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result<?,
             }
 
             this.deadlocks = Collections.unmodifiableSet(deadlocks);
-            this.involved = showStackTraces
-                    ? input.derive(involved)
-                    : input.getProcessRuntime().getEmptyThreadSet()
-            ;
+            this.involved = input.derive(involved);
         }
 
         /**
@@ -142,10 +155,23 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result<?,
 
         @Override
         protected void printResult(PrintStream out) {
-            for(ThreadSet<?, ?, ?> deadlock: deadlocks) {
-                for(ProcessThread<?, ?, ?> thread: deadlock) {
-                    out.print(" - ");
-                    out.print(thread.getName());
+            int i = 1;
+            for(SetType deadlock: deadlocks) {
+                HashSet<ThreadLock> involvedLocks = new HashSet<ThreadLock>(deadlock.size());
+                for(ThreadType thread: deadlock) {
+                    involvedLocks.add(thread.getWaitingToLock());
+                }
+
+                out.printf("%nDeadlock #%d:%n", i++);
+                for(ThreadType thread: deadlock) {
+                    out.println(thread.getHeader());
+                    out.printf("\tWaiting to %s%n", thread.getWaitingToLock());
+
+                    for (ThreadLock lock: thread.getAcquiredLocks()) {
+
+                        char mark = involvedLocks.contains(lock) ? '*' : ' ';
+                        out.printf("\tAcquired %c %s%n", mark, lock);
+                    }
                 }
             }
         }
@@ -157,9 +183,7 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result<?,
 
         @Override
         protected void printSummary(PrintStream out) {
-            out.println();
-            out.print(deadlocks.size());
-            out.println(" deadlocks detected");
+            out.printf("Deadlocks: %d%n", deadlocks.size());
         }
 
         @Override

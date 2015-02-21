@@ -23,17 +23,18 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
+import static com.github.olivergondza.dumpling.Util.only;
 import static com.github.olivergondza.dumpling.Util.pause;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -44,6 +45,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 
 import org.hamcrest.Description;
+import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.collection.IsEmptyCollection;
 import org.junit.Ignore;
@@ -547,35 +549,6 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     }
 
     @Test
-    public void lockRelationshipsShouldBePreserved() throws Exception {
-
-        ThreadDumpThreadSet threads = new ThreadDumpFactory().fromFile(Util.resourceFile("producer-consumer.log")).getThreads();
-
-        ThreadDumpThread blocked = threads.where(nameIs("blocked_thread")).onlyThread();
-        ThreadDumpThread owning = threads.where(nameIs("owning_thread")).onlyThread();
-
-        assertTrue(owning.getBlockingThreads().isEmpty());
-        assertEquals(threads.where(nameIs("blocked_thread")), owning.getBlockedThreads());
-
-        assertEquals(threads.where(nameIs("owning_thread")), blocked.getBlockingThreads());
-        assertTrue(blocked.getBlockedThreads().isEmpty());
-    }
-
-    @Test
-    public void doNotIncludeSelfToBlockedOrBlockingThreads() throws Exception {
-
-        ThreadDumpThreadSet threads = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "self-lock.log")).getThreads();
-
-        ThreadDumpThread handler = threads.where(nameIs("Reference Handler")).onlyThread();
-        ThreadDumpThread finalizer = threads.where(nameIs("Finalizer")).onlyThread();
-
-        assertTrue(handler.getBlockedThreads().isEmpty());
-        assertTrue(handler.getBlockingThreads().isEmpty());
-        assertTrue(finalizer.getBlockedThreads().isEmpty());
-        assertTrue(finalizer.getBlockingThreads().isEmpty());
-    }
-
-    @Test
     public void preserveThreadOrder() throws Exception {
 
         ThreadDumpThreadSet threads = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "self-lock.log")).getThreads();
@@ -601,19 +574,6 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         }
 
         assertThat(actualNames, equalTo(expectedNames));
-    }
-
-    @Test
-    public void parseParkedLocks() throws Exception {
-
-        ThreadDumpThreadSet threads = runtimeFrom("oraclejdk-1.7.0_51.log").getThreads();
-
-        ThreadDumpThread parking = threads.where(nameIs("ConnectionValidator")).onlyThread();
-
-        assertThat(parking.getStatus(), equalTo(ThreadStatus.PARKED_TIMED));
-        assertThat(parking.getWaitingOnLock().getClassName(), equalTo(
-                "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject"
-        ));
     }
 
     @Test
@@ -645,48 +605,29 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     // Thread state and locks might not be consistent with each other.
     // Can not assume that, for instance, thread waiting to acquire lock is not runnable
     @Test
+    @Ignore // Dumpling now rejects inconsistent models not to fail later or provide confusing results
     public void inconsistentThreadStateAndLockInformation() throws Exception {
-        ThreadDumpThread thread = runtimeFrom("inconsistent-locks-and-state.log").getThreads().onlyThread();
 
-        assertThat(thread.getStatus(), equalTo(ThreadStatus.RUNNABLE));
-        ThreadLock expectedLock = new ThreadLock(
+        ThreadDumpThreadSet threads = runtimeFrom("inconsistent-locks-and-state.log").getThreads();
+        ThreadDumpThread parking = threads.where(nameIs("runnable-parking-to-wait")).onlyThread();
+
+        assertThat(parking.getStatus(), equalTo(ThreadStatus.RUNNABLE));
+        assertThat(parking.getWaitingToLock(), equalTo(new ThreadLock(
                 "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject", 21032260640L
-        );
-        assertThat(thread.getWaitingOnLock(), equalTo(expectedLock));
+        )));
         // Based on stacktrace - not thread status
-        assertThat(thread.toString(), containsString("parking to wait for"));
+        assertThat(parking.toString(), containsString("parking to wait for"));
+
+        ThreadDumpThread blocked = threads.where(nameIs("blocked-without-monitor")).onlyThread();
     }
 
     @Test
-    public void monitorOwnerInObjectWait() throws Exception {
-        ThreadDumpThreadSet threads = runtimeFrom("in-object-wait.log").getThreads();
-
-        ThreadDumpThread reEntering = threads.where(nameIs("waitingToReacquireMonitorAfterWait")).onlyThread();
-        assertThat(reEntering.getStatus(), equalTo(ThreadStatus.BLOCKED));
-        assertThat(reEntering.getWaitingOnLock(), equalTo(new ThreadLock("java.lang.Object", 33677620560L)));
-        assertThat(reEntering.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
-
-        ThreadDumpThread owning = threads.where(nameIs("main")).onlyThread();
-        final Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(
-                new ThreadLock("java.lang.Object", 33677473560L)
-        ));
-        assertThat(owning.getStatus(), equalTo(ThreadStatus.SLEEPING));
-        assertThat(owning.getAcquiredLocks(), equalTo(locks));
-        assertThat(owning.getWaitingOnLock(), equalTo(null));
-
-        ThreadDumpThread waiting = threads.where(nameIs("monitorOwnerInObjectWait")).onlyThread();
-        assertThat(waiting.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
-        assertThat(waiting.getWaitingOnLock(), equalTo(new ThreadLock("java.lang.Object", 33677473560L)));
-        assertThat(waiting.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
-
-        ThreadDumpThread nested = threads.where(nameIs("waiting_in_nested_synchronized")).onlyThread();
-        assertThat(nested.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
-        final Set<ThreadLock> nestedLocks = new HashSet<ThreadLock>(Arrays.asList(
-                new ThreadLock("java.lang.Object", 33677621640L),
-                new ThreadLock("java.lang.Object", 33677621656L)
-        ));
-        assertThat(nested.getAcquiredLocks(), equalTo(nestedLocks));
-        assertThat(nested.getWaitingOnLock(), equalTo(new ThreadLock("java.lang.Object", 33677621672L)));
+    public void runnableInObjectWait() throws Exception {
+        ThreadDumpThread runnable = runtimeFrom("runnable-in-object-wait.log").getThreads().onlyThread();
+        assertThat(runnable.getStatus(), equalTo(ThreadStatus.RUNNABLE));
+        assertThat(only(runnable.getAcquiredLocks()), equalTo(new ThreadLock(
+                "hudson.remoting.UserRequest", 22040315832L
+        )));
     }
 
     @Test
@@ -704,56 +645,18 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         final ThreadLock lock = new ThreadLock("java.util.concurrent.locks.ReentrantLock$NonfairSync", 32296902960L);
         final Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(lock));
         assertThat(owning.getAcquiredLocks(), equalTo(locks));
-        assertThat(owning.getWaitingOnLock(), equalTo(null));
+        assertThat(owning.getWaitingToLock(), equalTo(null));
 
         assertThat(waiting.getStatus(), equalTo(ThreadStatus.PARKED));
         assertThat(waiting.getWaitingOnLock(), equalTo(lock));
+        assertThat(waiting.getWaitingToLock(), nullValue());
         assertThat(waiting.getAcquiredLocks(), IsEmptyCollection.<ThreadLock>empty());
-
-        assertThat(waiting.getBlockingThread(), equalTo(owning));
-    }
-
-    @Test
-    public void threadNameWithQuotes() throws Exception {
-        ThreadDumpThread quotes = runtimeFrom("quoted.log").getThreads().onlyThread();
-        assertThat(quotes.getName(), equalTo("\"o\""));
-        assertThat(quotes.getStatus(), equalTo(ThreadStatus.SLEEPING));
-        assertThat(quotes.getPriority(), equalTo(10));
-        assertThat(quotes.getTid(), equalTo(139651066363904L));
-        assertThat(quotes.getNid(), equalTo(19257L));
-    }
-
-    @Test
-    public void threadNameWithLinebreak() throws Exception {
-        ThreadDumpThread quotes = runtimeFrom("linebreaked.log").getThreads().onlyThread();
-        assertThat(quotes.getName(), equalTo("Thread\nName\nWith\nLinebreaks"));
-        assertThat(quotes.getStatus(), equalTo(ThreadStatus.SLEEPING));
-        assertThat(quotes.getPriority(), equalTo(10));
-        assertThat(quotes.getTid(), equalTo(139680862656512L));
-        assertThat(quotes.getNid(), equalTo(18973L));
     }
 
     @Test
     public void crlf() throws Exception {
         ThreadDumpThreadSet threads = runtimeFrom("crlf.log").getThreads();
         assertThat(threads.size(), equalTo(2));
-    }
-
-    @Test
-    public void multipleMonitorsOnSingleStackFrame() throws Exception {
-        ThreadDumpThreadSet monitors = runtimeFrom("multiple-monitors-on-single-frame.log").getThreads();
-
-        // All locks on single frame should be reported. Outermost lock should
-        // be at the bottom (first), innermost last.
-        assertThat(monitors.toString(), containsString(Util.formatTrace(
-                "- locked <0x7d7531890> (a java.lang.String)",
-                "- locked <0x7d7531890> (a java.lang.String)",
-                "- locked <0x7d7531880> (a java.lang.Object)",
-                "- locked <0x7d7531870> (a sun.misc.Lock)"
-        )));
-
-        // Duplicates are collapsed
-        assertThat(monitors.onlyThread().getAcquiredLocks().size(), equalTo(3));
     }
 
     @Test
@@ -773,8 +676,36 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                 nameIs("parseOutputProducedByJvmRuntimeFactory")
         ).onlyThread();
 
-        ThreadLock lock = t.getAcquiredLocks().iterator().next();
-        assertThat(lock, equalTo(ThreadLock.fromInstance(this)));
+        assertThat(only(t.getAcquiredLocks()), equalTo(ThreadLock.fromInstance(this)));
+    }
+
+    // Presumably this is a bug in certain java 6 versions from Oracle
+    @Test
+    public void parseThreadInObjectWaitThatDoesNotDeclareDesiredMonitor() throws Exception {
+        ThreadDumpThreadSet threads = runtimeFrom("in_wait_without_monitor.log").getThreads();
+        ThreadDumpThread blocked = threads.where(nameIs("blocked_without_log")).onlyThread();
+        ThreadDumpThread waiting = threads.where(nameIs("waiting_without_log")).onlyThread();
+        ThreadDumpThread timedWaiting = threads.where(nameIs("timed_waiting_without_log")).onlyThread();
+
+        assertThat(blocked.getWaitingToLock(), equalTo(new ThreadLock("hudson.model.Queue", 17233414264L)));
+        assertThat(waiting.getWaitingToLock(), equalTo(null));
+        assertThat(timedWaiting.getWaitingToLock(), equalTo(null));
+
+        assertThat(blocked.getAcquiredLocks(), Matchers.<ThreadLock>empty());
+        assertThat(waiting.getAcquiredLocks(), Matchers.<ThreadLock>empty());
+        assertThat(timedWaiting.getAcquiredLocks(), Matchers.<ThreadLock>empty());
+    }
+
+    // Presumably this is a bug in certain java 6 versions from Oracle
+    @Test
+    public void runnableThreadInUnsafePark() throws Exception {
+        ThreadDumpThreadSet threads = runtimeFrom("runnable_in_unsafe_park.log").getThreads();
+        ThreadDumpThread runnable = threads.where(nameIs("runnable")).onlyThread();
+
+        assertThat(runnable.getStatus(), equalTo(ThreadStatus.RUNNABLE));
+        assertThat(runnable.getAcquiredLocks(), Matchers.<ThreadLock>empty());
+        assertThat(runnable.getWaitingOnLock(), nullValue());
+        assertThat(runnable.getWaitingToLock(), nullValue());
     }
 
     private ThreadDumpRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {
@@ -933,7 +864,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
 
     private ThreadDumpRuntime reparse(ProcessRuntime<?, ?, ?> actual) {
         String output = actual.getThreads().toString();
-        ByteArrayInputStream stream = new ByteArrayInputStream(output.getBytes(StandardCharsets.UTF_8));
+        ByteArrayInputStream stream = new ByteArrayInputStream(output.getBytes(Charset.forName("UTF8")));
         ThreadDumpRuntime reparsed = new ThreadDumpFactory().fromStream(stream);
         return reparsed;
     }
@@ -947,7 +878,12 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         if (lhs.getPriority() != rhs.getPriority()) return "priority";
         if (lhs.isDaemon() != rhs.isDaemon()) return "daemon";
         if (!equals(lhs.getStatus(), rhs.getStatus())) return "thread status";
-        if (!equals(lhs.getWaitingOnLock(), rhs.getWaitingOnLock())) return "waiting on lock";
+        if (!equals(lhs.getWaitingToLock(), rhs.getWaitingToLock())) return String.format(
+                "waiting to lock (%s!=%s)", lhs.getWaitingToLock(), rhs.getWaitingToLock()
+        );
+        if (!equals(lhs.getWaitingOnLock(), rhs.getWaitingOnLock())) return String.format(
+                "waiting on lock (%s!=%s)", lhs.getWaitingOnLock(), rhs.getWaitingOnLock()
+        );
         if (!lhs.getAcquiredLocks().equals(rhs.getAcquiredLocks())) return "acquired locks";
         // if (!Arrays.equals(lhs.getStackTrace(), rhs.getStackTrace())) return "stack trace";
 

@@ -26,11 +26,18 @@ package com.github.olivergondza.dumpling.cli;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
@@ -43,8 +50,16 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
  */
 public class GroovyCommand implements CliCommand {
 
-    @Option(name = "-i", aliases = {"--in"}, required = true, usage = "Input for process runtime")
+    private static final GroovyInterpretterConfig CONFIG = new GroovyInterpretterConfig();
+
+    @Option(name = "-i", aliases = {"--in"}, usage = "Input for process runtime")
     private ProcessRuntime runtime;
+
+    @Option(name = "-s", aliases = {"--script"}, usage = "Script to execute")
+    private File script;
+
+    @Argument(metaVar = "SCRIPT_ARGS", multiValued = true, usage = "Arguments to be passed to the script")
+    private List<String> args = new ArrayList<String>();
 
     @Override
     public String getName() {
@@ -58,22 +73,23 @@ public class GroovyCommand implements CliCommand {
 
     @Override
     public int run(ProcessStream process) throws CmdLineException {
-        Binding binding = new Binding();
-        binding.setProperty("runtime", runtime);
-        binding.setProperty("out", process.out());
-        binding.setProperty("err", process.err());
+        Binding binding = CONFIG.getDefaultBinding(process, args, runtime);
+        if (runtime != null) {
+            binding.setProperty("runtime", runtime); // Compatibility
+        }
 
         CompilerConfiguration cc = new CompilerConfiguration();
         ImportCustomizer imports = new ImportCustomizer();
-        imports.addStarImports("com.github.olivergondza.dumpling.cli");
-        imports.addStarImports("com.github.olivergondza.dumpling.factory");
-        imports.addStarImports("com.github.olivergondza.dumpling.query");
-        imports.addStarImports("com.github.olivergondza.dumpling.model");
-        imports.addStaticStars("com.github.olivergondza.dumpling.model.ProcessThread");
+        for (String starImport: CONFIG.getStarImports()) {
+            imports.addStarImports(starImport);
+        }
+        for (String staticStar: CONFIG.getStaticStars()) {
+            imports.addStaticStars(staticStar);
+        }
         cc.addCompilationCustomizers(imports);
 
         GroovyShell shell = new GroovyShell(binding, cc);
-        Object exitVal = shell.run(new InputStreamReader(process.in()), "dumpling-script", Arrays.asList());
+        Object exitVal = shell.run(getScript(process), "dumpling-script", Arrays.asList());
         if (exitVal != null) {
             process.out().println(exitVal);
         }
@@ -85,5 +101,18 @@ public class GroovyCommand implements CliCommand {
         }
 
         return 0;
+    }
+
+    private InputStreamReader getScript(ProcessStream process) {
+        InputStream scriptStream = process.in();
+        if (script != null) {
+            try {
+                scriptStream = new FileInputStream(script);
+            } catch (FileNotFoundException ex) {
+                throw new CommandFailedException(ex.getMessage(), ex);
+            }
+        }
+
+        return new InputStreamReader(scriptStream);
     }
 }

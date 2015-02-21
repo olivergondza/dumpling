@@ -26,7 +26,6 @@ package com.github.olivergondza.dumpling.query;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
@@ -76,6 +75,15 @@ public interface SingleThreadSetQuery<ResultType extends SingleThreadSetQuery.Re
     public static abstract class Result<SetType extends ThreadSet<SetType, ?, ?>> {
 
         /**
+         * Show stack traces of involved threads.
+         */
+        private final boolean showStackTraces;
+
+        protected Result(boolean showStackTraces) {
+            this.showStackTraces = showStackTraces;
+        }
+
+        /**
          * Print query result.
          */
         protected abstract void printResult(@Nonnull PrintStream out);
@@ -83,9 +91,9 @@ public interface SingleThreadSetQuery<ResultType extends SingleThreadSetQuery.Re
         /**
          * Threads that are involved in result.
          *
-         * @return null or empty set when there are no threads to be printed.
+         * These threads will be listed if <tt>showStackTraces</tt> equal true.
          */
-        protected abstract @CheckForNull SetType involvedThreads();
+        protected abstract @Nonnull SetType involvedThreads();
 
         /**
          * Print optional summary for a query.
@@ -102,7 +110,7 @@ public interface SingleThreadSetQuery<ResultType extends SingleThreadSetQuery.Re
          */
         public int exitCode() {
             final SetType involvedThreads = involvedThreads();
-            return involvedThreads == null ? 0 : involvedThreads.size();
+            return involvedThreads.size();
         }
 
         @Override
@@ -118,11 +126,12 @@ public interface SingleThreadSetQuery<ResultType extends SingleThreadSetQuery.Re
          */
         protected final void printInto(@Nonnull PrintStream out) {
             printResult(out);
+            out.printf("%n%n");
 
             final ThreadSet<?, ?, ?> involvedThreads = involvedThreads();
-            if (involvedThreads != null) {
-                out.printf("%n%n");
+            if (showStackTraces && !involvedThreads.isEmpty()) {
                 out.print(involvedThreads);
+                out.printf("%n");
             }
 
             printSummary(out);

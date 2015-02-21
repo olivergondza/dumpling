@@ -25,16 +25,25 @@ package com.github.olivergondza.dumpling.model;
 
 import static com.github.olivergondza.dumpling.model.ProcessThread.acquiredLock;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
-import static com.github.olivergondza.dumpling.model.ProcessThread.waitingOnLock;
+import static com.github.olivergondza.dumpling.model.ProcessThread.waitingToLock;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.fail;
+
+import java.util.Arrays;
+import java.util.HashSet;
 
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
+import com.github.olivergondza.dumpling.factory.IllegalRuntimeStateException;
 import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
 import com.github.olivergondza.dumpling.factory.ThreadDumpFactoryTest;
+import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
+import com.github.olivergondza.dumpling.model.dump.ThreadDumpThread;
+import com.github.olivergondza.dumpling.model.dump.ThreadDumpThreadSet;
 
 public class ProcessTheadTest {
 
@@ -63,7 +72,7 @@ public class ProcessTheadTest {
 
     @Test
     public void differentWaitingVerbs() throws Exception {
-        ProcessRuntime runtime = factory.fromFile(Util.resourceFile("deadlock.log"));
+        ThreadDumpRuntime runtime = factory.fromFile(Util.resourceFile("deadlock.log"));
         assertThat(runtime.getThreads().toString(), containsString(
                 "- waiting to lock <0x404325338> (a hudson.model.Hudson)"
         ));
@@ -76,8 +85,43 @@ public class ProcessTheadTest {
 
     @Test
     public void filterByLocks() throws Exception {
-        ThreadSet threads = factory.fromFile(Util.resourceFile("producer-consumer.log")).getThreads();
-        assertThat(threads.where(nameIs("blocked_thread")), equalTo(threads.where(waitingOnLock("hudson.model.Queue"))));
+        ThreadDumpThreadSet threads = factory.fromFile(Util.resourceFile("producer-consumer.log")).getThreads();
+        assertThat(threads.where(nameIs("blocked_thread")), equalTo(threads.where(waitingToLock("hudson.model.Queue"))));
         assertThat(threads.where(nameIs("owning_thread")), equalTo(threads.where(acquiredLock("hudson.model.Queue"))));
+    }
+
+    @Test
+    public void failSanityCheck() {
+        try {
+            runtime(new ThreadDumpThread.Builder().setName(null));
+            fail();
+        } catch (IllegalRuntimeStateException ex) {
+            assertThat(ex.getMessage(), equalTo("Thread name not set"));
+        }
+
+        try {
+            runtime(new ThreadDumpThread.Builder().setName(""));
+            fail();
+        } catch (IllegalRuntimeStateException ex) {
+            assertThat(ex.getMessage(), equalTo("Thread name not set"));
+        }
+
+        try {
+            runtime(new ThreadDumpThread.Builder().setName("t"));
+            fail();
+        } catch (IllegalRuntimeStateException ex) {
+            assertThat(ex.getMessage(), equalTo("No thread identifier set"));
+        }
+
+        try {
+            runtime(new ThreadDumpThread.Builder().setName("t").setId(42).setThreadStatus(ThreadStatus.BLOCKED));
+            fail();
+        } catch (IllegalRuntimeStateException ex) {
+            assertThat(ex.getMessage(), startsWith("Blocked thread does not declare monitor"));
+        }
+    }
+
+    private ThreadDumpRuntime runtime(ThreadDumpThread.Builder... builders) {
+        return new ThreadDumpRuntime(new HashSet<ThreadDumpThread.Builder>(Arrays.asList(builders)));
     }
 }

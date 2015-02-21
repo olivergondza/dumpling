@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
+import com.github.olivergondza.dumpling.factory.IllegalRuntimeStateException;
 import com.github.olivergondza.dumpling.model.ThreadLock.Monitor;
 
 /**
@@ -54,9 +55,30 @@ public class ProcessThread<
     protected ProcessThread(@Nonnull RuntimeType runtime, @Nonnull Builder<?> builder) {
         this.runtime = runtime;
         this.state = builder.clone();
+
+        checkSanity();
     }
 
-    public String getName() {
+    private void checkSanity() {
+        if (state.name == null || state.name.isEmpty()) throw new IllegalRuntimeStateException("Thread name not set");
+        if (state.status == null) throw new IllegalRuntimeStateException("Thread status not set");
+
+        if (state.id == null && state.tid == null && state.nid == null) {
+            throw new IllegalRuntimeStateException("No thread identifier set");
+        }
+
+        if (state.status.isBlocked() && state.waitingToLock == null) {
+            throw new IllegalRuntimeStateException(
+                    "Blocked thread does not declare monitor: >>>\n%s\n<<<\n", state
+            );
+        }
+    }
+
+    public @Nonnull ProcessRuntime getRuntime() {
+        return runtime;
+    }
+
+    public @Nonnull String getName() {
         return state.name;
     }
 
@@ -95,7 +117,7 @@ public class ProcessThread<
     }
 
     /**
-     * {@link Thread.State} of current thread.
+     * {@link java.lang.Thread.State} of current thread.
      *
      * @return null if was not able to determine thread state.
      */
@@ -115,8 +137,22 @@ public class ProcessThread<
         return state.stackTrace;
     }
 
+    /**
+     * Monitor thread is waiting to be notified.
+     *
+     * @return null is the thread is not in {@link Object#wait()}.
+     */
     public @CheckForNull ThreadLock getWaitingOnLock() {
         return state.waitingOnLock;
+    }
+
+    /**
+     * Monitor thread is waiting to acquire.
+     *
+     * @return null then the thread is not <tt>BLOCKED</tt> acquiring the monitor.
+     */
+    public @CheckForNull ThreadLock getWaitingToLock() {
+        return state.waitingToLock;
     }
 
     public @Nonnull Set<ThreadLock> getAcquiredLocks() {
@@ -131,6 +167,18 @@ public class ProcessThread<
         return locks;
     }
 
+    public @Nonnull Set<ThreadLock> getAcquiredMonitors() {
+        LinkedHashSet<ThreadLock> locks = new LinkedHashSet<ThreadLock>(state.acquiredMonitors.size());
+        for (Monitor m: state.acquiredMonitors) {
+            locks.add(m.getLock());
+        }
+        return locks;
+    }
+
+    public @Nonnull Set<ThreadLock> getAcquiredSynchronizers() {
+        return new LinkedHashSet<ThreadLock>(state.acquiredSynchronizers);
+    }
+
     /**
      * Get threads that are waiting for lock held by this thread.
      */
@@ -138,12 +186,11 @@ public class ProcessThread<
         Set<ThreadType> blocked = new LinkedHashSet<ThreadType>();
         for (ThreadType thread: runtime.getThreads()) {
             if (thread == this) continue;
-            ThreadLock lock = ((ProcessThread<?, ?, ?>) thread).state.waitingOnLock;
-            if (getAcquiredLocks().contains(lock)) {
+            if (getAcquiredLocks().contains(thread.getWaitingToLock())) {
                 blocked.add(thread);
             }
         }
-        return runtime.getThreads().derive(blocked);
+        return runtime.getThreadSet(blocked);
     }
 
     /**
@@ -155,7 +202,7 @@ public class ProcessThread<
         final ThreadType blocking = getBlockingThread();
         if (blocking == null) return runtime.getEmptyThreadSet();
 
-        return runtime.getThreads().derive(Collections.singleton(blocking));
+        return runtime.getThreadSet(Collections.singleton(blocking));
     }
 
     /**
@@ -163,9 +210,15 @@ public class ProcessThread<
      * @return Blocking thread or null if not block by a thread.
      */
     public @CheckForNull ThreadType getBlockingThread() {
+        if (state.waitingToLock == null && state.waitingOnLock == null) {
+            return null;
+        }
+
         for (ThreadType thread: runtime.getThreads()) {
             if (thread == this) continue;
-            if (thread.getAcquiredLocks().contains(state.waitingOnLock)) {
+            Set<ThreadLock> acquired = thread.getAcquiredLocks();
+            if (acquired.isEmpty()) continue;
+            if (acquired.contains(state.waitingToLock) || acquired.contains(state.waitingOnLock)) {
                 return thread;
             }
         }
@@ -211,13 +264,10 @@ public class ProcessThread<
     }
 
     public static class Builder<
-//            ThreadType extends ProcessThread<? extends ThreadType, SetType, RuntimeType>,
-//            SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
-//            RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>,
             BuilderType extends Builder<BuilderType>
     > implements Cloneable {
 
-        private String name;
+        private @Nonnull String name = "";
         private boolean daemon;
         // priority might not be present in threaddump
         private Integer priority;
@@ -225,6 +275,7 @@ public class ProcessThread<
         private Long id, nid, tid;
         private @Nonnull StackTrace stackTrace = new StackTrace();
         private @Nonnull ThreadStatus status = ThreadStatus.UNKNOWN;
+        private @CheckForNull ThreadLock waitingToLock;
         private @CheckForNull ThreadLock waitingOnLock;
         private @Nonnull List<ThreadLock.Monitor> acquiredMonitors = Collections.emptyList();
         private @Nonnull List<ThreadLock> acquiredSynchronizers = Collections.emptyList();
@@ -238,7 +289,7 @@ public class ProcessThread<
             }
         }
 
-        public @Nonnull BuilderType setName(String name) {
+        public @Nonnull BuilderType setName(@Nonnull String name) {
             this.name = name;
             return (BuilderType) this;
         }
@@ -291,6 +342,11 @@ public class ProcessThread<
             return (BuilderType) this;
         }
 
+        public @Nonnull BuilderType setWaitingToLock(ThreadLock lock) {
+            this.waitingToLock = lock;
+            return (BuilderType) this;
+        }
+
         public @Nonnull BuilderType setAcquiredSynchronizers(List<ThreadLock> synchronizers) {
             this.acquiredSynchronizers = Collections.unmodifiableList(synchronizers);
             return (BuilderType) this;
@@ -330,12 +386,18 @@ public class ProcessThread<
             sb.append(NL).append("   java.lang.Thread.State: ").append(status.getName());
 
             int depth = 0;
-            for (StackTraceElement traceLine: stackTrace.getElemens()) {
+            for (StackTraceElement traceLine: stackTrace.getElements()) {
                 sb.append(NL).append("\tat ").append(traceLine);
 
-                if (waitingOnLock != null && depth == 0) {
-                    String verb = StackTrace.waitingVerb(traceLine);
-                    sb.append(NL).append("\t- ").append(verb).append(' ').append(waitingOnLock);
+                if (depth == 0) {
+                    if (waitingToLock != null) {
+                        String verb = waitingVerb();
+                        sb.append(NL).append("\t- ").append(verb).append(' ').append(waitingToLock);
+                    }
+                    if (waitingOnLock != null) {
+                        String verb = waitingVerb();
+                        sb.append(NL).append("\t- ").append(verb).append(' ').append(waitingOnLock);
+                    }
                 }
 
                 for (ThreadLock monitor: getMonitorsByDepth(depth)) {
@@ -353,6 +415,14 @@ public class ProcessThread<
             }
 
             return sb.toString();
+        }
+
+        private final String waitingVerb() {
+            if (status.isParked()) return "parking to wait for";
+            if (status.isWaiting()) return "waiting on";
+            if (status.isBlocked()) return "waiting to lock";
+
+            throw new AssertionError(status + " thread can not declare a lock: " + name);
         }
 
         private StringBuilder headerBuilder() {
@@ -373,7 +443,6 @@ public class ProcessThread<
      * @author ogondza
      * @see ThreadSet#where(ProcessThread.Predicate)
      */
-    // TODO do we need predicates typesafe?
     public static interface Predicate {
         boolean isValid(@Nonnull ProcessThread<?, ?, ?> thread);
     }
@@ -381,7 +450,7 @@ public class ProcessThread<
     /**
      * Match thread by name.
      */
-    public static Predicate nameIs(final String name) {
+    public static @Nonnull Predicate nameIs(final @Nonnull String name) {
         return new Predicate() {
             @Override
             public boolean isValid(ProcessThread<?, ?, ?> thread) {
@@ -393,7 +462,7 @@ public class ProcessThread<
     /**
      * Match thread its name contains pattern.
      */
-    public static Predicate nameContains(final Pattern pattern) {
+    public static @Nonnull Predicate nameContains(final @Nonnull Pattern pattern) {
         return new Predicate() {
             @Override
             public boolean isValid(ProcessThread<?, ?, ?> thread) {
@@ -403,9 +472,21 @@ public class ProcessThread<
     }
 
     /**
-     * Match thread that is waiting on lock identified by <tt>className</tt>.
+     * Match thread its name contains string.
      */
-    public static Predicate waitingOnLock(final String className) {
+    public static @Nonnull Predicate nameContains(final @Nonnull String pattern) {
+        return new Predicate() {
+            @Override
+            public boolean isValid(ProcessThread<?, ?, ?> thread) {
+                return thread.getName().contains(pattern);
+            }
+        };
+    }
+
+    /**
+     * Match waiting thread waiting for given thread to be notified.
+     */
+    public static @Nonnull Predicate waitingOnLock(final @Nonnull String className) {
         return new Predicate() {
             @Override
             public boolean isValid(ProcessThread<?, ?, ?> thread) {
@@ -416,9 +497,22 @@ public class ProcessThread<
     }
 
     /**
+     * Match thread that is waiting on lock identified by <tt>className</tt>.
+     */
+    public static @Nonnull Predicate waitingToLock(final @Nonnull String className) {
+        return new Predicate() {
+            @Override
+            public boolean isValid(ProcessThread<?, ?, ?> thread) {
+                final ThreadLock lock = thread.getWaitingToLock();
+                return lock != null && lock.getClassName().equals(className);
+            }
+        };
+    }
+
+    /**
      * Match thread that has acquired lock identified by <tt>className</tt>.
      */
-    public static Predicate acquiredLock(final String className) {
+    public static @Nonnull Predicate acquiredLock(final @Nonnull String className) {
         return new Predicate() {
             @Override
             public boolean isValid(@Nonnull ProcessThread<?, ?, ?> thread) {

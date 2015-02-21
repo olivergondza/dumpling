@@ -24,7 +24,6 @@
 package com.github.olivergondza.dumpling.query;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -38,9 +37,12 @@ import com.github.olivergondza.dumpling.cli.AbstractCliTest;
 import com.github.olivergondza.dumpling.factory.JvmRuntimeFactory;
 import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
+import com.github.olivergondza.dumpling.model.dump.ThreadDumpThread;
+import com.github.olivergondza.dumpling.model.dump.ThreadDumpThreadSet;
 import com.github.olivergondza.dumpling.model.jvm.JvmRuntime;
 import com.github.olivergondza.dumpling.model.jvm.JvmThread;
 import com.github.olivergondza.dumpling.model.jvm.JvmThreadSet;
+import com.github.olivergondza.dumpling.query.Deadlocks.Result;
 
 public class DeadlocksTest extends AbstractCliTest {
 
@@ -119,6 +121,19 @@ public class DeadlocksTest extends AbstractCliTest {
     }
 
     @Test
+    public void doNotReportThreadsNotPartOfTheCycle() throws Exception {
+        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock-and-friends.log"));
+        Result<ThreadDumpThreadSet, ThreadDumpRuntime, ThreadDumpThread> result = new Deadlocks().query(runtime.getThreads());
+        Set<ThreadDumpThreadSet> deadlocks = result.getDeadlocks();
+        assertThat("Deadlock count", deadlocks.size(), equalTo(1));
+
+        ThreadDumpThreadSet deadlock = deadlocks.iterator().next();
+        assertThat(deadlock.size(), equalTo(2));
+
+        assertThat("Involved thread count", result.involvedThreads().size(), equalTo(2));
+    }
+
+    @Test
     public void cliQuery() throws Exception {
         run("deadlocks", "--in", "threaddump", Util.resourceFile("deadlock.log").getAbsolutePath());
         assertThat(err.toString(), equalTo(""));
@@ -134,14 +149,18 @@ public class DeadlocksTest extends AbstractCliTest {
     }
 
     private void assertListing(String out) {
-        assertThat(out, containsString("- Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24 - Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107"));
-        assertThat(out, not(containsString(
-                "%n\"Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24\" daemon prio=10 tid=1481750528 nid=27336%n"
+        assertThat(out, containsString(Util.multiline(
+                "Deadlock #1:",
+                "\"Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24\" daemon prio=10 tid=1481750528 nid=27336",
+                "\tWaiting to <0x40dce6960> (a hudson.model.ListView)",
+                "\tAcquired   <0x40dce0d68> (a hudson.plugins.nested_view.NestedView)",
+                "\tAcquired   <0x49c5f7990> (a hudson.model.FreeStyleProject)",
+                "\tAcquired * <0x404325338> (a hudson.model.Hudson)",
+                "\"Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107\" daemon prio=10 tid=47091108077568 nid=17982",
+                "\tWaiting to <0x404325338> (a hudson.model.Hudson)",
+                "\tAcquired * <0x40dce6960> (a hudson.model.ListView)"
         )));
-        assertThat(out, not(containsString(
-                "%n\"Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107\" daemon prio=10 tid=47091108077568 nid=17982%n"
-        )));
-        assertThat(out, containsString("%n1 deadlocks detected%n"));
+        assertThat(out, containsString("%nDeadlocks: 1%n"));
     }
 
     @Test
@@ -160,15 +179,18 @@ public class DeadlocksTest extends AbstractCliTest {
     }
 
     private void assertLongListing(String out) {
-        assertThat(out, containsString("- Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24 - Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107"));
-
-        assertThat(out, containsString(
-                "%n\"Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24\" daemon prio=10 tid=1481750528 nid=27336%n"
-        ));
-        assertThat(out, containsString(
-                "%n\"Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107\" daemon prio=10 tid=47091108077568 nid=17982%n"
-        ));
-        assertThat(out, containsString("%n1 deadlocks detected%n"));
+        assertThat(out, containsString(Util.multiline(
+                "Deadlock #1:",
+                "\"Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24\" daemon prio=10 tid=1481750528 nid=27336",
+                "\tWaiting to <0x40dce6960> (a hudson.model.ListView)",
+                "\tAcquired   <0x40dce0d68> (a hudson.plugins.nested_view.NestedView)",
+                "\tAcquired   <0x49c5f7990> (a hudson.model.FreeStyleProject)",
+                "\tAcquired * <0x404325338> (a hudson.model.Hudson)",
+                "\"Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107\" daemon prio=10 tid=47091108077568 nid=17982",
+                "\tWaiting to <0x404325338> (a hudson.model.Hudson)",
+                "\tAcquired * <0x40dce6960> (a hudson.model.ListView)"
+        )));
+        assertThat(out, containsString("%nDeadlocks: 1%n"));
     }
 
     private Set<JvmThreadSet> deadlocks(JvmRuntime runtime) {

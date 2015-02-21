@@ -79,6 +79,10 @@ public class StackTrace {
         this.elements = elements.clone(); // Shallow copy is ok here as StackTraceElement is immutable
     }
 
+    public StackTrace(@Nonnull List<StackTraceElement> elements) {
+        this.elements = elements.toArray(new StackTraceElement[elements.size()]);
+    }
+
     public int size() {
         return elements.length;
     }
@@ -97,6 +101,24 @@ public class StackTrace {
         ;
     }
 
+    /**
+     * Get innermost stack frame or null when there is no trace attached.
+     */
+    public @CheckForNull StackTraceElement head() {
+        return getElement(0);
+    }
+
+    /**
+     * Get all the stack trace elements.
+     */
+    public @Nonnull List<StackTraceElement> getElements() {
+        return Arrays.asList(elements);
+    }
+
+    /**
+     * @deprecated because of the typo.
+     */
+    @Deprecated
     public @Nonnull List<StackTraceElement> getElemens() {
         return Arrays.asList(elements);
     }
@@ -128,25 +150,4 @@ public class StackTrace {
         if (!Arrays.equals(elements, other.elements)) return false;
         return true;
     }
-
-    /**
-     * Approximate correct waiting verb for stack trace element.
-     *
-     * Waiting verb can not be estimated using thread status as it might not be
-     * in sync with stacktrace/lock information. Waiting verb is whatever precedes
-     * the lock information in threaddump ("waiting on", "waiting to lock" etc.).
-     * This method yields reasonable result only for stacktrace of non-runnable thread.
-     *
-     * Here for the lack of better place.
-     */
-    /*package*/ static String waitingVerb(StackTraceElement element) {
-        if (parking.equals(element)) return "parking to wait for";
-        if (sleeping.equals(element)) return "waiting on";
-        if (waiting.equals(element)) return "waiting on";
-
-        return "waiting to lock";
-    }
-    private static final StackTraceElement parking = StackTrace.nativeElement("sun.misc.Unsafe", "park");
-    private static final StackTraceElement sleeping = StackTrace.nativeElement("java.lang.Thread", "sleep");
-    private static final StackTraceElement waiting = StackTrace.nativeElement("java.lang.Object", "wait", "Object.java");
 }

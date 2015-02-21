@@ -90,40 +90,42 @@ public class ThreadSet<
 
         Set<ThreadType> blocked = new HashSet<ThreadType>();
         for (ThreadType thread: runtime.getThreads()) {
-            if (acquired.contains(thread.getWaitingOnLock())) {
+            if (acquired.contains(thread.getWaitingToLock())) {
                 blocked.add(thread);
             }
         }
 
-        return derive(blocked);
+        return runtime.getThreadSet(blocked);
     }
 
     /**
      * Get threads blocking any of current threads.
      */
     public @Nonnull SetType getBlockingThreads() {
-        Set<ThreadLock> waitingOn = new HashSet<ThreadLock>();
+        Set<ThreadLock> waitingTo = new HashSet<ThreadLock>();
         for (ThreadType thread: threads) {
-            if (thread.getWaitingOnLock() != null) {
-                waitingOn.add(thread.getWaitingOnLock());
+            if (thread.getWaitingToLock() != null) {
+                waitingTo.add(thread.getWaitingToLock());
             }
         }
 
         Set<ThreadType> blocking = new HashSet<ThreadType>();
         for (ThreadType thread: runtime.getThreads()) {
             Set<ThreadLock> threadHolding = thread.getAcquiredLocks();
-            threadHolding.retainAll(waitingOn);
+            threadHolding.retainAll(waitingTo);
             if (!threadHolding.isEmpty()) {
                 blocking.add(thread);
             }
         }
 
-        return derive(blocking);
+        return runtime.getThreadSet(blocking);
     }
 
-    public @Nonnull SetType ignoring(@Nonnull ThreadSet<?, ?, ?> actualThreads) {
+    public @Nonnull SetType ignoring(@Nonnull ThreadSet<?, ?, ?> ignoredThreads) {
+        if (threads.isEmpty() || ignoredThreads.isEmpty()) return (SetType) this;
+
         HashSet<ThreadType> newThreads = new HashSet<ThreadType>(threads);
-        newThreads.removeAll(actualThreads.threads);
+        newThreads.removeAll(ignoredThreads.threads);
         return derive(newThreads);
     }
 
@@ -135,11 +137,11 @@ public class ThreadSet<
      */
     public @Nonnull SetType where(ProcessThread.Predicate pred) {
         HashSet<ThreadType> subset = new HashSet<ThreadType>(size() / 2);
-        for (@Nonnull ThreadType thread: threads) {
+        for (ThreadType thread: threads) {
             if (pred.isValid(thread)) subset.add(thread);
         }
 
-        return derive(subset);
+        return runtime.getThreadSet(subset);
     }
 
     /**
@@ -202,14 +204,8 @@ public class ThreadSet<
      *
      * @return New thread collection bound to same runtime.
      */
-    public @Nonnull SetType derive(Collection<? extends ThreadType> threads) {
-        if (threads.isEmpty()) return runtime.getEmptyThreadSet();
-
-        Set<ThreadType> threadSet = threads instanceof Set
-                ? (Set<ThreadType>) threads
-                : new HashSet<ThreadType>(threads)
-        ;
-        return runtime.createSet(threadSet);
+    public @Nonnull SetType derive(Collection<ThreadType> threads) {
+        return runtime.getThreadSet(threads);
     }
 
     // Groovy interop
@@ -240,9 +236,8 @@ public class ThreadSet<
         return this;
     }
 
-    // ThreadSet does not actually implement Set
-    public @Nonnull Set<ThreadType> toSet() {
-        return Collections.unmodifiableSet(threads);
+    public @Nonnull SetType toSet() {
+        return (SetType) this;
     }
 
     public @Nonnull SetType intersect(ThreadSet<?, ?, ?> other) {

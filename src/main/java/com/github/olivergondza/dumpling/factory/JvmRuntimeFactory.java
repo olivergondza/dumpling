@@ -28,7 +28,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,13 +42,16 @@ import com.github.olivergondza.dumpling.model.ThreadLock;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 import com.github.olivergondza.dumpling.model.jvm.JvmRuntime;
 import com.github.olivergondza.dumpling.model.jvm.JvmThread;
+import com.github.olivergondza.dumpling.model.jvm.JvmThread.Builder;
 
 /**
- * Create {@link ProcessRuntime} from state of current process.
+ * Create {@link ProcessRuntime} from state of current JVM process.
  *
  * @author ogondza
  */
 public class JvmRuntimeFactory {
+
+    private ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
 
     public @Nonnull JvmRuntime currentRuntime() {
         Set<Thread> threads = Thread.getAllStackTraces().keySet();
@@ -57,24 +59,40 @@ public class JvmRuntimeFactory {
 
         HashSet<JvmThread.Builder> state = new HashSet<JvmThread.Builder>(threads.size());
 
-        for (@Nonnull Thread thread: threads) {
-            JvmThread.Builder builder = (JvmThread.Builder) new JvmThread.Builder(thread)
-                    .setName(thread.getName())
-                    .setId(thread.getId())
-                    .setDaemon(thread.isDaemon())
-                    .setPriority(thread.getPriority())
-                    .setStacktrace(thread.getStackTrace())
-                    .setThreadStatus(status(thread))
-            ;
-
+        for (Thread thread: threads) {
             ThreadInfo info = infos.get(thread.getId());
             // The thread was terminated between Thread.getAllStackTraces() and ThreadMXBean.getThreadInfo()
             if (info == null) continue;
 
+            Builder builder = new JvmThread.Builder(thread)
+                    .setName(info.getThreadName())
+                    .setId(info.getThreadId())
+                    .setDaemon(thread.isDaemon())
+                    .setPriority(thread.getPriority())
+                    .setStacktrace(info.getStackTrace())
+            ;
+
+            final ThreadStatus status = ThreadStatus.fromState(
+                    info.getThreadState(), builder.getStacktrace().head()
+            );
+
+            builder.setThreadStatus(status);
+
             builder.setAcquiredMonitors(monitors(info));
             builder.setAcquiredSynchronizers(locks(info));
-            LockInfo lock = info.getLockInfo();
-            if (lock != null) builder.setWaitingOnLock(lock(lock));
+            LockInfo lockInfo = info.getLockInfo();
+            if (lockInfo != null) {
+                ThreadLock lock = lock(lockInfo);
+                if (status.isBlocked()) {
+                    builder.setWaitingToLock(lock);
+                } else if (status.isWaiting() || status.isParked()) {
+                    builder.setWaitingOnLock(lock);
+                } else {
+                    throw new IllegalRuntimeStateException(
+                            "Thread declares lock while %s: %n%s%n", status, info
+                    );
+                }
+            }
 
             state.add(builder);
         }
@@ -83,8 +101,7 @@ public class JvmRuntimeFactory {
     }
 
     private Map<Long, ThreadInfo> infos() {
-        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-        Map<Long, ThreadInfo> infos= new HashMap<Long, ThreadInfo>();
+        Map<Long, ThreadInfo> infos = new HashMap<Long, ThreadInfo>();
         for (ThreadInfo info: threadMXBean.dumpAllThreads(true, true)) {
             infos.put(info.getThreadId(), info);
         }
@@ -124,35 +141,7 @@ public class JvmRuntimeFactory {
         return new ThreadLock(info.getClassName(), info.getIdentityHashCode());
     }
 
-    private @Nonnull ThreadStatus status(Thread thread) {
-
-        try {
-            int code = threadStatus.getInt(thread);
-            return ThreadStatus.valueOf(code);
-        } catch (IllegalArgumentException ex) {
-
-            throw new UnsupportedJreException(ex);
-        } catch (IllegalAccessException ex) {
-
-            throw new UnsupportedJreException(ex);
-        } catch (NullPointerException ex) {
-
-            throw new UnsupportedJreException(ex);
-        }
-    }
-
-    private static Field threadStatus;
-    static {
-        try {
-            threadStatus = Thread.class.getDeclaredField("threadStatus");
-            threadStatus.setAccessible(true);
-        } catch (NoSuchFieldException ex) {
-           // Ignore in initialization. NullPointerException will be thrown when accessing.
-        } catch (SecurityException ex) {
-           // Ignore in initialization. IllegalAccessException will be thrown when accessing.
-        }
-    }
-
+    // Not used for now
     private final static class UnsupportedJreException extends RuntimeException {
         public UnsupportedJreException(Throwable cause) {
             super(

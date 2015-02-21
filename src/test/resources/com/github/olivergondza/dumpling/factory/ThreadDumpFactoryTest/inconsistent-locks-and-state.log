@@ -1,4 +1,6 @@
-"Pipe writer thread: jenkins_slave" daemon prio=10 tid=0x000000006332b000 nid=0x3bc2 runnable [0x00002ad3dfd0a000]
+Inconsistent threads dumped by oracle JDK 1.6
+
+"runnable-parking-to-wait" daemon prio=10 tid=0x000000006332b000 nid=0x3bc2 runnable [0x00002ad3dfd0a000]
    java.lang.Thread.State: RUNNABLE
         at sun.misc.Unsafe.park(Native Method)
         - parking to wait for  <0x00000004e59ed420> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
@@ -8,3 +10,31 @@
         at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:957)
         at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:917)
         at java.lang.Thread.run(Thread.java:662
+
+"blocked-without-monitor" daemon prio=10 tid=0x000000005ada7000 nid=0x456b waiting for monitor entry [0x00002b93cceec000]
+   java.lang.Thread.State: BLOCKED (on object monitor)
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:612)
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:290)
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+        at org.jboss.web.tomcat.filters.ReplyHeaderFilter.doFilter(ReplyHeaderFilter.java:96)
+        at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:235)
+        at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:206)
+        at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:235)
+        at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:191)
+        at org.jboss.web.tomcat.security.SecurityAssociationValve.invoke(SecurityAssociationValve.java:183)
+        at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:442)
+        at org.jboss.web.tomcat.security.JaccContextValve.invoke(JaccContextValve.java:95)
+        at org.jboss.web.tomcat.security.SecurityContextEstablishmentValve.process(SecurityContextEstablishmentValve.java:126)
+        at org.jboss.web.tomcat.security.SecurityContextEstablishmentValve.invoke(SecurityContextEstablishmentValve.java:70)
+        at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:127)
+        at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:102)
+        at org.jboss.web.tomcat.service.jca.CachedConnectionValve.invoke(CachedConnectionValve.java:158)
+        at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:109)
+        at org.jboss.web.tomcat.service.request.ActiveRequestResponseCacheValve.internalProcess(ActiveRequestResponseCacheValve.java:74)
+        at org.jboss.web.tomcat.service.request.ActiveRequestResponseCacheValve.invoke(ActiveRequestResponseCacheValve.java:47)
+        at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:330)
+        at org.apache.coyote.http11.Http11Processor.process(Http11Processor.java:829)
+        at org.apache.coyote.http11.Http11Protocol$Http11ConnectionHandler.process(Http11Protocol.java:599)
+        at org.apache.tomcat.util.net.JIoEndpoint$Worker.run(JIoEndpoint.java:451)
+        at java.lang.Thread.run(Thread.java:662)

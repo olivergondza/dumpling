@@ -46,4 +46,8 @@ public class CommandFailedException extends RuntimeException {
     public CommandFailedException(@Nonnull Throwable ex) {
         super(ex.getMessage(), ex);
     }
+
+    public CommandFailedException(@Nonnull String message, @Nonnull Throwable ex) {
+        super(message, ex);
+    }
 }

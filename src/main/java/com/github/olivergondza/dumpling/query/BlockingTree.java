@@ -42,14 +42,7 @@ import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
 /**
- * Get a forest of all blocking trees.
- *
- * Non-blocked threads are the roots of tree hierarchies where parent-child
- * relationship represents blocking-blocked situation. Leaves of such trees
- * represents blocked but not blocking threads.
- *
- * Only such branches are included that contain threads from initial set.
- * Provide all threads in runtime to analyze all threads.
+ * Print trees of blocking threads.
  *
  * @author ogondza
  */
@@ -62,6 +55,10 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
         return this;
     }
 
+    /**
+     * @param threads Only show tree branches that contain threads in this set.
+     * Provide all threads in runtime to analyze whole runtime.
+     */
     @Override
     public @Nonnull <
             SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
@@ -86,7 +83,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
 
         @Override
         public String getDescription() {
-            return "Print contention trees";
+            return "Print trees of blocking threads";
         }
 
         @Override
@@ -97,32 +94,53 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
         }
     }
 
+    /**
+     * Forest of all blocking trees found.
+     *
+     * @author ogondza
+     */
     public static final class Result<
             SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
             RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>,
             ThreadType extends ProcessThread<ThreadType, SetType, RuntimeType>
     > extends SingleThreadSetQuery.Result<SetType> {
 
+        private static final @Nonnull Deadlocks DEADLOCKS = new Deadlocks();
+
         private final @Nonnull Set<Tree<ThreadType>> trees;
         private final @Nonnull SetType involved;
-        private final boolean showStackTraces;
+        private final Deadlocks.Result<SetType, RuntimeType, ThreadType> deadlocks;
 
-        private Result(SetType threads, boolean showStackTraces) {
-            @Nonnull Set<Tree<ThreadType>> roots = new HashSet<Tree<ThreadType>>();
+        private final @Nonnull SetType deadlockedThreads;
+
+        private Result(@Nonnull SetType threads, boolean showStackTraces) {
+            super(showStackTraces);
+            deadlocks = DEADLOCKS.query(threads);
+            deadlockedThreads = deadlocks.involvedThreads();
+
+            @Nonnull Set<Tree<ThreadType>> roots = new LinkedHashSet<Tree<ThreadType>>();
             for (ThreadType thread: threads.getProcessRuntime().getThreads()) {
-                if (thread.getWaitingOnLock() == null && !thread.getAcquiredLocks().isEmpty()) {
-                    if (!thread.getBlockedThreads().isEmpty()) {
-                        roots.add(new Tree<ThreadType>(thread, buildDown(thread)));
-                    }
-                }
+                // consider only unblocked threads or possibly deadlocked ones
+                if (thread.getWaitingToLock() != null && !deadlockedThreads.contains(thread)) continue;
+                // No thread can be blocked by this
+                if (thread.getAcquiredLocks().isEmpty()) continue;
+                // No blocked and not-deadlocked threads to report
+                if (thread.getBlockedThreads().ignoring(deadlockedThreads).isEmpty()) continue;
+
+                roots.add(new Tree<ThreadType>(thread, buildDown(thread)));
             }
 
             this.trees = Collections.unmodifiableSet(filter(roots, threads));
-            this.showStackTraces = showStackTraces;
 
             LinkedHashSet<ThreadType> involved = new LinkedHashSet<ThreadType>();
             for (Tree<ThreadType> root: trees) {
                 flatten(root, involved);
+            }
+
+            for (SetType deadlock: deadlocks.getDeadlocks()) {
+                for (ThreadType deadlockedThread: deadlock) {
+                    involved.add(deadlockedThread);
+                }
             }
 
             this.involved = threads.derive(involved);
@@ -130,7 +148,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
 
         private @Nonnull Set<Tree<ThreadType>> buildDown(ThreadType thread) {
             @Nonnull Set<Tree<ThreadType>> newTrees = new HashSet<Tree<ThreadType>>();
-            for(ThreadType t: thread.getBlockedThreads()) {
+            for(ThreadType t: thread.getBlockedThreads().ignoring(deadlockedThreads)) {
                 newTrees.add(new Tree<ThreadType>(t, buildDown(t)));
             }
 
@@ -162,6 +180,11 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
             }
         }
 
+        /**
+         * All trees detected.
+         *
+         * Empty, when there are no blocked/blocking threads.
+         */
         public @Nonnull Set<Tree<ThreadType>> getTrees() {
             return trees;
         }
@@ -185,11 +208,27 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
             for (Tree<ThreadType> tree: trees) {
                 out.println(tree);
             }
+
+            if (!deadlocks.getDeadlocks().isEmpty()) {
+                out.printf("%n");
+                deadlocks.printResult(out);
+            }
         }
 
         @Override
         protected SetType involvedThreads() {
-            return showStackTraces ? involved : null;
+            return involved;
+        }
+
+        @Override
+        protected void printSummary(PrintStream out) {
+            out.printf("All threads: %d; Roots: %d", involved.size(), trees.size());
+            if (!deadlocks.getDeadlocks().isEmpty()) {
+                out.print(' ');
+                deadlocks.printSummary(out);
+            } else {
+                out.println();
+            }
         }
     }
 

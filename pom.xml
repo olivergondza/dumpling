@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.olivergondza</groupId>
   <artifactId>dumpling</artifactId>
-  <version>0.2-SNAPSHOT</version>
+  <version>0.7-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>DSL based threaddump analyzer</name>
   <url>https://github.com/olivergondza/dumpling</url>
@@ -62,6 +62,14 @@
     </dependency>
 
     <dependency>
+      <groupId>com.sun</groupId>
+      <artifactId>tools</artifactId>
+      <version>1.6</version>
+      <scope>system</scope>
+      <systemPath>${java.home}/../lib/tools.jar</systemPath>
+    </dependency>
+
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.11</version>
@@ -91,6 +99,19 @@
       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
   </distributionManagement>
+
+  <profiles>
+    <!-- Do not fail the build because of javadoc warnings http://stackoverflow.com/a/16743137/2091470 -->
+    <profile>
+      <id>doclint-java8-disable</id>
+      <activation>
+        <jdk>[1.8,)</jdk>
+      </activation>
+      <properties>
+        <javadoc.opts>-Xdoclint:none</javadoc.opts>
+      </properties>
+    </profile>
+  </profiles>
 
   <build>
     <plugins>
@@ -152,10 +173,12 @@
         <executions>
           <execution>
             <id>attach-javadocs</id>
-            <phase>install</phase>
             <goals>
               <goal>jar</goal>
             </goals>
+            <configuration>
+              <additionalparam>${javadoc.opts}</additionalparam>
+            </configuration>
           </execution>
         </executions>
       </plugin>

@@ -23,12 +23,14 @@
  */
 package com.github.olivergondza.dumpling.model;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
 
+import com.github.olivergondza.dumpling.factory.IllegalRuntimeStateException;
 import com.github.olivergondza.dumpling.query.SingleThreadSetQuery;
 
 /**
@@ -50,8 +52,8 @@ public abstract class ProcessRuntime<
 
         int buildersSize = builders.size();
         int threadsSize = threads.size();
-        if (buildersSize != threadsSize) throw new AssertionError(
-                String.format("%d builders produced %d threads", buildersSize, threadsSize)
+        if (buildersSize != threadsSize) throw new IllegalRuntimeStateException(
+                "%d builders produced %d threads", buildersSize, threadsSize
         );
     }
 
@@ -76,6 +78,19 @@ public abstract class ProcessRuntime<
 
     public @Nonnull SetType getEmptyThreadSet() {
         return emptySet;
+    }
+
+    /**
+     * Instantiate {@link ThreadSet} scoped to this runtime.
+     */
+    public @Nonnull SetType getThreadSet(@Nonnull Collection<ThreadType> threads) {
+        if (threads.isEmpty()) return emptySet;
+
+        Set<ThreadType> threadSet = threads instanceof Set
+                ? (Set<ThreadType>) threads
+                : new LinkedHashSet<ThreadType>(threads)
+        ;
+        return createSet(threadSet);
     }
 
     /**

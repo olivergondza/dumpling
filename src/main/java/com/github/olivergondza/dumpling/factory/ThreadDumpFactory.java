@@ -28,6 +28,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -49,6 +50,7 @@ import com.github.olivergondza.dumpling.model.ThreadLock.Monitor;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpThread;
+import com.github.olivergondza.dumpling.model.dump.ThreadDumpThread.Builder;
 
 /**
  * Instantiate {@link ProcessRuntime} from threaddump produced by <tt>jstack</tt> or similar tool.
@@ -60,13 +62,15 @@ public class ThreadDumpFactory implements CliRuntimeFactory<ThreadDumpRuntime> {
     private static final StackTraceElement WAIT_TRACE_ELEMENT = StackTrace.nativeElement("java.lang.Object", "wait");
 
     private static final String NL = "(?:\\r\\n|\\n)";
+    private static final String LOCK_SUBPATTERN = "<0x(\\w+)> \\(a ([^\\)]+)\\)";
 
     private static final Pattern THREAD_DELIMITER = Pattern.compile(NL + NL + "(?!\\s)");
     private static final Pattern STACK_TRACE_ELEMENT_LINE = Pattern.compile(" *at (\\S+)\\.(\\S+)\\(([^:]+?)(\\:\\d+)?\\)");
-    private static final Pattern ACQUIRED_LINE = Pattern.compile("- locked <0x(\\w+)> \\(a ([^\\)]+)\\)");
+    private static final Pattern ACQUIRED_LINE = Pattern.compile("- locked " + LOCK_SUBPATTERN);
     // Oracle/OpenJdk puts unnecessary space after 'parking to wait for'
-    private static final Pattern WAITING_FOR_LINE = Pattern.compile("- (?:waiting on|waiting to lock|parking to wait for ?) <0x(\\w+)> \\(a ([^\\)]+)\\)");
-    private static final Pattern OWNABLE_SYNCHRONIZER_LINE = Pattern.compile("- <0x(\\w+)> \\(a ([^\\)]+)\\)");
+    private static final Pattern WAITING_ON_LINE = Pattern.compile("- (?:waiting on|parking to wait for ?) " + LOCK_SUBPATTERN);
+    private static final Pattern WAITING_TO_LOCK_LINE = Pattern.compile("- waiting to lock " + LOCK_SUBPATTERN);
+    private static final Pattern OWNABLE_SYNCHRONIZER_LINE = Pattern.compile("- " + LOCK_SUBPATTERN);
     private static final Pattern THREAD_HEADER = Pattern.compile(
             "^\"(.*)\" ([^\\n\\r]+)(?:" + NL + "\\s+java.lang.Thread.State: ([^\\n\\r]+)(?:" + NL + "(.+))?)?",
             Pattern.DOTALL
@@ -75,6 +79,11 @@ public class ThreadDumpFactory implements CliRuntimeFactory<ThreadDumpRuntime> {
     @Override
     public @Nonnull String getKind() {
         return "threaddump";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Parse threaddrump from file, or standard input when '-' provided as a locator.";
     }
 
     @Override
@@ -139,17 +148,18 @@ public class ThreadDumpFactory implements CliRuntimeFactory<ThreadDumpRuntime> {
 
         final String trace = matcher.group(4);
         if (trace != null) {
-            initStacktrace(builder, trace);
-            initLocks(builder, trace);
+            builder = initStacktrace(builder, trace);
+            builder = initLocks(builder, trace);
         }
 
         return builder;
     }
 
-    private void initLocks(ThreadDumpThread.Builder builder, String string) {
+    private Builder initLocks(ThreadDumpThread.Builder builder, String string) {
         List<ThreadLock.Monitor> monitors = new ArrayList<ThreadLock.Monitor>();
         List<ThreadLock> synchronizers = new ArrayList<ThreadLock>();
-        List<ThreadLock> waitingFor = new ArrayList<ThreadLock>(1);
+        ThreadLock waitingToLock = null; // Block waiting on monitor
+        ThreadLock waitingOnLock = null; // in Object.wait()
         int depth = -1;
 
         StringTokenizer tokenizer = new StringTokenizer(string, "\n");
@@ -162,9 +172,21 @@ public class ThreadDumpFactory implements CliRuntimeFactory<ThreadDumpRuntime> {
                 continue;
             }
 
-            Matcher waitingForMatcher = WAITING_FOR_LINE.matcher(line);
-            if (waitingForMatcher.find()) {
-                waitingFor.add(createLock(waitingForMatcher));
+            Matcher waitingToMatcher = WAITING_TO_LOCK_LINE.matcher(line);
+            if (waitingToMatcher.find()) {
+                if (waitingToLock != null) throw new IllegalRuntimeStateException(
+                        "Waiting to lock reported several times per single thread: %s", string
+                );
+                waitingToLock = createLock(waitingToMatcher);
+                continue;
+            }
+
+            Matcher waitingOnMatcher = WAITING_ON_LINE.matcher(line);
+            if (waitingOnMatcher.find()) {
+                if (waitingOnLock != null) throw new IllegalRuntimeStateException(
+                        "Waiting on lock reported several times per single thread: %s", string
+                );
+                waitingOnLock = createLock(waitingOnMatcher);
                 continue;
             }
 
@@ -183,34 +205,53 @@ public class ThreadDumpFactory implements CliRuntimeFactory<ThreadDumpRuntime> {
             depth++;
         }
 
-        ThreadLock lock = null;
-        switch(waitingFor.size()) {
-            case 0: // Noop
-            break;
-            case 1:
-                lock = waitingFor.get(0);
-            break;
-            default: throw new AssertionError(String.format("Waiting for %d locks is not possible.", waitingFor.size()));
+        ThreadStatus status = builder.getThreadStatus();
+        StackTraceElement innerFrame = builder.getStacktrace().getElement(0);
+
+        // Probably a bug in JVM/jstack but let's see what we can do
+        if (waitingOnLock == null && !status.isRunnable() && WAIT_TRACE_ELEMENT.equals(innerFrame)) {
+            HashSet<ThreadLock> acquiredLocks = new HashSet<ThreadLock>(monitors.size());
+            for (Monitor m: monitors) {
+                acquiredLocks.add(m.getLock());
+            }
+            if (acquiredLocks.size() == 1) {
+                waitingOnLock = acquiredLocks.iterator().next();
+            }
         }
 
-        // Eliminate self lock that is presented in threaddumps when in Object.wait()
-        if (WAIT_TRACE_ELEMENT.equals(builder.getStacktrace().getElement(0))) {
+        if (waitingOnLock != null) {
+            // Eliminate self lock that is presented in threaddumps when in Object.wait().
+            filterMonitors(monitors, waitingOnLock);
 
-            // Waiting on self lock -> the lock is not acquired
+            // 'waiting on' is reported even when blocked re-entering the monitor. Convert it from waitingOn to waitingTo
             if (builder.getThreadStatus().isBlocked()) {
-                assert lock != null;
-                filterMonitors(monitors, lock);
-            }
 
-            // remove self lock from acquired and waiting-on locks
-            if (builder.getThreadStatus().isWaiting()) {
-                filterMonitors(monitors, lock);
+                waitingToLock = waitingOnLock;
+                waitingOnLock = null;
             }
         }
+
+        // https://github.com/olivergondza/dumpling/issues/43
+        if (waitingOnLock != null && status.isRunnable()) {
+            // Presumably when entering or leaving the parked state.
+            // Remove the lock instead of fixing the thread status as there is
+            // no general way to tell PARKED and PARKED_TIMED apart.
+            waitingOnLock = null;
+        }
+
+        if (waitingToLock != null && !status.isBlocked()) throw new IllegalRuntimeStateException(
+                "%s thread declares waitingTo lock: >>>\n%s\n<<<\n", status, string
+        );
+        if (waitingOnLock != null && !status.isWaiting() && !status.isParked()) throw new IllegalRuntimeStateException(
+                "%s thread declares waitingOn lock: >>>\n%s\n<<<\n", status, string
+        );
 
         builder.setAcquiredMonitors(monitors);
         builder.setAcquiredSynchronizers(synchronizers);
-        builder.setWaitingOnLock(lock);
+        builder.setWaitingToLock(waitingToLock);
+        builder.setWaitingOnLock(waitingOnLock);
+
+        return builder;
     }
 
     private void filterMonitors(List<ThreadLock.Monitor> monitors, ThreadLock lock) {
@@ -246,7 +287,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory<ThreadDumpRuntime> {
         ;
     }
 
-    private void initStacktrace(ThreadDumpThread.Builder builder, String trace) {
+    private Builder initStacktrace(ThreadDumpThread.Builder builder, String trace) {
         Matcher match = STACK_TRACE_ELEMENT_LINE.matcher(trace);
         ArrayList<StackTraceElement> traceElements = new ArrayList<StackTraceElement>();
 
@@ -267,5 +308,9 @@ public class ThreadDumpFactory implements CliRuntimeFactory<ThreadDumpRuntime> {
                     match.group(1), match.group(2), sourceFile, sourceLine
             ));
         }
+
+        return builder.setStacktrace(
+                traceElements.toArray(new StackTraceElement[traceElements.size()])
+        );
     }
 }

@@ -140,6 +140,40 @@ public class BlockingTreeTest extends AbstractCliTest {
     }
 
     @Test
+    public void deadlock() throws Exception {
+        runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock.log"));
+
+        ThreadDumpThread blocking = runtime.getThreads().where(nameContains("ajp-127.0.0.1-8009-24")).onlyThread();
+        ThreadDumpThread blocked = runtime.getThreads().where(nameContains("ajp-127.0.0.1-8009-133")).onlyThread();
+
+        Set<Tree<ThreadDumpThread>> expected = new HashSet<Tree<ThreadDumpThread>>(Arrays.asList(
+                new BlockingTree.Tree<ThreadDumpThread>(blocking, new BlockingTree.Tree<ThreadDumpThread>(blocked))
+        ));
+
+        assertThat(new BlockingTree().query(runtime.getThreads()).getTrees(), equalTo(expected));
+    }
+
+    @Test
+    public void handleThreadsBlockedOnDeadlocks() throws Exception {
+        runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock-and-friends.log"));
+        ThreadDumpThreadSet ts = runtime.getThreads();
+
+        Set<Tree<ThreadDumpThread>> expected = new HashSet<Tree<ThreadDumpThread>>(Arrays.asList(
+                new BlockingTree.Tree<ThreadDumpThread>(
+                        ts.where(nameContains("ajp-127.0.0.1-8009-103")).onlyThread(),
+                        new BlockingTree.Tree<ThreadDumpThread>(
+                                ts.where(nameContains("ajp-127.0.0.1-8009-46")).onlyThread(),
+                                new BlockingTree.Tree<ThreadDumpThread>(
+                                        ts.where(nameContains("ajp-127.0.0.1-8009-94")).onlyThread()
+                                )
+                        )
+                )
+        ));
+
+        assertThat(new BlockingTree().query(runtime.getThreads()).getTrees(), equalTo(expected));
+    }
+
+    @Test
     public void cliQuery() {
         run("blocking-tree", "--in", "threaddump", blockingTreeLog.getAbsolutePath());
         assertThat(err.toString(), equalTo(""));

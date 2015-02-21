@@ -34,16 +34,19 @@ import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
 import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
+import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
+import com.github.olivergondza.dumpling.model.dump.ThreadDumpThreadSet;
 
 public class ThreadSetTest {
 
     @Test
     public void blockedAndBlocking() throws Exception {
-        ProcessRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("blocking-chain.log"));
-        ThreadSet root = runtime.getThreads().where(nameIs("root"));
-        ThreadSet blocking = runtime.getThreads().where(nameContains(Pattern.compile("blocking1")));
-        ThreadSet blocked = runtime.getThreads().where(nameContains(Pattern.compile("blocked1")));
+        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("blocking-chain.log"));
+        ThreadDumpThreadSet root = runtime.getThreads().where(nameIs("root"));
+        ThreadDumpThreadSet blocking = runtime.getThreads().where(nameContains(Pattern.compile("blocking1")));
+        ThreadDumpThreadSet blocked = runtime.getThreads().where(nameContains(Pattern.compile("blocked1")));
 
+        assertThat(root.size(), equalTo(1));
         assertThat(root.getBlockedThreads(), equalTo(blocked));
         assertThat(root.getBlockingThreads(), equalTo(blocking));
     }
