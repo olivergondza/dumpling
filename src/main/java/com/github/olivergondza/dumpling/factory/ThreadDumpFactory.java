@@ -148,22 +148,30 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
         final String trace = matcher.group(4);
         if (trace != null) {
             builder = initStacktrace(builder, trace);
-            builder = initLocks(builder, trace);
         }
 
         return builder;
     }
 
-    private Builder initLocks(Builder builder, String string) {
+    private Builder initStacktrace(Builder builder, String trace) {
+        ArrayList<StackTraceElement> traceElements = new ArrayList<StackTraceElement>();
+
         List<ThreadLock.Monitor> monitors = new ArrayList<ThreadLock.Monitor>();
         List<ThreadLock> synchronizers = new ArrayList<ThreadLock>();
         ThreadLock waitingToLock = null; // Block waiting on monitor
         ThreadLock waitingOnLock = null; // in Object.wait()
         int depth = -1;
 
-        StringTokenizer tokenizer = new StringTokenizer(string, "\n");
+        StringTokenizer tokenizer = new StringTokenizer(trace, "\n");
         while (tokenizer.hasMoreTokens()) {
             String line = tokenizer.nextToken();
+
+            StackTraceElement elem = traceElement(line);
+            if (elem != null) {
+                traceElements.add(elem);
+                depth++;
+                continue;
+            }
 
             Matcher acquiredMatcher = ACQUIRED_LINE.matcher(line);
             if (acquiredMatcher.find()) {
@@ -174,7 +182,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
             Matcher waitingToMatcher = WAITING_TO_LOCK_LINE.matcher(line);
             if (waitingToMatcher.find()) {
                 if (waitingToLock != null) throw new IllegalRuntimeStateException(
-                        "Waiting to lock reported several times per single thread: %s", string
+                        "Waiting to lock reported several times per single thread >>>%n%s%n<<<%n", trace
                 );
                 waitingToLock = createLock(waitingToMatcher);
                 continue;
@@ -183,7 +191,7 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
             Matcher waitingOnMatcher = WAITING_ON_LINE.matcher(line);
             if (waitingOnMatcher.find()) {
                 if (waitingOnLock != null) throw new IllegalRuntimeStateException(
-                        "Waiting on lock reported several times per single thread: %s", string
+                        "Waiting on lock reported several times per single thread >>>%n%s%n<<<%n", trace
                 );
                 waitingOnLock = createLock(waitingOnMatcher);
                 continue;
@@ -199,10 +207,9 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
                     synchronizers.add(createLock(matcher));
                 }
             }
-
-            // Count stack frames - not locks
-            depth++;
         }
+
+        builder.setStacktrace(new StackTrace(traceElements));
 
         ThreadStatus status = builder.getThreadStatus();
         StackTraceElement innerFrame = builder.getStacktrace().getElement(0);
@@ -239,10 +246,10 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
         }
 
         if (waitingToLock != null && !status.isBlocked()) throw new IllegalRuntimeStateException(
-                "%s thread declares waitingTo lock: >>>\n%s\n<<<\n", status, string
+                "%s thread declares waitingTo lock: >>>%n%s%n<<<%n", status, trace
         );
         if (waitingOnLock != null && !status.isWaiting() && !status.isParked()) throw new IllegalRuntimeStateException(
-                "%s thread declares waitingOn lock: >>>\n%s\n<<<\n", status, string
+                "%s thread declares waitingOn lock: >>>%n%s%n<<<%n", status, trace
         );
 
         builder.setAcquiredMonitors(monitors);
@@ -251,6 +258,26 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
         builder.setWaitingOnLock(waitingOnLock);
 
         return builder;
+    }
+
+    private StackTraceElement traceElement(String line) {
+        Matcher match = STACK_TRACE_ELEMENT_LINE.matcher(line);
+        if (!match.find()) return null;
+
+        String sourceFile = match.group(3);
+        int sourceLine = match.group(4) == null
+                ? -1
+                : Integer.parseInt(match.group(4).substring(1))
+        ;
+
+        if (sourceLine == -1 && "Native Method".equals(match.group(3))) {
+            sourceFile = null;
+            sourceLine = -2; // Magic value for native methods
+        }
+
+        return new StackTraceElement(
+                match.group(1), match.group(2), sourceFile, sourceLine
+        );
     }
 
     private void filterMonitors(List<ThreadLock.Monitor> monitors, ThreadLock lock) {
@@ -286,32 +313,5 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
                 ? Long.parseLong(value.substring(2), 16)
                 : Long.parseLong(value, 10)
         ;
-    }
-
-    private Builder initStacktrace(Builder builder, String trace) {
-        Matcher match = STACK_TRACE_ELEMENT_LINE.matcher(trace);
-        ArrayList<StackTraceElement> traceElements = new ArrayList<StackTraceElement>();
-
-        while (match.find()) {
-
-            String sourceFile = match.group(3);
-            int sourceLine = match.group(4) == null
-                    ? -1
-                    : Integer.parseInt(match.group(4).substring(1))
-            ;
-
-            if (sourceLine == -1 && "Native Method".equals(match.group(3))) {
-                sourceFile = null;
-                sourceLine = -2; // Magic value for native methods
-            }
-
-            traceElements.add(new StackTraceElement(
-                    match.group(1), match.group(2), sourceFile, sourceLine
-            ));
-        }
-
-        return builder.setStacktrace(
-                traceElements.toArray(new StackTraceElement[traceElements.size()])
-        );
     }
 }

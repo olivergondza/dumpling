@@ -326,6 +326,11 @@ public class ProcessThread {
             return this;
         }
 
+        public @Nonnull Builder setStacktrace(@Nonnull StackTrace stackTrace) {
+            this.stackTrace = stackTrace;
+            return this;
+        }
+
         public @Nonnull StackTrace getStacktrace() {
             return stackTrace;
         }

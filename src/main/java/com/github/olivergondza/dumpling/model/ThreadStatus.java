@@ -184,17 +184,11 @@ public enum ThreadStatus {
     }
 
     public static @Nonnull ThreadStatus fromString(String title) {
-        try {
-
-            return Enum.valueOf(ThreadStatus.class, title);
-        } catch (IllegalArgumentException ex) {
-
-            for (ThreadStatus value: values()) {
-                if (value.getName().equals(title)) return value;
-            }
-
-            throw ex;
+        for (ThreadStatus value: values()) {
+            if (value.getName().equals(title)) return value;
         }
+
+        return Enum.valueOf(ThreadStatus.class, title);
     }
 
     @Deprecated public static @Nonnull ThreadStatus fromState(Thread.State state) {
