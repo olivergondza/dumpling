@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.WeakHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -260,7 +261,13 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
         return builder;
     }
 
+    private static final WeakHashMap<String, StackTraceElement> traceElementCache = new WeakHashMap<String, StackTraceElement>();
     private StackTraceElement traceElement(String line) {
+        if (!line.startsWith("\tat ")) return null;
+
+        StackTraceElement cached = traceElementCache.get(line);
+        if (cached != null) return cached;
+
         Matcher match = STACK_TRACE_ELEMENT_LINE.matcher(line);
         if (!match.find()) return null;
 
@@ -275,9 +282,11 @@ public class ThreadDumpFactory implements CliRuntimeFactory {
             sourceLine = -2; // Magic value for native methods
         }
 
-        return new StackTraceElement(
+        StackTraceElement element = StackTrace.element(
                 match.group(1), match.group(2), sourceFile, sourceLine
         );
+        traceElementCache.put(line, element);
+        return element;
     }
 
     private void filterMonitors(List<ThreadLock.Monitor> monitors, ThreadLock lock) {
