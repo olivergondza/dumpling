@@ -42,8 +42,8 @@ import org.junit.After;
 public abstract class AbstractCliTest {
 
     protected InputStream in = null;
-    protected ByteArrayOutputStream err = new ByteArrayOutputStream();
-    protected ByteArrayOutputStream out = new ByteArrayOutputStream();
+    protected ByteArrayOutputStream err;
+    protected ByteArrayOutputStream out;
     protected int exitValue;
 
     /* Autocleaned fixture */
@@ -64,6 +64,8 @@ public abstract class AbstractCliTest {
     }
 
     protected int run(@Nonnull String... args) {
+        err = new ByteArrayOutputStream();
+        out = new ByteArrayOutputStream();
         return exitValue = new Main().run(args, new ProcessStream(in, new PrintStream(out), new PrintStream(err)));
     }
 
