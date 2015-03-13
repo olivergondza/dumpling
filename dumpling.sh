@@ -29,7 +29,12 @@ function download() {
   latest=`wget --no-check-certificate $metadata_url -O - 2> /dev/null | grep \<latest\> | sed -e "s/<[^>]*>//g" -e "s/\s*//"`
   jar_url="https://oss.sonatype.org/content/repositories/releases/com/github/olivergondza/dumpling/$latest/dumpling-$latest-shaded.jar"
   echo "Downloading Dumpling $latest now..." >&2
-  wget --no-check-certificate -nv -O $1 $jar_url || rm $1
+  wget --no-check-certificate -nv -O $1 $jar_url
+  if [ $? != 0 ]; then
+    echo "Download failed" >&2
+    rm -f $1
+    exit 1
+  fi
 }
 
 dir="$( cd "$( dirname "$0" )" && pwd )"
