@@ -36,7 +36,6 @@ import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpThread;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpThreadSet;
-import com.github.olivergondza.dumpling.query.TopContenders.Result;
 
 public class TopContendersTest extends AbstractCliTest {
 
@@ -44,7 +43,7 @@ public class TopContendersTest extends AbstractCliTest {
     public void trivial() throws Exception {
         ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("producer-consumer.log"));
 
-        TopContenders.Result<ThreadDumpThreadSet, ThreadDumpRuntime, ThreadDumpThread> contenders = (Result<ThreadDumpThreadSet, ThreadDumpRuntime, ThreadDumpThread>) runtime.query(new TopContenders());
+        TopContenders.Result<ThreadDumpThreadSet, ThreadDumpRuntime, ThreadDumpThread> contenders = new TopContenders().query(runtime.getThreads());
 
         final ThreadDumpThread owning = runtime.getThreads().where(nameIs("owning_thread")).onlyThread();
 
@@ -56,7 +55,7 @@ public class TopContendersTest extends AbstractCliTest {
     public void contenders() throws Exception {
         ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "contention.log"));
 
-        TopContenders.Result<ThreadDumpThreadSet, ThreadDumpRuntime, ThreadDumpThread> contenders = (Result<ThreadDumpThreadSet, ThreadDumpRuntime, ThreadDumpThread>) runtime.query(new TopContenders());
+        TopContenders.Result<ThreadDumpThreadSet, ThreadDumpRuntime, ThreadDumpThread> contenders = new TopContenders().query(runtime.getThreads());
 
         ThreadDumpThreadSet ts = runtime.getThreads();
         final ThreadDumpThread producerProcessThread = ts.where(nameIs("producer")).onlyThread();
@@ -76,7 +75,7 @@ public class TopContendersTest extends AbstractCliTest {
     @Test
     public void toStringNoTraces() throws Exception {
         ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "contention.log"));
-        assertListing(runtime.query(new TopContenders()).toString());
+        assertListing(new TopContenders().query(runtime.getThreads()).toString());
     }
 
     private void assertListing(String out) {
@@ -106,7 +105,7 @@ public class TopContendersTest extends AbstractCliTest {
     @Test
     public void toStringWithTraces() throws Exception {
         ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "contention.log"));
-        assertLongListing(runtime.query(new TopContenders().showStackTraces()).toString());
+        assertLongListing(new TopContenders().showStackTraces().query(runtime.getThreads()).toString());
     }
 
     private void assertLongListing(String out) {

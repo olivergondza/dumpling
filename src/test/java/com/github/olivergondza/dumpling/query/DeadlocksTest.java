@@ -145,7 +145,7 @@ public class DeadlocksTest extends AbstractCliTest {
     @Test
     public void toStringNoTraces() throws Exception {
         ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock.log"));
-        assertListing(runtime.query(new Deadlocks()).toString());
+        assertListing(new Deadlocks().query(runtime.getThreads()).toString());
     }
 
     private void assertListing(String out) {
@@ -175,7 +175,7 @@ public class DeadlocksTest extends AbstractCliTest {
     @Test
     public void toStringWithTraces() throws Exception {
         ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock.log"));
-        assertLongListing(runtime.query(new Deadlocks().showStackTraces()).toString());
+        assertLongListing(new Deadlocks().showStackTraces().query(runtime.getThreads()).toString());
     }
 
     private void assertLongListing(String out) {

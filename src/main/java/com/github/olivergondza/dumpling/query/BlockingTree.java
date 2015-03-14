@@ -103,7 +103,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
             SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
             RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>,
             ThreadType extends ProcessThread<ThreadType, SetType, RuntimeType>
-    > extends SingleThreadSetQuery.Result<SetType> {
+    > extends SingleThreadSetQuery.Result<SetType, RuntimeType, ThreadType> {
 
         private static final @Nonnull Deadlocks DEADLOCKS = new Deadlocks();
 

@@ -147,7 +147,7 @@ public class ThreadSet<
     /**
      * Run query using this as an initial thread set.
      */
-    public <T extends SingleThreadSetQuery.Result<?>> T query(SingleThreadSetQuery<T> query) {
+    public <T extends SingleThreadSetQuery.Result<SetType, RuntimeType, ThreadType>> T query(SingleThreadSetQuery<T> query) {
         return query.<SetType, RuntimeType, ThreadType>query((SetType) this);
     }
 

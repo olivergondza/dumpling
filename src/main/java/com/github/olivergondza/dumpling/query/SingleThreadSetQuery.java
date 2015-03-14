@@ -47,7 +47,7 @@ import com.github.olivergondza.dumpling.model.ThreadSet;
  * @see ThreadSet#query(SingleThreadSetQuery)
  * @see ProcessRuntime#query(SingleThreadSetQuery)
  */
-public interface SingleThreadSetQuery<ResultType extends SingleThreadSetQuery.Result<?>> {
+public interface SingleThreadSetQuery<ResultType extends SingleThreadSetQuery.Result<?, ?, ?>> {
 
     /**
      * Get typed result of the query.
@@ -72,7 +72,11 @@ public interface SingleThreadSetQuery<ResultType extends SingleThreadSetQuery.Re
      * @author ogondza
      * @see SingleThreadSetQuery
      */
-    public static abstract class Result<SetType extends ThreadSet<SetType, ?, ?>> {
+    public static abstract class Result<
+            SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
+            RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>,
+            ThreadType extends ProcessThread<ThreadType, SetType, RuntimeType>
+    > {
 
         /**
          * Show stack traces of involved threads.

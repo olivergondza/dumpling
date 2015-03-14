@@ -101,7 +101,7 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
             SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
             RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>,
             ThreadType extends ProcessThread<ThreadType, SetType, RuntimeType>
-    > extends SingleThreadSetQuery.Result<SetType> {
+    > extends SingleThreadSetQuery.Result<SetType, RuntimeType, ThreadType> {
 
         private final @Nonnull Map<ThreadType, SetType> contenders;
         private final @Nonnull SetType involved;

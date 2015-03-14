@@ -107,7 +107,8 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result<?,
             SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
             RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>,
             ThreadType extends ProcessThread<ThreadType, SetType, RuntimeType>
-    > extends SingleThreadSetQuery.Result<SetType> {
+    > extends SingleThreadSetQuery.Result<SetType, RuntimeType, ThreadType> {
+
         private final @Nonnull Set<SetType> deadlocks;
         private final @Nonnull SetType involved;
 

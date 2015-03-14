@@ -49,7 +49,7 @@ public class SingleThreadSetQueryTest {
         assertThat(out, equalTo(String.format("RESULT%n%n%n\"THREAD_NAME\" #42%n   java.lang.Thread.State: UNKNOWN%n%n%nSUMMARY%n")));
     }
 
-    private static final class Threads extends SingleThreadSetQuery.Result<ThreadDumpThreadSet> {
+    private static final class Threads extends SingleThreadSetQuery.Result<ThreadDumpThreadSet, ThreadDumpRuntime, ThreadDumpThread> {
 
         private Threads(boolean showStackTraces) {
             super(showStackTraces);

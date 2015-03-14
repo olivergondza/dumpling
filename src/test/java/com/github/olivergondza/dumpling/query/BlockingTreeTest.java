@@ -73,6 +73,8 @@ public class BlockingTreeTest extends AbstractCliTest {
     @Test
     public void fullForest() {
         Set<Tree<ThreadDumpThread>> full = new BlockingTree().query(runtime.getThreads()).getTrees();
+
+        @SuppressWarnings("unchecked")
         Set<Tree<ThreadDumpThread>> expected = new HashSet<Tree<ThreadDumpThread>>(Arrays.asList(
                 tree(a,
                         tree(aa, tree(aaa)),
@@ -87,6 +89,8 @@ public class BlockingTreeTest extends AbstractCliTest {
     @Test
     public void oneChainFromBottom() {
         Set<Tree<ThreadDumpThread>> as = new BlockingTree().query(runtime.getThreads().where(nameIs("aaa"))).getTrees();
+
+        @SuppressWarnings("unchecked")
         Set<Tree<ThreadDumpThread>> expected = new HashSet<Tree<ThreadDumpThread>>(Arrays.asList(
                 tree(a, tree(aa, tree(aaa)))
         ));
@@ -97,6 +101,8 @@ public class BlockingTreeTest extends AbstractCliTest {
     @Test
     public void oneChainFromMiddle() {
         Set<Tree<ThreadDumpThread>> as = new BlockingTree().query(runtime.getThreads().where(nameIs("aa"))).getTrees();
+
+        @SuppressWarnings("unchecked")
         Set<Tree<ThreadDumpThread>> expected = new HashSet<Tree<ThreadDumpThread>>(Arrays.asList(
                 tree(a, tree(aa, tree(aaa)))
         ));
@@ -107,6 +113,8 @@ public class BlockingTreeTest extends AbstractCliTest {
     @Test
     public void fullRoot() {
         Set<Tree<ThreadDumpThread>> as = new BlockingTree().query(runtime.getThreads().where(nameIs("b"))).getTrees();
+
+        @SuppressWarnings("unchecked")
         Set<Tree<ThreadDumpThread>> expected = new HashSet<Tree<ThreadDumpThread>>(Arrays.asList(
                 tree(b, tree(ba))
         ));
@@ -119,6 +127,8 @@ public class BlockingTreeTest extends AbstractCliTest {
         Set<Tree<ThreadDumpThread>> as = new BlockingTree().query(
                 runtime.getThreads().where(nameContains(Pattern.compile("^(aaa|ba)$")))
         ).getTrees();
+
+        @SuppressWarnings("unchecked")
         Set<Tree<ThreadDumpThread>> expected = new HashSet<Tree<ThreadDumpThread>>(Arrays.asList(
                 tree(a, tree(aa, tree(aaa))),
                 tree(b, tree(ba))
@@ -146,6 +156,7 @@ public class BlockingTreeTest extends AbstractCliTest {
         ThreadDumpThread blocking = runtime.getThreads().where(nameContains("ajp-127.0.0.1-8009-24")).onlyThread();
         ThreadDumpThread blocked = runtime.getThreads().where(nameContains("ajp-127.0.0.1-8009-133")).onlyThread();
 
+        @SuppressWarnings("unchecked")
         Set<Tree<ThreadDumpThread>> expected = new HashSet<Tree<ThreadDumpThread>>(Arrays.asList(
                 new BlockingTree.Tree<ThreadDumpThread>(blocking, new BlockingTree.Tree<ThreadDumpThread>(blocked))
         ));
@@ -158,6 +169,7 @@ public class BlockingTreeTest extends AbstractCliTest {
         runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock-and-friends.log"));
         ThreadDumpThreadSet ts = runtime.getThreads();
 
+        @SuppressWarnings("unchecked")
         Set<Tree<ThreadDumpThread>> expected = new HashSet<Tree<ThreadDumpThread>>(Arrays.asList(
                 new BlockingTree.Tree<ThreadDumpThread>(
                         ts.where(nameContains("ajp-127.0.0.1-8009-103")).onlyThread(),
@@ -183,7 +195,7 @@ public class BlockingTreeTest extends AbstractCliTest {
 
     @Test
     public void toStringNoTraces() {
-        assertQueryListing(runtime.query(new BlockingTree()).toString());
+        assertQueryListing(new BlockingTree().query(runtime.getThreads()).toString());
     }
 
     private void assertQueryListing(String out) {
@@ -213,7 +225,7 @@ public class BlockingTreeTest extends AbstractCliTest {
 
     @Test
     public void toStringTraces() {
-        assertLongQueryListing(runtime.query(new BlockingTree().showStackTraces()).toString());
+        assertLongQueryListing(new BlockingTree().showStackTraces().query(runtime.getThreads()).toString());
     }
 
     private void assertLongQueryListing(final String out) {
