@@ -51,10 +51,10 @@ public class GroovyshCommand implements CliCommand {
     private static final GroovyInterpretterConfig CONFIG = new GroovyInterpretterConfig();
 
     @Option(name = "-i", aliases = {"--in"}, usage = "Input for process runtime")
-    private ProcessRuntime runtime;
+    private ProcessRuntime<?, ?, ?> runtime;
 
     @Argument(metaVar = "SCRIPT_ARGS", multiValued = true, usage = "Arguments to be passed to the script")
-    private List<String> args = new ArrayList<String>();
+    private @Nonnull List<String> args = new ArrayList<String>();
 
     @Override
     public String getName() {

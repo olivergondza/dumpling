@@ -88,6 +88,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
 
         @Override
         public int run(@Nonnull ProcessStream process) throws CmdLineException {
+            @SuppressWarnings({"unchecked", "rawtypes"})
             Result<?, ?, ?> result = new Result(runtime.getThreads(), showStackTraces);
             result.printInto(process.out());
             return result.exitCode();
@@ -253,8 +254,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
         }
 
         /*package*/ Tree(@Nonnull ThreadType root, @Nonnull Tree<ThreadType>... leaves) {
-            this.root = root;
-            this.leaves = Collections.unmodifiableSet(new HashSet<Tree<ThreadType>>(Arrays.asList(leaves)));
+            this(root, new LinkedHashSet<Tree<ThreadType>>(Arrays.asList(leaves)));
         }
 
         public @Nonnull ThreadType getRoot() {
@@ -296,6 +296,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
 
             if (!rhs.getClass().equals(this.getClass())) return false;
 
+            @SuppressWarnings("unchecked")
             Tree<ThreadType> other = (Tree<ThreadType>) rhs;
             return this.root.equals(other.root) && this.leaves.equals(other.leaves);
         }

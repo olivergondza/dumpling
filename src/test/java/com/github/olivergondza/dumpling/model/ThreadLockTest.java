@@ -33,34 +33,34 @@ public class ThreadLockTest {
     @Test @SuppressWarnings("deprecation")
     public void equalsWithAddress() {
         assertEquals(
-                new ThreadLock("my.class.Name", 42),
-                new ThreadLock("my.class.Name", 42)
+                new ThreadLock.WithAddress("my.class.Name", 42),
+                new ThreadLock.WithAddress("my.class.Name", 42)
         );
 
         assertNotEquals(
-                new ThreadLock("my.class.Name", 42),
-                new ThreadLock("my.class.Name", 43)
+                new ThreadLock.WithAddress("my.class.Name", 42),
+                new ThreadLock.WithAddress("my.class.Name", 43)
         );
         assertNotEquals(
-                new ThreadLock("my.other.class.Name", 42),
-                new ThreadLock("my.class.Name", 43)
+                new ThreadLock.WithAddress("my.other.class.Name", 42),
+                new ThreadLock.WithAddress("my.class.Name", 43)
         );
     }
 
     @Test @SuppressWarnings("deprecation")
     public void equalsWithHashCode() {
         assertEquals(
-                new ThreadLock("my.class.Name", 42),
-                new ThreadLock("my.class.Name", 42)
+                new ThreadLock.WithHashCode("my.class.Name", 42),
+                new ThreadLock.WithHashCode("my.class.Name", 42)
         );
 
         assertNotEquals(
-                new ThreadLock("my.class.Name", 42),
-                new ThreadLock("my.class.Name", 43)
+                new ThreadLock.WithHashCode("my.class.Name", 42),
+                new ThreadLock.WithHashCode("my.class.Name", 43)
         );
         assertNotEquals(
-                new ThreadLock("my.other.class.Name", 42),
-                new ThreadLock("my.class.Name", 43)
+                new ThreadLock.WithHashCode("my.other.class.Name", 42),
+                new ThreadLock.WithHashCode("my.class.Name", 43)
         );
     }
 

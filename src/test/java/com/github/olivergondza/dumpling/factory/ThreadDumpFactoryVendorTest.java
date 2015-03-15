@@ -313,11 +313,10 @@ public class ThreadDumpFactoryVendorTest {
             StringBuilder err = new StringBuilder();
             try {
                 byte[] buffer = new byte[1024];
-                int len;
-                while ((len = process.getErrorStream().read(buffer)) != -1) {
+                while (process.getErrorStream().read(buffer) != -1) {
                     out.append(new String(buffer));
                 }
-                while ((len = process.getInputStream().read(buffer)) != -1) {
+                while (process.getInputStream().read(buffer) != -1) {
                     err.append(new String(buffer));
                 }
             } catch (IOException ex) {

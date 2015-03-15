@@ -35,6 +35,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.kohsuke.args4j.Argument;
@@ -53,13 +55,13 @@ public class GroovyCommand implements CliCommand {
     private static final GroovyInterpretterConfig CONFIG = new GroovyInterpretterConfig();
 
     @Option(name = "-i", aliases = {"--in"}, usage = "Input for process runtime")
-    private ProcessRuntime runtime;
+    private ProcessRuntime<?, ?, ?> runtime;
 
     @Option(name = "-s", aliases = {"--script"}, usage = "Script to execute")
     private File script;
 
     @Argument(metaVar = "SCRIPT_ARGS", multiValued = true, usage = "Arguments to be passed to the script")
-    private List<String> args = new ArrayList<String>();
+    private @Nonnull List<String> args = new ArrayList<String>();
 
     @Override
     public String getName() {

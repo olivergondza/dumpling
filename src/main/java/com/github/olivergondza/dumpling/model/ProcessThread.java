@@ -74,7 +74,7 @@ public class ProcessThread<
         }
     }
 
-    public @Nonnull ProcessRuntime getRuntime() {
+    public @Nonnull RuntimeType getRuntime() {
         return runtime;
     }
 

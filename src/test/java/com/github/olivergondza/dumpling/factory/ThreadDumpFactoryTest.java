@@ -618,7 +618,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         // Based on stacktrace - not thread status
         assertThat(parking.toString(), containsString("parking to wait for"));
 
-        ThreadDumpThread blocked = threads.where(nameIs("blocked-without-monitor")).onlyThread();
+        threads.where(nameIs("blocked-without-monitor")).onlyThread();
     }
 
     @Test
@@ -717,7 +717,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     }
 
     private static volatile int syntheticId = 42;
-    private ThreadDumpThread.Builder thread(String name) {
+    private ThreadDumpThread.Builder thread(@Nonnull String name) {
         return new ThreadDumpThread.Builder().setName(name)
                 // Preset unique id for purposes of the test as we can not rely
                 // that SUT will correctly initialize IDs. Threads with the
@@ -727,7 +727,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         ;
     }
 
-    private ThreadDumpThread.Builder daemon(String name) {
+    private ThreadDumpThread.Builder daemon(@Nonnull String name) {
         return thread(name).setDaemon(true);
     }
 
@@ -735,7 +735,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         return new ThreadLock(classname, address);
     }
 
-    private TypeSafeMatcher<ThreadDumpRuntime> stacktraceEquals(final StackTrace expected, final String threadName) {
+    private TypeSafeMatcher<ThreadDumpRuntime> stacktraceEquals(final StackTrace expected, final @Nonnull String threadName) {
         return new TypeSafeMatcher<ThreadDumpRuntime>() {
             @Override
             public void describeTo(Description description) {
@@ -782,7 +782,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
                 }
             }
 
-            private StackTrace trace(ThreadDumpRuntime runtime, String threadName) {
+            private StackTrace trace(ThreadDumpRuntime runtime, @Nonnull String threadName) {
                 return runtime.getThreads().where(nameIs(threadName)).onlyThread().getStackTrace();
             }
         };

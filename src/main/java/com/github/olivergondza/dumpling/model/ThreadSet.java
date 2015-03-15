@@ -51,8 +51,8 @@ public class ThreadSet<
 
     private static final @Nonnull String NL = System.getProperty("line.separator", "\n");
 
-    private final @Nonnull RuntimeType runtime;
-    private final @Nonnull Set<ThreadType> threads;
+    protected final @Nonnull RuntimeType runtime;
+    protected final @Nonnull Set<ThreadType> threads;
 
     protected ThreadSet(@Nonnull RuntimeType runtime, @Nonnull Set<ThreadType> threads) {
         this.runtime = runtime;
@@ -121,7 +121,7 @@ public class ThreadSet<
         return runtime.getThreadSet(blocking);
     }
 
-    public @Nonnull SetType ignoring(@Nonnull ThreadSet<?, ?, ?> ignoredThreads) {
+    public @Nonnull SetType ignoring(@Nonnull SetType ignoredThreads) {
         if (threads.isEmpty() || ignoredThreads.isEmpty()) return (SetType) this;
 
         HashSet<ThreadType> newThreads = new HashSet<ThreadType>(threads);
@@ -168,7 +168,7 @@ public class ThreadSet<
 
         if (!this.getClass().equals(rhs.getClass())) return false;
 
-        ThreadSet<?, ?, ?> other = (ThreadSet) rhs;
+        ThreadSet<?, ?, ?> other = (ThreadSet<?, ?, ?>) rhs;
 
         return runtime.equals(other.runtime) && threads.equals(other.threads);
     }
@@ -204,7 +204,7 @@ public class ThreadSet<
      *
      * @return New thread collection bound to same runtime.
      */
-    public @Nonnull SetType derive(Collection<ThreadType> threads) {
+    public @Nonnull SetType derive(@Nonnull Collection<ThreadType> threads) {
         return runtime.getThreadSet(threads);
     }
 
@@ -212,24 +212,28 @@ public class ThreadSet<
 
     public @Nonnull SetType grep() {
         // Do not invoke grep(Collection) as it was added in 2.0
-        @SuppressWarnings({"unchecked"})
-        final Collection<ThreadType> grep = DefaultGroovyMethods.grep((Object) threads);
+        @SuppressWarnings({"unchecked", "null"})
+        final @Nonnull Collection<ThreadType> grep = DefaultGroovyMethods.grep((Object) threads);
         return derive(grep);
     }
 
     public @Nonnull SetType grep(Object filter) {
         // Do not invoke grep(Collection, Object) as it was added in 2.0
-        @SuppressWarnings("unchecked")
-        final Collection<ThreadType> grep = DefaultGroovyMethods.grep((Object) threads, filter);
+        @SuppressWarnings({"unchecked", "null"})
+        final @Nonnull Collection<ThreadType> grep = DefaultGroovyMethods.grep((Object) threads, filter);
         return derive(grep);
     }
 
     public @Nonnull SetType findAll() {
-        return derive(DefaultGroovyMethods.findAll(threads));
+        @SuppressWarnings("null")
+        final @Nonnull Collection<ThreadType> ret = DefaultGroovyMethods.findAll(threads);
+        return derive(ret);
     }
 
     public @Nonnull SetType findAll(Closure<ThreadType> predicate) {
-        return derive(DefaultGroovyMethods.findAll(threads, predicate));
+        @SuppressWarnings("null")
+        final @Nonnull Collection<ThreadType> ret = DefaultGroovyMethods.findAll(threads, predicate);
+        return derive(ret);
     }
 
     public @Nonnull ThreadSet<SetType, RuntimeType, ThreadType> asImmutable() {
@@ -240,22 +244,23 @@ public class ThreadSet<
         return (SetType) this;
     }
 
-    public @Nonnull SetType intersect(ThreadSet<?, ?, ?> other) {
+    public @Nonnull SetType intersect(SetType other) {
         if (!runtime.equals(other.runtime)) throw new IllegalStateException(
                 "Unable to intersect thread sets bound to different runtime"
         );
 
-        @SuppressWarnings("unchecked")
-        final Collection<ThreadType> intersect = DefaultGroovyMethods.intersect((Set) threads, (Set) other.threads);
+        @SuppressWarnings("null")
+        final @Nonnull Collection<ThreadType> intersect = DefaultGroovyMethods.intersect(threads, other.threads);
         return derive(intersect);
     }
 
     public @Nonnull SetType plus(SetType other) {
-        final ThreadSet<?, ?, ?> typedOther = other;
-        if (!runtime.equals(typedOther.runtime)) throw new IllegalStateException(
+        if (!runtime.equals(other.runtime)) throw new IllegalStateException(
                 "Unable to merge thread sets bound to different runtime"
         );
 
-        return derive(DefaultGroovyMethods.plus(threads, (Set<ThreadType>) typedOther.threads));
+        @SuppressWarnings("null")
+        final @Nonnull Collection<ThreadType> plus = DefaultGroovyMethods.plus(threads, other.threads);
+        return derive(plus);
     }
 }

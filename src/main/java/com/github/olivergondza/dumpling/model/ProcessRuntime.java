@@ -35,6 +35,7 @@ import com.github.olivergondza.dumpling.query.SingleThreadSetQuery;
 
 /**
  * Snapshot of threads in JVM at given time.
+ *
  * @author ogondza
  */
 public abstract class ProcessRuntime<

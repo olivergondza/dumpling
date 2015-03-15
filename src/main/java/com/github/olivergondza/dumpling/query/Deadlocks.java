@@ -89,7 +89,7 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result<?,
 
         @Override
         public int run(@Nonnull ProcessStream process) throws CmdLineException {
-
+            @SuppressWarnings({"rawtypes", "unchecked"})
             Result<?, ?, ?> result = new Result(runtime.getThreads(), showStackTraces);
             result.printInto(process.out());
             return result.exitCode();
@@ -128,7 +128,8 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result<?,
 
                     int beginning = cycleCandidate.indexOf(blocking);
                     if (beginning != -1) {
-                        List<ThreadType> cycle = cycleCandidate.subList(beginning, cycleCandidate.size());
+                        @SuppressWarnings("null")
+                        @Nonnull List<ThreadType> cycle = cycleCandidate.subList(beginning, cycleCandidate.size());
                         deadlocks.add(input.derive(cycle));
                         involved.addAll(cycle);
                         analyzed.addAll(cycleCandidate);

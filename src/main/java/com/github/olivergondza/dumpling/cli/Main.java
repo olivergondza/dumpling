@@ -87,23 +87,23 @@ public class Main {
         return -1;
     }
 
-    public static class ProcessRuntimeOptionHandler extends OptionHandler<ProcessRuntime> {
+    public static class ProcessRuntimeOptionHandler extends OptionHandler<ProcessRuntime<?, ?, ?>> {
 
         // TODO: this is awful but I found no better way
         private static ProcessStream system;
 
-        public ProcessRuntimeOptionHandler(CmdLineParser parser, OptionDef option, Setter<? super ProcessRuntime> setter) {
+        public ProcessRuntimeOptionHandler(CmdLineParser parser, OptionDef option, Setter<? super ProcessRuntime<?, ?, ?>> setter) {
             super(parser, option, setter);
         }
 
         @Override
         public int parseArguments(Parameters params) throws CmdLineException {
             String scheme = namedParameter("KIND", params, 0);
-            CliRuntimeFactory factory = getFactory(scheme);
+            CliRuntimeFactory<?> factory = getFactory(scheme);
             if (factory == null) throw new CmdLineException(owner, "Unknown runtime source kind: " + scheme);
 
             String locator = namedParameter("LOCATOR", params, 1);
-            ProcessRuntime runtime = factory.createRuntime(locator, system);
+            ProcessRuntime<?, ?, ?> runtime = factory.createRuntime(locator, system);
             if (runtime == null) throw new AssertionError(factory.getClass() + " failed to create runtime");
 
             setter.addValue(runtime);
@@ -124,30 +124,29 @@ public class Main {
             return "KIND LOCATOR";
         }
 
-        /*package*/ static @Nonnull List<CliRuntimeFactory> getFactories() {
-            List<CliRuntimeFactory> factories = new ArrayList<CliRuntimeFactory>();
-            for (Class<? extends CliRuntimeFactory> type: factoryTypes()) {
+        /*package*/ static @Nonnull List<CliRuntimeFactory<?>> getFactories() {
+            List<CliRuntimeFactory<?>> factories = new ArrayList<CliRuntimeFactory<?>>();
+            for (Class<? extends CliRuntimeFactory<?>> type: factoryTypes()) {
                 factories.add(instantiateFactory(type));
             }
             return factories;
         }
 
-        public static @CheckForNull CliRuntimeFactory getFactory(String name) {
-            for (Class<? extends CliRuntimeFactory> type: factoryTypes()) {
-                CliRuntimeFactory factory = instantiateFactory(type);
+        public static @CheckForNull CliRuntimeFactory<?> getFactory(String name) {
+            for (Class<? extends CliRuntimeFactory<?>> type: factoryTypes()) {
+                CliRuntimeFactory<?> factory = instantiateFactory(type);
                 if (name.equals(factory.getKind())) return factory;
             }
 
             return null;
         }
 
-        private static Set<Class<? extends CliRuntimeFactory>> factoryTypes() {
-            return new Reflections("com.github.olivergondza.dumpling")
-                    .getSubTypesOf(CliRuntimeFactory.class)
-            ;
+        @SuppressWarnings({"rawtypes", "unchecked"})
+        private static Set<Class<? extends CliRuntimeFactory<?>>> factoryTypes() {
+            return (Set) new Reflections("com.github.olivergondza.dumpling").getSubTypesOf(CliRuntimeFactory.class);
         }
 
-        private static CliRuntimeFactory instantiateFactory(Class<? extends CliRuntimeFactory> type) {
+        private static CliRuntimeFactory<?> instantiateFactory(Class<? extends CliRuntimeFactory<?>> type) {
             try {
 
                 return type.newInstance();

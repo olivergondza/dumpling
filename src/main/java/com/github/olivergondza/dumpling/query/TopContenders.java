@@ -91,6 +91,7 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
 
         @Override
         public int run(@Nonnull ProcessStream process) throws CmdLineException {
+            @SuppressWarnings({"unchecked", "rawtypes"})
             Result<?, ?, ?> result = new Result(runtime.getThreads(), showStackTraces);
             result.printInto(process.out());
             return result.exitCode();

@@ -66,7 +66,7 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
      *
      * Dumpling exposed API is available via <tt>D</tt> property.
      */
-    /*package*/ Binding getDefaultBinding(@Nonnull ProcessStream stream, @Nonnull List<String> args, @Nullable ProcessRuntime runtime) {
+    /*package*/ Binding getDefaultBinding(@Nonnull ProcessStream stream, @Nonnull List<String> args, @Nullable ProcessRuntime<?, ?, ?> runtime) {
         Binding binding = new Binding();
         binding.setProperty("out", stream.out());
         binding.setProperty("err", stream.err());
@@ -91,7 +91,7 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
             this.stream = stream;
         }
 
-        public ProcessRuntime call(String filename) throws Exception {
+        public ProcessRuntime<?, ?, ?> call(String filename) throws Exception {
             stream.err().println("load(String) command is deprecated. Use 'D.load.threaddump(String)' instead.");
             return new ThreadDumpFactory().fromFile(new File(filename));
         }
@@ -183,10 +183,10 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
     /*package*/ static class CliApiEntryPoint extends CliApi {
 
         private final @Nonnull ProcessStream streams;
-        private final @Nullable ProcessRuntime runtime;
+        private final @Nullable ProcessRuntime<?, ?, ?> runtime;
         private final @Nonnull List<String> args;
 
-        /*package*/ CliApiEntryPoint(@Nonnull ProcessStream streams, @Nonnull List<String> args, @Nullable ProcessRuntime runtime, @Nonnull String property) {
+        /*package*/ CliApiEntryPoint(@Nonnull ProcessStream streams, @Nonnull List<String> args, @Nullable ProcessRuntime<?, ?, ?> runtime, @Nonnull String property) {
             super(property + '.');
             this.streams = streams;
             this.runtime = runtime;
@@ -203,7 +203,7 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
         }
 
         @ApiDoc(text = "Current runtime passed via `--in` option. null if not provided.")
-        public @Nullable ProcessRuntime getRuntime() {
+        public @Nullable ProcessRuntime<?, ?, ?> getRuntime() {
             return runtime;
         }
     }
@@ -219,27 +219,27 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
         }
 
         @ApiDoc(text = "Load runtime from threaddump.")
-        public ProcessRuntime threaddump(@Nonnull String filename) throws IOException {
+        public ProcessRuntime<?, ?, ?> threaddump(@Nonnull String filename) throws IOException {
             return new ThreadDumpFactory().fromFile(new File(filename));
         }
 
         @ApiDoc(text = "Load runtime from process identified by PID.")
-        public ProcessRuntime process(int pid) throws IOException, InterruptedException {
+        public ProcessRuntime<?, ?, ?> process(int pid) throws IOException, InterruptedException {
             return new PidRuntimeFactory().fromProcess(pid);
         }
 
         @ApiDoc(text = "Load runtime via JMX from process identified by PID.")
-        public ProcessRuntime jmx(int pid) {
+        public ProcessRuntime<?, ?, ?> jmx(int pid) {
             return new JmxRuntimeFactory().forLocalProcess(pid);
         }
 
         @ApiDoc(text = "Load runtime via JMX using JMX connection string.")
-        public ProcessRuntime jmx(@Nonnull String connection) {
+        public ProcessRuntime<?, ?, ?> jmx(@Nonnull String connection) {
             return new JmxRuntimeFactory().createRuntime(connection, streams);
         }
 
         @ApiDoc(text = "Capture runtime of current JVM.")
-        public ProcessRuntime getJvm() {
+        public ProcessRuntime<?, ?, ?> getJvm() {
             return new JvmRuntimeFactory().currentRuntime();
         }
     }

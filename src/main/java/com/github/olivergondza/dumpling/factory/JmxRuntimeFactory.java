@@ -65,6 +65,7 @@ import com.github.olivergondza.dumpling.model.jvm.JvmThread;
  *
  * @author ogondza
  */
+// TODO jmx model
 public final class JmxRuntimeFactory implements CliRuntimeFactory {
 
     @Override
@@ -126,7 +127,7 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
         for (CompositeData thread: threads) {
             @Nonnull State state = Thread.State.valueOf((String) thread.get("threadState"));
 
-            // TODO introduce JVM supertypes for MX
+            // TODO introduce JVM supertypes for JMX
             JvmThread.Builder builder = new JvmThread.Builder(null)
                     .setName((String) thread.get("threadName"))
                     .setId((Long) thread.get("threadId"))

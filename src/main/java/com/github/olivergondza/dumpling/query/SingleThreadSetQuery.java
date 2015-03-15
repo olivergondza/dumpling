@@ -104,7 +104,7 @@ public interface SingleThreadSetQuery<ResultType extends SingleThreadSetQuery.Re
          *
          * To be overriden when there is any summary to report.
          */
-        protected void printSummary(@Nonnull PrintStream out) {}
+        protected void printSummary(@SuppressWarnings("unused") @Nonnull PrintStream out) {}
 
         /**
          * Exit code to report when run from CLI.

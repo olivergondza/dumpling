@@ -186,7 +186,9 @@ public enum ThreadStatus {
     public static @Nonnull ThreadStatus fromString(String title) {
         try {
 
-            return Enum.valueOf(ThreadStatus.class, title);
+            @SuppressWarnings("null")
+            final @Nonnull ThreadStatus value = Enum.valueOf(ThreadStatus.class, title);
+            return value;
         } catch (IllegalArgumentException ex) {
 
             for (ThreadStatus value: values()) {

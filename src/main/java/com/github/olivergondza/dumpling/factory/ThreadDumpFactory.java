@@ -121,15 +121,20 @@ public class ThreadDumpFactory implements CliRuntimeFactory<ThreadDumpRuntime> {
     private @Nonnull Set<ThreadDumpThread.Builder> threads(InputStream stream) {
         Set<ThreadDumpThread.Builder> threads = new LinkedHashSet<ThreadDumpThread.Builder>();
 
-        Scanner scanner = new Scanner(stream).useDelimiter(THREAD_DELIMITER);
-        while (scanner.hasNext()) {
-            String singleThread = scanner.next();
-            ThreadDumpThread.Builder thread = thread(singleThread);
-            if (thread == null) continue;
-            threads.add(thread);
-        }
+        Scanner scanner = new Scanner(stream);
+        scanner.useDelimiter(THREAD_DELIMITER);
+        try {
+            while (scanner.hasNext()) {
+                String singleThread = scanner.next();
+                ThreadDumpThread.Builder thread = thread(singleThread);
+                if (thread == null) continue;
+                threads.add(thread);
+            }
 
-        return threads;
+            return threads;
+        } finally {
+            scanner.close();
+        }
     }
 
     private ThreadDumpThread.Builder thread(String singleThread) {
