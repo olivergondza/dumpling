@@ -21,34 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.github.olivergondza.dumpling.model.jvm;
+package com.github.olivergondza.dumpling.model.mxbean;
 
+import java.lang.management.ThreadMXBean;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-import com.github.olivergondza.dumpling.model.ProcessThread.Builder;
 import com.github.olivergondza.dumpling.model.ThreadSet;
-import com.github.olivergondza.dumpling.model.mxbean.MXBeanRuntime;
 
 /**
- * Subclass handing JVM-aware {@link ThreadSet} implementation.
+ * {@link ThreadSet} created from {@link ThreadMXBean} data.
+ *
+ * Shared API for JVM and JMX models.
  *
  * @author ogondza
  */
-public final class JvmRuntime extends MXBeanRuntime<JvmRuntime, JvmThreadSet, JvmThread> {
+public abstract class MXBeanThreadSet<
+        S extends MXBeanThreadSet<S, R, T>,
+        R extends MXBeanRuntime<R, S, T>,
+        T extends MXBeanThread<T, S, R>
+> extends ThreadSet<S, R, T> {
 
-    public JvmRuntime(@Nonnull Set<JvmThread.Builder> builders) {
-        super(builders);
-    }
-
-    @Override
-    protected JvmThreadSet createSet(Set<JvmThread> threads) {
-        return new JvmThreadSet(this, threads);
-    }
-
-    @Override
-    protected JvmThread createThread(Builder<?> builder) {
-        return new JvmThread(this, (JvmThread.Builder) builder);
+    protected MXBeanThreadSet(@Nonnull R runtime, @Nonnull Set<T> threads) {
+        super(runtime, threads);
     }
 }

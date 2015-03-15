@@ -29,23 +29,25 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 import com.github.olivergondza.dumpling.model.ProcessThread;
-import com.github.olivergondza.dumpling.model.ThreadSet;
+import com.github.olivergondza.dumpling.model.mxbean.MXBeanThreadSet;
 
 /**
  * ThreadSet with convenient methods to take advantage from {@link Thread} availability.
  *
  * @author ogondza
  */
-public final class JvmThreadSet extends ThreadSet<JvmThreadSet, JvmRuntime, JvmThread> {
+public final class JvmThreadSet extends MXBeanThreadSet<JvmThreadSet, JvmRuntime, JvmThread> {
 
-    public JvmThreadSet(@Nonnull JvmRuntime runtime, @Nonnull Set<JvmThread> threads) {
+    protected JvmThreadSet(@Nonnull JvmRuntime runtime, @Nonnull Set<JvmThread> threads) {
         super(runtime, threads);
     }
 
     /**
      * Get {@link ProcessThread} for given {@link Thread}.
      */
-    public @CheckForNull JvmThread forThread(@Nonnull Thread needle) {
+    public @CheckForNull JvmThread forThread(@CheckForNull Thread needle) {
+        if (needle == null) return null;
+
         for (JvmThread candidate: this) {
             final JvmThread jvmThread = candidate;
             final Thread thread = jvmThread.getThread();

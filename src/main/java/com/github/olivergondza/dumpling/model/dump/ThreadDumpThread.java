@@ -34,8 +34,5 @@ public final class ThreadDumpThread extends ProcessThread<ThreadDumpThread, Thre
     }
 
     public final static class Builder extends ProcessThread.Builder<Builder> {
-
-        public Builder() {
-        }
     }
 }

@@ -45,6 +45,8 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.StackTrace;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
+import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
+import com.github.olivergondza.dumpling.model.jmx.JmxRuntime;
 
 public class JmxRuntimeFactoryTest extends AbstractCliTest {
 
@@ -66,14 +68,14 @@ public class JmxRuntimeFactoryTest extends AbstractCliTest {
     @Test
     public void jmxRemoteConnect() throws Exception {
         runRemoteSut();
-        ProcessRuntime runtime = new JmxRuntimeFactory().forRemoteProcess(JMX_HOST, JMX_PORT);
+        JmxRuntime runtime = new JmxRuntimeFactory().forRemoteProcess(JMX_HOST, JMX_PORT);
         assertThreadState(runtime);
     }
 
     @Test
     public void jmxRemoteConnectWithPasswd() throws Exception {
         runRemoteSut(true);
-        ProcessRuntime runtime = new JmxRuntimeFactory().forRemoteProcess(JMX_HOST, JMX_PORT, JMX_USER, JMX_PASSWD);
+        JmxRuntime runtime = new JmxRuntimeFactory().forRemoteProcess(JMX_HOST, JMX_PORT, JMX_USER, JMX_PASSWD);
         assertThreadState(runtime);
     }
 
@@ -106,14 +108,14 @@ public class JmxRuntimeFactoryTest extends AbstractCliTest {
         run("groovy", "--in", "jmx", JMX_CONNECTION);
 
         // Reuse verification logic re-parsing the output as thread dump
-        ProcessRuntime reparsed = new ThreadDumpFactory().fromStream(new ByteArrayInputStream(out.toByteArray()));
+        ThreadDumpRuntime reparsed = new ThreadDumpFactory().fromStream(new ByteArrayInputStream(out.toByteArray()));
         assertThreadState(reparsed);
     }
 
     @Test
     public void jmxLocalConnect() {
         runLocalSut();
-        ProcessRuntime runtime = new JmxRuntimeFactory().forLocalProcess(Util.currentPid());
+        JmxRuntime runtime = new JmxRuntimeFactory().forLocalProcess(Util.currentPid());
         assertThreadState(runtime);
     }
 
@@ -124,7 +126,7 @@ public class JmxRuntimeFactoryTest extends AbstractCliTest {
         run("groovy", "--in", "jmx", Integer.toString(Util.currentPid()));
 
         // Reuse verification logic re-parsing the output as thread dump
-        ProcessRuntime reparsed = new ThreadDumpFactory().fromStream(new ByteArrayInputStream(out.toByteArray()));
+        ThreadDumpRuntime reparsed = new ThreadDumpFactory().fromStream(new ByteArrayInputStream(out.toByteArray()));
         assertThreadState(reparsed);
     }
 
@@ -148,15 +150,15 @@ public class JmxRuntimeFactoryTest extends AbstractCliTest {
         }
     }
 
-    private void assertThreadState(ProcessRuntime runtime) {
-        ProcessThread actual = runtime.getThreads().where(nameIs("remotely-observed-thread")).onlyThread();
+    private void assertThreadState(ProcessRuntime<?, ?, ?> runtime) {
+        ProcessThread<?, ?, ?> actual = runtime.getThreads().where(nameIs("remotely-observed-thread")).onlyThread();
         StackTrace trace = actual.getStackTrace();
 
         assertThat(actual.getName(), equalTo("remotely-observed-thread"));
         assertThat(actual.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
         // TODO other attributes
 
-        // Test class and method name only as JVM way offer filename too while thread dump way does not
+        // Test class and method name only as MXBean way offer filename too while thread dump way does not
         final StackTraceElement innerFrame = trace.getElement(0);
         assertThat(innerFrame.getClassName(), equalTo("java.lang.Object"));
         assertThat(innerFrame.getMethodName(), equalTo("wait"));

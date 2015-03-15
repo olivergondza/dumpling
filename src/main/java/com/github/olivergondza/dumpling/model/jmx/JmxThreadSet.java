@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014 Red Hat, Inc.
+ * Copyright (c) 2015 Red Hat, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,34 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.github.olivergondza.dumpling.model.jvm;
+package com.github.olivergondza.dumpling.model.jmx;
 
 import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-import com.github.olivergondza.dumpling.model.ProcessThread.Builder;
 import com.github.olivergondza.dumpling.model.ThreadSet;
-import com.github.olivergondza.dumpling.model.mxbean.MXBeanRuntime;
+import com.github.olivergondza.dumpling.model.mxbean.MXBeanThreadSet;
 
 /**
- * Subclass handing JVM-aware {@link ThreadSet} implementation.
+ * {@link ThreadSet} created over JMX.
  *
  * @author ogondza
  */
-public final class JvmRuntime extends MXBeanRuntime<JvmRuntime, JvmThreadSet, JvmThread> {
+public final class JmxThreadSet extends MXBeanThreadSet<JmxThreadSet, JmxRuntime, JmxThread> {
 
-    public JvmRuntime(@Nonnull Set<JvmThread.Builder> builders) {
-        super(builders);
-    }
-
-    @Override
-    protected JvmThreadSet createSet(Set<JvmThread> threads) {
-        return new JvmThreadSet(this, threads);
-    }
-
-    @Override
-    protected JvmThread createThread(Builder<?> builder) {
-        return new JvmThread(this, (JvmThread.Builder) builder);
+    public JmxThreadSet(@Nonnull JmxRuntime runtime, @Nonnull Set<JmxThread> threads) {
+        super(runtime, threads);
     }
 }

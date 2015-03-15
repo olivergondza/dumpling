@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package com.github.olivergondza.dumpling.model.jvm;
 
 import java.lang.ref.WeakReference;
@@ -29,13 +30,14 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 import com.github.olivergondza.dumpling.model.ProcessThread;
+import com.github.olivergondza.dumpling.model.mxbean.MXBeanThread;
 
 /**
  * {@link ProcessThread} with {@link Thread} reference.
  *
  * @author ogondza
  */
-public final class JvmThread extends ProcessThread<JvmThread, JvmThreadSet, JvmRuntime> {
+public final class JvmThread extends MXBeanThread<JvmThread, JvmThreadSet, JvmRuntime> {
 
     final @Nonnull JvmThread.Builder state;
 
@@ -53,7 +55,7 @@ public final class JvmThread extends ProcessThread<JvmThread, JvmThreadSet, JvmR
         return state.thread.get();
     }
 
-    public final static class Builder extends ProcessThread.Builder<Builder> {
+    public final static class Builder extends MXBeanThread.Builder<Builder> {
 
         // Using weak reference not to keep the thread in memory once terminated
         private final @Nonnull WeakReference<Thread> thread;

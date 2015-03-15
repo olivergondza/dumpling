@@ -30,7 +30,7 @@ import javax.annotation.Nonnull;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread.Builder;
 
-public class ThreadDumpRuntime extends ProcessRuntime<ThreadDumpRuntime, ThreadDumpThreadSet, ThreadDumpThread> {
+public final class ThreadDumpRuntime extends ProcessRuntime<ThreadDumpRuntime, ThreadDumpThreadSet, ThreadDumpThread> {
 
     public ThreadDumpRuntime(@Nonnull Set<ThreadDumpThread.Builder> builders) {
         super(builders);

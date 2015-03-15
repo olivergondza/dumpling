@@ -55,8 +55,8 @@ import com.github.olivergondza.dumpling.cli.ProcessStream;
 import com.github.olivergondza.dumpling.model.StackTrace;
 import com.github.olivergondza.dumpling.model.ThreadLock;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
-import com.github.olivergondza.dumpling.model.jvm.JvmRuntime;
-import com.github.olivergondza.dumpling.model.jvm.JvmThread;
+import com.github.olivergondza.dumpling.model.jmx.JmxRuntime;
+import com.github.olivergondza.dumpling.model.jmx.JmxThread;
 
 /**
  * Create runtime from running process via JMX interface.
@@ -65,8 +65,7 @@ import com.github.olivergondza.dumpling.model.jvm.JvmThread;
  *
  * @author ogondza
  */
-// TODO jmx model
-public final class JmxRuntimeFactory implements CliRuntimeFactory {
+public final class JmxRuntimeFactory implements CliRuntimeFactory<JmxRuntime> {
 
     @Override
     public @Nonnull String getKind() {
@@ -79,7 +78,7 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
     }
 
     @Override
-    public @Nonnull JvmRuntime createRuntime(@Nonnull String locator, @Nonnull ProcessStream process) throws CommandFailedException {
+    public @Nonnull JmxRuntime createRuntime(@Nonnull String locator, @Nonnull ProcessStream process) throws CommandFailedException {
         try {
             return fromConnection(locateConnection(locator));
         } catch (FailedToInitializeJmxConnection ex) {
@@ -87,15 +86,15 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
         }
     }
 
-    public @Nonnull JvmRuntime forRemoteProcess(@Nonnull String host, int port) throws FailedToInitializeJmxConnection {
+    public @Nonnull JmxRuntime forRemoteProcess(@Nonnull String host, int port) throws FailedToInitializeJmxConnection {
         return forRemoteProcess(host, port, null, null);
     }
 
-    public @Nonnull JvmRuntime forRemoteProcess(@Nonnull String host, int port, String username, String password) throws FailedToInitializeJmxConnection {
+    public @Nonnull JmxRuntime forRemoteProcess(@Nonnull String host, int port, String username, String password) throws FailedToInitializeJmxConnection {
         return fromConnection(new RemoteConnector(host, port, username, password).getServerConnection());
     }
 
-    public @Nonnull JvmRuntime forLocalProcess(int pid) throws FailedToInitializeJmxConnection {
+    public @Nonnull JmxRuntime forLocalProcess(int pid) throws FailedToInitializeJmxConnection {
         return fromConnection(new LocalConnector(pid).getServerConnection());
     }
 
@@ -108,7 +107,7 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
         }
     }
 
-    private @Nonnull JvmRuntime fromConnection(@Nonnull MBeanServerConnection connection) {
+    private @Nonnull JmxRuntime fromConnection(@Nonnull MBeanServerConnection connection) {
         try {
             return extractRuntime(connection);
         } catch (MBeanException ex) {
@@ -120,15 +119,14 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
         }
     }
 
-    private @Nonnull JvmRuntime extractRuntime(@Nonnull MBeanServerConnection connection) throws MBeanException, JMException, IOException {
+    private @Nonnull JmxRuntime extractRuntime(@Nonnull MBeanServerConnection connection) throws MBeanException, JMException, IOException {
         final CompositeData[] threads = getRemoteThreads(connection);
-        HashSet<JvmThread.Builder> builders = new HashSet<JvmThread.Builder>(threads.length);
+        HashSet<JmxThread.Builder> builders = new HashSet<JmxThread.Builder>(threads.length);
 
         for (CompositeData thread: threads) {
             @Nonnull State state = Thread.State.valueOf((String) thread.get("threadState"));
 
-            // TODO introduce JVM supertypes for JMX
-            JvmThread.Builder builder = new JvmThread.Builder(null)
+            JmxThread.Builder builder = new JmxThread.Builder()
                     .setName((String) thread.get("threadName"))
                     .setId((Long) thread.get("threadId"))
                     .setStacktrace(getStackTrace(thread))
@@ -149,7 +147,7 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory {
             builders.add(builder);
         }
 
-        return new JvmRuntime(builders);
+        return new JmxRuntime(builders);
     }
 
     private List<ThreadLock.Monitor> getMonitors(CompositeData thread) {
