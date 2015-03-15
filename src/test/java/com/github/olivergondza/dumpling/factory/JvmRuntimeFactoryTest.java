@@ -404,6 +404,17 @@ public class JvmRuntimeFactoryTest {
         assertThat(monitors.onlyThread().getAcquiredLocks().size(), equalTo(3));
     }
 
+    @Test
+    public void extractThread() {
+        JvmThreadSet threads = new JvmRuntimeFactory().currentRuntime().getThreads();
+        Thread currentThread = Thread.currentThread();
+
+        assertThat(currentThread.getId(), equalTo(threads.forCurrentThread().getId()));
+        assertThat(currentThread.getId(), equalTo(threads.forThread(currentThread).getId()));
+        assertNull(threads.forThread(null));
+        assertNull(threads.forThread(new Thread()));
+    }
+
     private void assertStatusIs(ThreadStatus expected, Thread thread) {
         assertEquals("Reported state: " + thread.getState(), expected, statusOf(thread));
     }

@@ -50,8 +50,7 @@ public final class JvmThreadSet extends MXBeanThreadSet<JvmThreadSet, JvmRuntime
 
         for (JvmThread candidate: this) {
             final JvmThread jvmThread = candidate;
-            final Thread thread = jvmThread.getThread();
-            if (needle.equals(thread)) return jvmThread;
+            if (needle.equals(jvmThread.getThread())) return jvmThread;
         }
         return null;
     }
