@@ -35,6 +35,8 @@ import static org.junit.Assert.fail;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import javax.annotation.Nonnull;
+
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
@@ -93,7 +95,9 @@ public class ProcessTheadTest {
     @Test
     public void failSanityCheck() {
         try {
-            runtime(new ThreadDumpThread.Builder().setName(null));
+            @SuppressWarnings("null")
+            @Nonnull String nil = System.getProperty(null);
+            runtime(new ThreadDumpThread.Builder().setName(nil));
             fail();
         } catch (IllegalRuntimeStateException ex) {
             assertThat(ex.getMessage(), equalTo("Thread name not set"));
