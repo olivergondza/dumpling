@@ -35,8 +35,6 @@ import static org.junit.Assert.fail;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import javax.annotation.Nonnull;
-
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
@@ -92,12 +90,10 @@ public class ProcessTheadTest {
         assertThat(threads.where(nameIs("owning_thread")), equalTo(threads.where(acquiredLock("hudson.model.Queue"))));
     }
 
-    @Test
+    @Test @SuppressWarnings("null")
     public void failSanityCheck() {
         try {
-            @SuppressWarnings("null")
-            @Nonnull String nil = System.getProperty(null);
-            runtime(new ThreadDumpThread.Builder().setName(nil));
+            runtime(new ThreadDumpThread.Builder().setName(_null()));
             fail();
         } catch (IllegalRuntimeStateException ex) {
             assertThat(ex.getMessage(), equalTo("Thread name not set"));
@@ -123,6 +119,11 @@ public class ProcessTheadTest {
         } catch (IllegalRuntimeStateException ex) {
             assertThat(ex.getMessage(), startsWith("Blocked thread does not declare monitor"));
         }
+    }
+
+    // Fool static analysis tools
+    private String _null() {
+        return null;
     }
 
     private ThreadDumpRuntime runtime(ThreadDumpThread.Builder... builders) {
