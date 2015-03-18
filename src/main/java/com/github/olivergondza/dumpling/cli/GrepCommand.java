@@ -23,34 +23,61 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
+
+import java.util.Arrays;
+
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
+import com.github.olivergondza.dumpling.model.ThreadSet;
 
-/**
- * Print threaddump as string.
- *
- * @author ogondza
- */
-public class ThreaddumpCommand implements CliCommand {
+public class GrepCommand implements CliCommand {
+
+    private static final GroovyInterpretterConfig CONFIG = new GroovyInterpretterConfig();
+    private static final String SCRIPT_STUB = "D.runtime.threads.grep { thread -> %s }";
 
     @Option(name = "-i", aliases = {"--in"}, usage = "Input for process runtime")
     private ProcessRuntime<?, ?, ?> runtime;
 
+    @Argument(metaVar = "PREDICATE", usage = "Groovy expression used as a filtering criteria")
+    private String predicate;
+
     @Override
     public String getName() {
-        return "threaddump";
+        return "grep";
     }
 
     @Override
     public String getDescription() {
-        return "Print runtime as string";
+        return "Filter threads using groovy expression";
     }
 
     @Override
     public int run(ProcessStream process) throws CmdLineException {
-        process.out().print(runtime.getThreads().toString());
-        return 0;
+        CompilerConfiguration cc = new CompilerConfiguration();
+        ImportCustomizer imports = new ImportCustomizer();
+        for (String starImport: CONFIG.getStarImports()) {
+            imports.addStarImports(starImport);
+        }
+        for (String staticStar: CONFIG.getStaticStars()) {
+            imports.addStaticStars(staticStar);
+        }
+        cc.addCompilationCustomizers(imports);
+        Binding binding = CONFIG.getDefaultBinding(process, Arrays.<String>asList(), runtime);
+        GroovyShell shell = new GroovyShell(binding, cc);
+
+        String script = String.format(SCRIPT_STUB, predicate);
+        ThreadSet<?, ?, ?> set = (ThreadSet<?, ?, ?>) shell.run(script, "dumpling-script", Arrays.asList());
+
+        process.out().print(set.toString());
+        process.err().printf("Threads: %d%n", set.size());
+
+        return set.isEmpty() ? 1 : 0;
     }
 }

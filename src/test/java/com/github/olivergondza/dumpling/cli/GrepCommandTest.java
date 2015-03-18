@@ -23,34 +23,32 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.Option;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.not;
 
-import com.github.olivergondza.dumpling.model.ProcessRuntime;
+import org.junit.Test;
 
-/**
- * Print threaddump as string.
- *
- * @author ogondza
- */
-public class ThreaddumpCommand implements CliCommand {
+import com.github.olivergondza.dumpling.Util;
 
-    @Option(name = "-i", aliases = {"--in"}, usage = "Input for process runtime")
-    private ProcessRuntime<?, ?, ?> runtime;
+public class GrepCommandTest extends AbstractCliTest {
 
-    @Override
-    public String getName() {
-        return "threaddump";
-    }
+    @Test
+    public void cli() throws Exception {
+        final String log = Util.resourceFile("producer-consumer.log").getAbsolutePath();
 
-    @Override
-    public String getDescription() {
-        return "Print runtime as string";
-    }
+        run("grep", "thread.name == 'blocked_thread'", "--in", "threaddump", log);
+        assertThat(this, succeeded());
+        assertThat(err.toString(), equalTo(String.format("Threads: 1%n")));
 
-    @Override
-    public int run(ProcessStream process) throws CmdLineException {
-        process.out().print(runtime.getThreads().toString());
-        return 0;
+        assertThat(out.toString(), containsString("\"blocked_thread\""));
+        assertThat(out.toString(), not(containsString("\"owning_thread\"")));
+
+        run("grep", "false", "--in", "threaddump", log);
+        assertThat(exitValue, equalTo(1));
+        assertThat(err.toString(), equalTo(String.format("Threads: 0%n")));
+
+        assertThat(out.toString(), not(containsString("\"blocked_thread\"")));
+        assertThat(out.toString(), not(containsString("\"owning_thread\"")));
     }
 }
