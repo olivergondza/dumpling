@@ -277,4 +277,15 @@ public class GroovyRuntimeTest extends AbstractCliTest {
         assertThat(out.toString(), containsString("Hello World!"));
         assertThat(this, succeeded());
     }
+
+    @Theory
+    public void help(String command) {
+        stdin("print D%n");
+        run(command);
+
+        assertThat(err.toString(), equalTo(""));
+        assertThat(out.toString(), containsString("D.args: java.util.List%n  CLI arguments passed to the script"));
+        assertThat(out.toString(), containsString("D.load.threaddump(String): com.github.olivergondza.dumpling.model.ProcessRuntime"));
+        assertThat(this, succeeded());
+    }
 }
