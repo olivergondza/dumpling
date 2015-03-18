@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.github.olivergondza.dumpling.query;
+package com.github.olivergondza.dumpling.cli;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -29,9 +29,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
-import com.github.olivergondza.dumpling.cli.AbstractCliTest;
 
-public class ThreaddumpQueryTest extends AbstractCliTest {
+public class ThreaddumpCommandTest extends AbstractCliTest {
 
     @Test
     public void cli() throws Exception {
