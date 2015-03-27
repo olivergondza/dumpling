@@ -15,7 +15,7 @@ To make dumpling part of your application and inspect threads from within, follo
 <dependency>
   <groupId>com.github.olivergondza</groupId>
   <artifactId>dumpling</artifactId>
-  <version>0.3</version>
+  <version>0.7</version>
 </dependency>
 ```
 
