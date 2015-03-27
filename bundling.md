@@ -9,7 +9,7 @@ prio: 10
 
 ## Setup
 
-To make dumpling part of your application and inspect threads from within, following dependency needs to be available:
+To make Dumpling part of your application and inspect threads from within, following dependency needs to be available:
 
 ```xml
 <dependency>
@@ -19,7 +19,7 @@ To make dumpling part of your application and inspect threads from within, follo
 </dependency>
 ```
 
-Bits are released to Sonatype OSS reporsitory, make sure it is configured either in pom.xml or settings.xml:
+Bits are released to Sonatype OSS reporsitory, make sure it is configured either in `pom.xml` or `settings.xml`:
 
 ```xml
 <repositories>
