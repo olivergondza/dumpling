@@ -157,7 +157,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
         }
 
         private @Nonnull Set<Tree<ThreadType>> filter(Set<Tree<ThreadType>> roots, SetType threads) {
-            Set<Tree<ThreadType>> filtered = new HashSet<Tree<ThreadType>>();
+            Set<Tree<ThreadType>> filtered = new LinkedHashSet<Tree<ThreadType>>();
             for (Tree<ThreadType> r: roots) {
                 // Add whitelisted items including their subtrees
                 if (threads.contains(r.getRoot())) {
