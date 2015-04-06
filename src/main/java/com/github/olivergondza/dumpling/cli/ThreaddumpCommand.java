@@ -54,7 +54,7 @@ public class ThreaddumpCommand implements CliCommand {
 
     @Override
     public int run(ProcessStream process) throws CmdLineException {
-        runtime.getThreads().toString(process.out(), porcelain ? Mode.MACHINE : Mode.HUMAN);
+        runtime.toString(process.out(), porcelain ? Mode.MACHINE : Mode.HUMAN);
         return 0;
     }
 }

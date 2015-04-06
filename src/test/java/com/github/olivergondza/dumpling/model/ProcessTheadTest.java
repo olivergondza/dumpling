@@ -33,7 +33,7 @@ import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 import org.junit.Test;
 
@@ -127,6 +127,9 @@ public class ProcessTheadTest {
     }
 
     private ThreadDumpRuntime runtime(ThreadDumpThread.Builder... builders) {
-        return new ThreadDumpRuntime(new HashSet<ThreadDumpThread.Builder>(Arrays.asList(builders)));
+        return new ThreadDumpRuntime(
+                new LinkedHashSet<ThreadDumpThread.Builder>(Arrays.asList(builders)),
+                Arrays.asList("A Header")
+        );
     }
 }

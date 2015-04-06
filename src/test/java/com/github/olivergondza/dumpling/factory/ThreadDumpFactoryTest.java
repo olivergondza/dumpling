@@ -29,10 +29,13 @@ import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -53,6 +56,7 @@ import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
 import com.github.olivergondza.dumpling.cli.AbstractCliTest;
+import com.github.olivergondza.dumpling.model.ModelObject.Mode;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.StackTrace;
 import com.github.olivergondza.dumpling.model.ThreadLock;
@@ -125,7 +129,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     @Test
     public void oracleJdk7() throws Exception {
 
-        ThreadDumpRuntime expected = runtime (
+        ThreadDumpRuntime expected = runtime(
                 daemon("Attach Listener").setTid(194867200).setNid(18909).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
                 thread("GC task thread#0 (ParallelGC)").setTid(191416320).setNid(18882).setPriority(10),
                 thread("GC task thread#1 (ParallelGC)").setTid(191424512).setNid(18883).setPriority(10),
@@ -187,7 +191,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     @Test
     public void oracleJdk8() throws Exception {
 
-        ThreadDumpRuntime expected = runtime (
+        ThreadDumpRuntime expected = runtime(
                 daemon("Attach Listener").setTid(1716535296).setNid(8144).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9).setId(11),
                 thread("GC task thread#0 (ParallelGC)").setTid(3059810304L).setNid(8115),
                 thread("GC task thread#1 (ParallelGC)").setTid(3059815424L).setNid(8116),
@@ -250,7 +254,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     @Test
     public void openjdk6() throws Exception {
 
-        ThreadDumpRuntime expected = runtime (
+        ThreadDumpRuntime expected = runtime(
                 daemon("Attach Listener").setTid(507363328).setNid(28597).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
                 thread("GC task thread#0 (ParallelGC)").setTid(504647680).setNid(28568).setPriority(10),
                 thread("GC task thread#1 (ParallelGC)").setTid(504655872).setNid(28569).setPriority(10),
@@ -344,7 +348,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     @Test
     public void openjdk7() throws Exception {
 
-        ThreadDumpRuntime expected = runtime (
+        ThreadDumpRuntime expected = runtime(
                 daemon("Attach Listener").setTid(1740638208).setNid(32404).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
                 thread("GC task thread#0 (ParallelGC)").setTid(3075542016L).setNid(32366).setPriority(10),
                 thread("GC task thread#1 (ParallelGC)").setTid(3075547136L).setNid(32367).setPriority(10),
@@ -442,7 +446,7 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
     @Test
     public void openjdk8() throws Exception {
 
-        ThreadDumpRuntime expected = runtime (
+        ThreadDumpRuntime expected = runtime(
                 daemon("Attach Listener").setTid(1733312512).setNid(7829).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9).setId(11),
                 thread("GC task thread#0 (ParallelGC)").setTid(3076587520L).setNid(7798),
                 thread("GC task thread#1 (ParallelGC)").setTid(3076592640L).setNid(7799),
@@ -708,12 +712,30 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertThat(runnable.getWaitingToLock(), nullValue());
     }
 
+    @Test
+    public void runtimeHeader() throws Exception {
+        ThreadDumpRuntime runtime = runtimeFrom("crlf.log");
+        String expected = String.format("%s%n%s%n",
+                "2014-08-23 15:51:50", "Full thread dump OpenJDK 64-Bit Server VM (24.65-b04 mixed mode):"
+        );
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        runtime.toString(new PrintStream(out), Mode.HUMAN);
+        assertThat(out.toString(), startsWith(expected));
+
+        runtime.toString(new PrintStream(out), Mode.MACHINE);
+        assertThat(out.toString(), startsWith(expected));
+    }
+
     private ThreadDumpRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {
         return new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), resource));
     }
 
     private ThreadDumpRuntime runtime(ThreadDumpThread.Builder... builders) {
-        return new ThreadDumpRuntime(new LinkedHashSet<ThreadDumpThread.Builder>(Arrays.asList(builders)));
+        return new ThreadDumpRuntime(
+                new LinkedHashSet<ThreadDumpThread.Builder>(Arrays.asList(builders)),
+                Arrays.asList("Expected threaddump")
+        );
     }
 
     private static volatile int syntheticId = 42;

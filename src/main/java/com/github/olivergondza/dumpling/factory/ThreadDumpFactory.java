@@ -28,6 +28,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -116,26 +117,29 @@ public class ThreadDumpFactory implements CliRuntimeFactory<ThreadDumpRuntime> {
     }
 
     /*package*/ @Nonnull ThreadDumpRuntime fromStream(InputStream stream) {
-        return new ThreadDumpRuntime(threads(stream));
-    }
-
-    private @Nonnull Set<ThreadDumpThread.Builder> threads(InputStream stream) {
         Set<ThreadDumpThread.Builder> threads = new LinkedHashSet<ThreadDumpThread.Builder>();
+        List<String> header = new ArrayList<String>();
 
         Scanner scanner = new Scanner(stream);
         scanner.useDelimiter(THREAD_DELIMITER);
         try {
             while (scanner.hasNext()) {
-                String singleThread = scanner.next();
-                ThreadDumpThread.Builder thread = thread(singleThread);
-                if (thread == null) continue;
-                threads.add(thread);
-            }
+                String singleChunk = scanner.next();
+                ThreadDumpThread.Builder thread = thread(singleChunk);
+                if (thread != null) {
+                    threads.add(thread);
+                    continue;
+                }
 
-            return threads;
+                if (threads.isEmpty()) { // Still reading header
+                    header.addAll(Arrays.asList(singleChunk.split(NL)));
+                }
+            }
         } finally {
             scanner.close();
         }
+
+        return new ThreadDumpRuntime(threads, header);
     }
 
     private ThreadDumpThread.Builder thread(String singleThread) {

@@ -27,6 +27,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.HashSet;
 
 import org.junit.Test;
@@ -64,7 +65,7 @@ public class SingleThreadSetQueryTest {
         protected ThreadDumpThreadSet involvedThreads() {
             HashSet<ThreadDumpThread.Builder> threads = new HashSet<ThreadDumpThread.Builder>();
             threads.add(new ThreadDumpThread.Builder().setName("THREAD_NAME").setId(42));
-            return new ThreadDumpRuntime(threads).getThreads();
+            return new ThreadDumpRuntime(threads, Arrays.asList("A header")).getThreads();
         }
 
         @Override

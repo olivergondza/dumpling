@@ -23,6 +23,7 @@
  */
 package com.github.olivergondza.dumpling.model.dump;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -32,8 +33,8 @@ import com.github.olivergondza.dumpling.model.ProcessThread.Builder;
 
 public final class ThreadDumpRuntime extends ProcessRuntime<ThreadDumpRuntime, ThreadDumpThreadSet, ThreadDumpThread> {
 
-    public ThreadDumpRuntime(@Nonnull Set<ThreadDumpThread.Builder> builders) {
-        super(builders);
+    public ThreadDumpRuntime(@Nonnull Set<ThreadDumpThread.Builder> builders, @Nonnull List<String> header) {
+        super(builders, header);
     }
 
     @Override
