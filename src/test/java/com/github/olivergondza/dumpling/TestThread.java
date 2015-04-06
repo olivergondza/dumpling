@@ -25,6 +25,7 @@ package com.github.olivergondza.dumpling;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import javax.annotation.Nonnull;
 
@@ -51,10 +52,12 @@ public final class TestThread {
     }
 
     public static Thread runThread() {
+        final CountDownLatch cdl = new CountDownLatch(1);
         Thread thread = new Thread("remotely-observed-thread") {
             @Override
             public synchronized void run() {
                 try {
+                    cdl.countDown();
                     this.wait();
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
@@ -63,7 +66,11 @@ public final class TestThread {
         };
         thread.start();
 
-        Util.pause(1000);
+        try {
+            cdl.await();
+        } catch (InterruptedException ex) {
+            throw new AssertionError(ex);
+        }
 
         return thread;
     }
