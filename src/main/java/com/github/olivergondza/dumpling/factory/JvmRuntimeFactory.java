@@ -140,14 +140,4 @@ public class JvmRuntimeFactory {
     private @Nonnull ThreadLock lock(final LockInfo info) {
         return new ThreadLock(info.getClassName(), info.getIdentityHashCode());
     }
-
-    // Not used for now
-    private final static class UnsupportedJreException extends RuntimeException {
-        public UnsupportedJreException(Throwable cause) {
-            super(
-                    "Dumpling was unable to extract necessary information from running JVM. Report this as Dumpling feature request with JRE vendor and version attached.",
-                    cause
-            );
-        }
-    }
 }
