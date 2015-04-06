@@ -51,4 +51,17 @@ public class GrepCommandTest extends AbstractCliTest {
         assertThat(out.toString(), not(containsString("\"blocked_thread\"")));
         assertThat(out.toString(), not(containsString("\"owning_thread\"")));
     }
+
+    @Test
+    public void porcelain() throws Exception {
+        final String log = Util.resourceFile("producer-consumer.log").getAbsolutePath();
+
+        run("grep", "thread.status.blocked", "--in", "threaddump", log);
+        assertThat(out.toString(), containsString("\"blocked_thread\" prio=10 tid=47088345200640 nid=32297"));
+        assertThat(out.toString(), containsString("- waiting to lock <0x4063a9378> (a hudson.model.Queue)"));
+
+        run("grep", "thread.status.blocked", "--in", "threaddump", log, "--porcelain");
+        assertThat(out.toString(), containsString("\"blocked_thread\" prio=10 tid=0x00002ad39c16b800 nid=0x7e29"));
+        assertThat(out.toString(), containsString("- waiting to lock <0x00000004063a9378> (a hudson.model.Queue)"));
+    }
 }

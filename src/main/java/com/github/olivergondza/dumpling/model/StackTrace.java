@@ -123,7 +123,7 @@ public class StackTrace extends ModelObject {
     }
 
     @Override
-    public void toString(PrintStream stream) {
+    public void toString(PrintStream stream, Mode mode) {
         for (StackTraceElement e: elements) {
             stream.println();
             stream.append("\tat ").append(e.toString());

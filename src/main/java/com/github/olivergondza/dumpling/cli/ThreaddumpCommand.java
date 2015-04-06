@@ -26,6 +26,7 @@ package com.github.olivergondza.dumpling.cli;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
+import com.github.olivergondza.dumpling.model.ModelObject.Mode;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 
 /**
@@ -37,6 +38,9 @@ public class ThreaddumpCommand implements CliCommand {
 
     @Option(name = "-i", aliases = {"--in"}, usage = "Input for process runtime")
     private ProcessRuntime<?, ?, ?> runtime;
+
+    @Option(name = "-p", aliases = {"--porcelain"}, usage = "Show in a format designed for machine consumption")
+    private boolean porcelain = false;
 
     @Override
     public String getName() {
@@ -50,7 +54,7 @@ public class ThreaddumpCommand implements CliCommand {
 
     @Override
     public int run(ProcessStream process) throws CmdLineException {
-        runtime.getThreads().toString(process.out());
+        runtime.getThreads().toString(process.out(), porcelain ? Mode.MACHINE : Mode.HUMAN);
         return 0;
     }
 }

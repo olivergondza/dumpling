@@ -38,6 +38,7 @@ import org.kohsuke.args4j.Option;
 import com.github.olivergondza.dumpling.cli.CliCommand;
 import com.github.olivergondza.dumpling.cli.ProcessStream;
 import com.github.olivergondza.dumpling.model.ModelObject;
+import com.github.olivergondza.dumpling.model.ModelObject.Mode;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
@@ -208,7 +209,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
         @Override
         protected void printResult(PrintStream out) {
             for (Tree<ThreadType> tree: trees) {
-                tree.toString(out);
+                tree.toString(out, Mode.HUMAN);
                 out.println();
             }
 
@@ -266,14 +267,14 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
         }
 
         @Override
-        public void toString(PrintStream stream) {
-            writeInto("", stream);
+        public void toString(PrintStream stream, Mode mode) {
+            writeInto("", stream, mode);
         }
 
-        private void writeInto(String prefix, PrintStream sb) {
+        private void writeInto(String prefix, PrintStream sb, Mode mode) {
             sb.append(prefix).append(root.getHeader()).println();
             for (Tree<ThreadType> l: leaves) {
-                l.writeInto(prefix + "\t", sb);
+                l.writeInto(prefix + "\t", sb, mode);
             }
         }
 

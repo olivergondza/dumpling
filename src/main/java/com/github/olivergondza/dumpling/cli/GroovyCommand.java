@@ -44,6 +44,7 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
 import com.github.olivergondza.dumpling.model.ModelObject;
+import com.github.olivergondza.dumpling.model.ModelObject.Mode;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 
 /**
@@ -60,6 +61,9 @@ public class GroovyCommand implements CliCommand {
 
     @Option(name = "-s", aliases = {"--script"}, usage = "Script to execute")
     private File script;
+
+    @Option(name = "-p", aliases = {"--porcelain"}, usage = "Show in a format designed for machine consumption")
+    private boolean porcelain = false;
 
     @Argument(metaVar = "SCRIPT_ARGS", multiValued = true, usage = "Arguments to be passed to the script")
     private @Nonnull List<String> args = new ArrayList<String>();
@@ -95,7 +99,8 @@ public class GroovyCommand implements CliCommand {
         Object exitVal = shell.run(getScript(process), "dumpling-script", Arrays.asList());
         if (exitVal != null) {
             if (exitVal instanceof ModelObject) {
-                ((ModelObject) exitVal).toString(process.out());
+                final ModelObject model = (ModelObject) exitVal;
+                model.toString(process.out(), porcelain ? Mode.MACHINE : Mode.HUMAN);
             } else {
                 process.out().println(exitVal);
             }

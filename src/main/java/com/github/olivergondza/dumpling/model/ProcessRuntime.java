@@ -105,7 +105,7 @@ public abstract class ProcessRuntime<
     }
 
     @Override
-    public void toString(PrintStream stream) {
+    public void toString(PrintStream stream, Mode mode) {
         stream.print(this);
     }
 }

@@ -34,6 +34,7 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
+import com.github.olivergondza.dumpling.model.ModelObject.Mode;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
@@ -44,6 +45,9 @@ public class GrepCommand implements CliCommand {
 
     @Option(name = "-i", aliases = {"--in"}, usage = "Input for process runtime")
     private ProcessRuntime<?, ?, ?> runtime;
+
+    @Option(name = "-p", aliases = {"--porcelain"}, usage = "Show in a format designed for machine consumption")
+    private boolean porcelain = false;
 
     @Argument(metaVar = "PREDICATE", usage = "Groovy expression used as a filtering criteria")
     private String predicate;
@@ -75,7 +79,7 @@ public class GrepCommand implements CliCommand {
         String script = String.format(SCRIPT_STUB, predicate);
         ThreadSet<?, ?, ?> set = (ThreadSet<?, ?, ?>) shell.run(script, "dumpling-script", Arrays.asList());
 
-        set.toString(process.out());
+        set.toString(process.out(), porcelain ? Mode.MACHINE : Mode.HUMAN);
         process.err().printf("Threads: %d%n", set.size());
 
         return set.isEmpty() ? 1 : 0;

@@ -23,6 +23,8 @@
  */
 package com.github.olivergondza.dumpling.model;
 
+import java.io.PrintStream;
+
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 
@@ -31,7 +33,7 @@ import javax.annotation.Nonnull;
  *
  * @author ogondza
  */
-public class ThreadLock {
+public class ThreadLock extends ModelObject {
 
     protected final @Nonnull String className;
     private final long id;
@@ -71,8 +73,10 @@ public class ThreadLock {
     }
 
     @Override
-    public String toString() {
-        return String.format("<0x%x> (a %s)", id, className);
+    public void toString(PrintStream stream, Mode mode) {
+        String format = mode.isHuman() ? "<0x%x> (a %s)" : "<0x%016x> (a %s)";
+        stream.format(format, id, className);
+
     }
 
     /**

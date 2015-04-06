@@ -32,6 +32,8 @@ import java.io.PrintWriter;
 
 import org.junit.Test;
 
+import com.github.olivergondza.dumpling.Util;
+
 public class GroovyCommandTest extends AbstractCliTest {
 
     @Test
@@ -57,5 +59,22 @@ public class GroovyCommandTest extends AbstractCliTest {
         } finally {
             file.delete();
         }
+    }
+
+    @Test
+    public void porcelain() throws Exception {
+        final String log = Util.resourceFile("producer-consumer.log").getAbsolutePath();
+
+        stdin("D.runtime.threads%n");
+        run("groovy", "--in", "threaddump", log);
+        assertThat(this, succeeded());
+        assertThat(out.toString(), containsString("\"blocked_thread\" prio=10 tid=47088345200640 nid=32297"));
+        assertThat(out.toString(), containsString("- waiting to lock <0x4063a9378> (a hudson.model.Queue)"));
+
+        stdin("D.runtime.threads%n");
+        run("groovy", "--in", "threaddump", log, "--porcelain");
+        assertThat(this, succeeded());
+        assertThat(out.toString(), containsString("\"blocked_thread\" prio=10 tid=0x00002ad39c16b800 nid=0x7e29"));
+        assertThat(out.toString(), containsString("- waiting to lock <0x00000004063a9378> (a hudson.model.Queue)"));
     }
 }

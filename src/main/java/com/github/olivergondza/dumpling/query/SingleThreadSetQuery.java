@@ -28,6 +28,7 @@ import java.io.PrintStream;
 
 import javax.annotation.Nonnull;
 
+import com.github.olivergondza.dumpling.model.ModelObject.Mode;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
@@ -121,7 +122,6 @@ public interface SingleThreadSetQuery<ResultType extends SingleThreadSetQuery.Re
         public final String toString() {
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             printInto(new PrintStream(buffer));
-
             return buffer.toString();
         }
 
@@ -134,7 +134,7 @@ public interface SingleThreadSetQuery<ResultType extends SingleThreadSetQuery.Re
 
             final ThreadSet<?, ?, ?> involvedThreads = involvedThreads();
             if (showStackTraces && !involvedThreads.isEmpty()) {
-                involvedThreads.toString(out);
+                involvedThreads.toString(out, Mode.HUMAN);
                 out.println();
             }
 

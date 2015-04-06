@@ -231,8 +231,8 @@ public class ProcessThread<
     }
 
     @Override
-    public void toString(PrintStream stream) {
-        state.toString(stream);
+    public void toString(PrintStream stream, Mode mode) {
+        state.toString(stream, mode);
     }
 
     @Override
@@ -370,7 +370,7 @@ public class ProcessThread<
 
         private String getHeader() {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            printHeader(new PrintStream(baos));
+            printHeader(new PrintStream(baos), Mode.HUMAN);
             return baos.toString();
         }
 
@@ -387,8 +387,8 @@ public class ProcessThread<
         }
 
         @Override
-        public void toString(PrintStream stream) {
-            printHeader(stream);
+        public void toString(PrintStream stream, Mode mode) {
+            printHeader(stream, mode);
             stream.format("%n   java.lang.Thread.State: %s", status.getName());
 
             int depth = 0;
@@ -397,17 +397,21 @@ public class ProcessThread<
 
                 if (depth == 0) {
                     if (waitingToLock != null) {
-                        String verb = waitingVerb();
-                        stream.format("%n\t- %s %s", verb, waitingToLock);
+                        stream.println();
+                        stream.append("\t- ").append(waitingVerb()).append(' ');
+                        waitingToLock.toString(stream, mode);
                     }
                     if (waitingOnLock != null) {
-                        String verb = waitingVerb();
-                        stream.format("%n\t- %s %s", verb, waitingOnLock);
+                        stream.println();
+                        stream.append("\t- ").append(waitingVerb()).append(' ');
+                        waitingOnLock.toString(stream, mode);
                     }
                 }
 
                 for (ThreadLock monitor: getMonitorsByDepth(depth)) {
-                    stream.format("%n\t- locked %s", monitor.toString());
+                    stream.println();
+                    stream.append("\t- locked ");
+                    monitor.toString(stream, mode);
                 }
 
                 depth++;
@@ -416,7 +420,9 @@ public class ProcessThread<
             if (!acquiredSynchronizers.isEmpty()) {
                 stream.format("%n%n   Locked ownable synchronizers:%n");
                 for (ThreadLock synchronizer: acquiredSynchronizers) {
-                    stream.format("\t- %s%n", synchronizer.toString());
+                    stream.append("\t- ");
+                    synchronizer.toString(stream, mode);
+                    stream.println();
                 }
             }
         }
@@ -429,13 +435,20 @@ public class ProcessThread<
             throw new AssertionError(status + " thread can not declare a lock: " + name);
         }
 
-        private void printHeader(PrintStream stream) {
+        private void printHeader(PrintStream stream, Mode mode) {
             stream.append('"').append(name).append('"');
             if (id != null) stream.append(" #").append(id.toString());
             if (daemon) stream.append(" daemon");
             if (priority != null) stream.append(" prio=").append(priority.toString());
-            if (tid != null) stream.append(" tid=").append(tid.toString());
-            if (nid != null) stream.append(" nid=").append(nid.toString());
+
+            if (tid != null) {
+                String format = mode.isHuman() ? "%d" : "0x%016x";
+                stream.append(" tid=").format(format, tid);
+            }
+            if (nid != null) {
+                String format = mode.isHuman() ? "%d" : "0x%x";
+                stream.append(" nid=").format(format, nid);
+            }
         }
     }
 

@@ -36,7 +36,7 @@ public abstract class ModelObject {
     /**
      * Print object into stream.
      */
-    public abstract void toString(PrintStream stream);
+    public abstract void toString(PrintStream stream, Mode mode);
 
     /**
      * Default toString implementation for ModelObject.
@@ -44,7 +44,31 @@ public abstract class ModelObject {
     @Override
     public String toString() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        toString(new PrintStream(baos));
+        toString(new PrintStream(baos), Mode.HUMAN);
         return baos.toString();
+    }
+
+    /**
+     * Print output specific for given mode.
+     *
+     * @author ogondza
+     */
+    public static enum Mode {
+        /**
+         * Well-defined output format to be consumed by other programs.
+         */
+        MACHINE,
+        /**
+         * Pretty printed output easy to read for human.
+         */
+        HUMAN;
+
+        public boolean isMachine() {
+            return this == MACHINE;
+        }
+
+        public boolean isHuman() {
+            return this == HUMAN;
+        }
     }
 }
