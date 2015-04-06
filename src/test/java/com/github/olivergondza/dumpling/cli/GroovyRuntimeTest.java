@@ -28,11 +28,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.File;
 
+import org.junit.Rule;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 
+import com.github.olivergondza.dumpling.DisposeRule;
 import com.github.olivergondza.dumpling.Util;
 import com.github.olivergondza.dumpling.TestThread;
 import com.github.olivergondza.dumpling.factory.ThreadDumpFactoryTest;
@@ -44,6 +46,8 @@ import com.github.olivergondza.dumpling.factory.ThreadDumpFactoryTest;
  */
 @RunWith(Theories.class)
 public class GroovyRuntimeTest extends AbstractCliTest {
+
+    @Rule public DisposeRule disposer = new DisposeRule();
 
     @DataPoints
     public static String[] commands() {
@@ -101,7 +105,7 @@ public class GroovyRuntimeTest extends AbstractCliTest {
     }
 
     private void assertLoadPid(String command, String script) {
-        thread = TestThread.runThread();
+        disposer.register(TestThread.runThread());
         stdin(String.format(script, Util.currentPid()));
         run(command);
 
@@ -121,7 +125,7 @@ public class GroovyRuntimeTest extends AbstractCliTest {
     }
 
     private void assertLoadPidOverJmx(String command, String script) {
-        thread = TestThread.runThread();
+        disposer.register(TestThread.runThread());
         stdin(String.format(script, Util.currentPid()));
         run(command);
 
@@ -141,7 +145,7 @@ public class GroovyRuntimeTest extends AbstractCliTest {
     }
 
     private void assertLoadJmx(String command, String script) throws Exception {
-        process = TestThread.runJmxObservableProcess(false);
+        disposer.register(TestThread.runJmxObservableProcess(false));
         stdin(String.format(script, TestThread.JMX_CONNECTION));
         run(command);
 

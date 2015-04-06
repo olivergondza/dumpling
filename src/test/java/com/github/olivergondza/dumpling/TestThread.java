@@ -68,6 +68,7 @@ public final class TestThread {
         return thread;
     }
 
+    /* Client is expected to dispose the thread */
     public static Process runJmxObservableProcess(boolean auth) throws Exception {
         List<String> args = new ArrayList<String>();
         args.add("java");
@@ -92,7 +93,6 @@ public final class TestThread {
             process.exitValue();
             throw new AssertionError("Test process process terminated prematurelly");
         } catch (IllegalThreadStateException ex) {
-            Runtime.getRuntime().addShutdownHook(new DestroyProcess(process));
             return process;
         }
     }
@@ -102,18 +102,5 @@ public final class TestThread {
         // Workaround http://jira.codehaus.org/browse/MRESOURCES-132
         new ProcessBuilder("chmod", "600", file).start().waitFor();
         return file;
-    }
-
-    private static final class DestroyProcess extends Thread {
-        private final Process process;
-
-        private DestroyProcess(Process process) {
-            this.process = process;
-        }
-
-        @Override
-        public void run() {
-            process.destroy();
-        }
     }
 }

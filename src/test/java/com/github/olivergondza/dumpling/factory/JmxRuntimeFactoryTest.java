@@ -35,8 +35,10 @@ import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 
+import org.junit.Rule;
 import org.junit.Test;
 
+import com.github.olivergondza.dumpling.DisposeRule;
 import com.github.olivergondza.dumpling.Util;
 import com.github.olivergondza.dumpling.TestThread;
 import com.github.olivergondza.dumpling.cli.AbstractCliTest;
@@ -49,6 +51,8 @@ import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
 import com.github.olivergondza.dumpling.model.jmx.JmxRuntime;
 
 public class JmxRuntimeFactoryTest extends AbstractCliTest {
+
+    @Rule public DisposeRule disposer = new DisposeRule();
 
     @Test
     public void parseRemoteLogin() {
@@ -176,14 +180,14 @@ public class JmxRuntimeFactoryTest extends AbstractCliTest {
     }
 
     private void runLocalSut() {
-        this.thread = TestThread.runThread();
+        disposer.register(TestThread.runThread());
     }
 
     private void runRemoteSut() throws Exception {
-        process = TestThread.runJmxObservableProcess(false);
+        disposer.register(TestThread.runJmxObservableProcess(false));
     }
 
     private void runRemoteSut(boolean auth) throws Exception {
-        process = TestThread.runJmxObservableProcess(auth);
+        disposer.register(TestThread.runJmxObservableProcess(auth));
     }
 }
