@@ -25,6 +25,7 @@ package com.github.olivergondza.dumpling.model;
 
 import groovy.lang.Closure;
 
+import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -47,9 +48,7 @@ public class ThreadSet<
         SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
         RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>,
         ThreadType extends ProcessThread<ThreadType, SetType, RuntimeType>
-> implements Iterable<ThreadType> {
-
-    private static final @Nonnull String NL = System.getProperty("line.separator", "\n");
+> extends ModelObject implements Iterable<ThreadType> {
 
     protected final @Nonnull RuntimeType runtime;
     protected final @Nonnull Set<ThreadType> threads;
@@ -152,12 +151,11 @@ public class ThreadSet<
     }
 
     @Override
-    public String toString() {
-        StringBuilder stringBuilder = new StringBuilder();
+    public void toString(PrintStream stream) {
         for (ThreadType thread: threads) {
-            stringBuilder.append(thread).append(NL + NL);
+            thread.toString(stream);
+            stream.format("%n%n");
         }
-        return stringBuilder.toString();
     }
 
     @Override

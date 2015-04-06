@@ -75,7 +75,7 @@ public class GrepCommand implements CliCommand {
         String script = String.format(SCRIPT_STUB, predicate);
         ThreadSet<?, ?, ?> set = (ThreadSet<?, ?, ?>) shell.run(script, "dumpling-script", Arrays.asList());
 
-        process.out().print(set.toString());
+        set.toString(process.out());
         process.err().printf("Threads: %d%n", set.size());
 
         return set.isEmpty() ? 1 : 0;

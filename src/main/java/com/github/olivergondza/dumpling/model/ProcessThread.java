@@ -23,6 +23,8 @@
  */
 package com.github.olivergondza.dumpling.model;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -45,9 +47,7 @@ public class ProcessThread<
         ThreadType extends ProcessThread<ThreadType, SetType, RuntimeType>,
         SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
         RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>
-> {
-
-    private static final @Nonnull String NL = System.getProperty("line.separator", "\n");
+> extends ModelObject {
 
     private final @Nonnull RuntimeType runtime;
     private final @Nonnull Builder<?> state;
@@ -231,8 +231,8 @@ public class ProcessThread<
     }
 
     @Override
-    public String toString() {
-        return state.toString();
+    public void toString(PrintStream stream) {
+        state.toString(stream);
     }
 
     @Override
@@ -265,7 +265,7 @@ public class ProcessThread<
 
     public static class Builder<
             BuilderType extends Builder<BuilderType>
-    > implements Cloneable {
+    > extends ModelObject implements Cloneable {
 
         private @Nonnull String name = "";
         private boolean daemon;
@@ -369,7 +369,9 @@ public class ProcessThread<
         }
 
         private String getHeader() {
-            return headerBuilder().toString();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            printHeader(new PrintStream(baos));
+            return baos.toString();
         }
 
         private List<ThreadLock> getMonitorsByDepth(int depth) {
@@ -385,41 +387,38 @@ public class ProcessThread<
         }
 
         @Override
-        public String toString() {
-            StringBuilder sb = headerBuilder();
-
-            sb.append(NL).append("   java.lang.Thread.State: ").append(status.getName());
+        public void toString(PrintStream stream) {
+            printHeader(stream);
+            stream.format("%n   java.lang.Thread.State: %s", status.getName());
 
             int depth = 0;
             for (StackTraceElement traceLine: stackTrace.getElements()) {
-                sb.append(NL).append("\tat ").append(traceLine);
+                stream.format("%n\tat %s", traceLine);
 
                 if (depth == 0) {
                     if (waitingToLock != null) {
                         String verb = waitingVerb();
-                        sb.append(NL).append("\t- ").append(verb).append(' ').append(waitingToLock);
+                        stream.format("%n\t- %s %s", verb, waitingToLock);
                     }
                     if (waitingOnLock != null) {
                         String verb = waitingVerb();
-                        sb.append(NL).append("\t- ").append(verb).append(' ').append(waitingOnLock);
+                        stream.format("%n\t- %s %s", verb, waitingOnLock);
                     }
                 }
 
                 for (ThreadLock monitor: getMonitorsByDepth(depth)) {
-                    sb.append(NL).append("\t- locked ").append(monitor.toString());
+                    stream.format("%n\t- locked %s", monitor.toString());
                 }
 
                 depth++;
             }
 
             if (!acquiredSynchronizers.isEmpty()) {
-                sb.append(NL + NL).append("   Locked ownable synchronizers:").append(NL);
+                stream.format("%n%n   Locked ownable synchronizers:%n");
                 for (ThreadLock synchronizer: acquiredSynchronizers) {
-                    sb.append("\t- ").append(synchronizer.toString()).append(NL);
+                    stream.format("\t- %s%n", synchronizer.toString());
                 }
             }
-
-            return sb.toString();
         }
 
         private final String waitingVerb() {
@@ -430,15 +429,13 @@ public class ProcessThread<
             throw new AssertionError(status + " thread can not declare a lock: " + name);
         }
 
-        private StringBuilder headerBuilder() {
-            StringBuilder sb = new StringBuilder();
-            sb.append('"').append(name).append('"');
-            if (id != null) sb.append(" #").append(id);
-            if (daemon) sb.append(" daemon");
-            if (priority != null) sb.append(" prio=").append(priority);
-            if (tid != null) sb.append(" tid=").append(tid);
-            if (nid != null) sb.append(" nid=").append(nid);
-            return sb;
+        private void printHeader(PrintStream stream) {
+            stream.append('"').append(name).append('"');
+            if (id != null) stream.append(" #").append(id.toString());
+            if (daemon) stream.append(" daemon");
+            if (priority != null) stream.append(" prio=").append(priority.toString());
+            if (tid != null) stream.append(" tid=").append(tid.toString());
+            if (nid != null) stream.append(" nid=").append(nid.toString());
         }
     }
 

@@ -111,7 +111,7 @@ public class DeadlocksTest extends AbstractCliTest {
         JvmRuntime runtime = runtime();
         final Set<JvmThreadSet> deadlocks = deadlocks(runtime);
 
-        assertEquals("One deadlock should be present\n\n" + runtime.getThreads().toString(), 1, deadlocks.size());
+        assertEquals("One deadlock should be present\n\n" + runtime.getThreads(), 1, deadlocks.size());
         for (JvmThreadSet deadlock: deadlocks) {
             assertEquals("Deadlock should contain of 2 threads", 2, deadlock.size());
             for (JvmThread thread: deadlock) {

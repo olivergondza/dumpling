@@ -37,6 +37,7 @@ import org.kohsuke.args4j.Option;
 
 import com.github.olivergondza.dumpling.cli.CliCommand;
 import com.github.olivergondza.dumpling.cli.ProcessStream;
+import com.github.olivergondza.dumpling.model.ModelObject;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
@@ -207,11 +208,12 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
         @Override
         protected void printResult(PrintStream out) {
             for (Tree<ThreadType> tree: trees) {
-                out.println(tree);
+                tree.toString(out);
+                out.println();
             }
 
             if (!deadlocks.getDeadlocks().isEmpty()) {
-                out.printf("%n");
+                out.println();
                 deadlocks.printResult(out);
             }
         }
@@ -241,9 +243,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
      *
      * @author ogondza
      */
-    public final static class Tree<ThreadType extends ProcessThread<ThreadType, ?, ?>> {
-
-        private static final @Nonnull String NL = System.getProperty("line.separator", "\n");
+    public final static class Tree<ThreadType extends ProcessThread<ThreadType, ?, ?>> extends ModelObject {
 
         private final @Nonnull ThreadType root;
         private final @Nonnull Set<Tree<ThreadType>> leaves;
@@ -266,14 +266,12 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
         }
 
         @Override
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
-            writeInto("", sb);
-            return sb.toString();
+        public void toString(PrintStream stream) {
+            writeInto("", stream);
         }
 
-        private void writeInto(String prefix, StringBuilder sb) {
-            sb.append(prefix).append(root.getHeader()).append(NL);
+        private void writeInto(String prefix, PrintStream sb) {
+            sb.append(prefix).append(root.getHeader()).println();
             for (Tree<ThreadType> l: leaves) {
                 l.writeInto(prefix + "\t", sb);
             }

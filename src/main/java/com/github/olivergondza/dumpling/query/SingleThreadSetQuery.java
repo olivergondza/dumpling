@@ -134,8 +134,8 @@ public interface SingleThreadSetQuery<ResultType extends SingleThreadSetQuery.Re
 
             final ThreadSet<?, ?, ?> involvedThreads = involvedThreads();
             if (showStackTraces && !involvedThreads.isEmpty()) {
-                out.print(involvedThreads);
-                out.printf("%n");
+                involvedThreads.toString(out);
+                out.println();
             }
 
             printSummary(out);

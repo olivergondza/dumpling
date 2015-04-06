@@ -23,6 +23,7 @@
  */
 package com.github.olivergondza.dumpling.model;
 
+import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -42,7 +43,7 @@ public abstract class ProcessRuntime<
         RuntimeType extends ProcessRuntime<RuntimeType, SetType, ThreadType>,
         SetType extends ThreadSet<SetType, RuntimeType, ThreadType>,
         ThreadType extends ProcessThread<ThreadType, SetType, RuntimeType>
-> {
+> extends ModelObject {
 
     private final @Nonnull SetType threads;
     private final @Nonnull SetType emptySet;
@@ -101,5 +102,10 @@ public abstract class ProcessRuntime<
      */
     public <T extends SingleThreadSetQuery.Result<SetType, RuntimeType, ThreadType>> T query(SingleThreadSetQuery<T> query) {
         return threads.query(query);
+    }
+
+    @Override
+    public void toString(PrintStream stream) {
+        stream.print(this);
     }
 }

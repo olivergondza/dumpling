@@ -21,36 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.github.olivergondza.dumpling.cli;
+package com.github.olivergondza.dumpling.model;
 
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.Option;
-
-import com.github.olivergondza.dumpling.model.ProcessRuntime;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 
 /**
- * Print threaddump as string.
+ * Dumpling model object.
  *
  * @author ogondza
  */
-public class ThreaddumpCommand implements CliCommand {
+public abstract class ModelObject {
 
-    @Option(name = "-i", aliases = {"--in"}, usage = "Input for process runtime")
-    private ProcessRuntime<?, ?, ?> runtime;
+    /**
+     * Print object into stream.
+     */
+    public abstract void toString(PrintStream stream);
 
+    /**
+     * Default toString implementation for ModelObject.
+     */
     @Override
-    public String getName() {
-        return "threaddump";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Print runtime as string";
-    }
-
-    @Override
-    public int run(ProcessStream process) throws CmdLineException {
-        runtime.getThreads().toString(process.out());
-        return 0;
+    public String toString() {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        toString(new PrintStream(baos));
+        return baos.toString();
     }
 }

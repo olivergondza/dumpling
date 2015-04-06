@@ -23,6 +23,7 @@
  */
 package com.github.olivergondza.dumpling.model;
 
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -35,9 +36,7 @@ import javax.annotation.Nonnull;
  *
  * @author ogondza
  */
-public class StackTrace {
-
-    private static final @Nonnull String NL = System.getProperty("line.separator", "\n");
+public class StackTrace extends ModelObject {
 
     public static StackTraceElement element(String declaringClass, String methodName, String fileName, int lineNumber) {
         return new StackTraceElement(declaringClass, methodName, fileName, lineNumber);
@@ -124,15 +123,13 @@ public class StackTrace {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-
+    public void toString(PrintStream stream) {
         for (StackTraceElement e: elements) {
-            sb.append(NL).append("\tat ").append(e);
+            stream.println();
+            stream.append("\tat ").append(e.toString());
         }
 
-        sb.append(NL);
-        return sb.toString();
+        stream.println();
     }
 
     @Override

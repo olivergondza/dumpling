@@ -43,6 +43,7 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
+import com.github.olivergondza.dumpling.model.ModelObject;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 
 /**
@@ -93,7 +94,11 @@ public class GroovyCommand implements CliCommand {
         GroovyShell shell = new GroovyShell(binding, cc);
         Object exitVal = shell.run(getScript(process), "dumpling-script", Arrays.asList());
         if (exitVal != null) {
-            process.out().println(exitVal);
+            if (exitVal instanceof ModelObject) {
+                ((ModelObject) exitVal).toString(process.out());
+            } else {
+                process.out().println(exitVal);
+            }
         }
 
         if (exitVal instanceof Boolean) {
