@@ -23,7 +23,10 @@
  */
 package com.github.olivergondza.dumpling.model.mxbean;
 
+import java.io.PrintStream;
 import java.lang.management.ThreadMXBean;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -44,7 +47,22 @@ public abstract class MXBeanRuntime<
         T extends MXBeanThread<T, S, R>
 > extends ProcessRuntime<R, S, T> {
 
-    protected MXBeanRuntime(@Nonnull Set<? extends ProcessThread.Builder<?>> builders) {
+    private static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    private final @Nonnull Date captured;
+    private final @Nonnull String jvmId;
+
+    protected MXBeanRuntime(@Nonnull Set<? extends ProcessThread.Builder<?>> builders, @Nonnull Date captured, @Nonnull String jvmId) {
         super(builders);
+        this.captured = (Date) captured.clone();
+        this.jvmId = jvmId;
+    }
+
+    @Override
+    public void toString(PrintStream stream, Mode mode) {
+        stream.println(FORMAT.format(captured));
+        stream.println(jvmId);
+        stream.println();
+        super.toString(stream, mode);
     }
 }

@@ -24,11 +24,9 @@
 package com.github.olivergondza.dumpling.model;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -47,20 +45,10 @@ public abstract class ProcessRuntime<
         ThreadType extends ProcessThread<ThreadType, SetType, RuntimeType>
 > extends ModelObject {
 
-    /**
-     * Threaddump header, either empty or terminated wit blank line so it can be prepended to the ThreadSet.
-     */
-    private final @Nonnull List<String> header;
     private final @Nonnull SetType threads;
     private final @Nonnull SetType emptySet;
 
-    @Deprecated
     public ProcessRuntime(@Nonnull Set<? extends ProcessThread.Builder<?>> builders) {
-        this(builders, Collections.<String>emptyList());
-    }
-
-    public ProcessRuntime(@Nonnull Set<? extends ProcessThread.Builder<?>> builders, @Nonnull List<String> header) {
-        this.header = new ArrayList<String>(header);
         this.threads = createThreads(builders);
         this.emptySet = createSet(Collections.<ThreadType>emptySet());
 
@@ -118,13 +106,6 @@ public abstract class ProcessRuntime<
 
     @Override
     public void toString(PrintStream stream, Mode mode) {
-        if (!header.isEmpty()) {
-            for (String line: header) {
-                stream.println(line);
-            }
-            stream.println();
-        }
-
         threads.toString(stream, mode);
     }
 }

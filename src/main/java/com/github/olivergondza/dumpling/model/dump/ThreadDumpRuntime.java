@@ -23,6 +23,8 @@
  */
 package com.github.olivergondza.dumpling.model.dump;
 
+import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -33,8 +35,14 @@ import com.github.olivergondza.dumpling.model.ProcessThread.Builder;
 
 public final class ThreadDumpRuntime extends ProcessRuntime<ThreadDumpRuntime, ThreadDumpThreadSet, ThreadDumpThread> {
 
+    /**
+     * Threaddump header, either empty or terminated wit blank line so it can be prepended to the ThreadSet.
+     */
+    private final @Nonnull List<String> header;
+
     public ThreadDumpRuntime(@Nonnull Set<ThreadDumpThread.Builder> builders, @Nonnull List<String> header) {
-        super(builders, header);
+        super(builders);
+        this.header = new ArrayList<String>(header);
     }
 
     @Override
@@ -45,5 +53,17 @@ public final class ThreadDumpRuntime extends ProcessRuntime<ThreadDumpRuntime, T
     @Override
     protected ThreadDumpThread createThread(Builder<?> builder) {
         return new ThreadDumpThread(this, (ThreadDumpThread.Builder) builder);
+    }
+
+    @Override
+    public void toString(PrintStream stream, Mode mode) {
+        if (!header.isEmpty()) {
+            for (String line: header) {
+                stream.println(line);
+            }
+            stream.println();
+        }
+
+        super.toString(stream, mode);
     }
 }

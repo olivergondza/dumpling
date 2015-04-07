@@ -23,15 +23,17 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
+import static com.github.olivergondza.dumpling.factory.MXBeanFactoryUtils.getMonitors;
+import static com.github.olivergondza.dumpling.factory.MXBeanFactoryUtils.getSynchronizer;
+import static com.github.olivergondza.dumpling.factory.MXBeanFactoryUtils.getSynchronizers;
+
 import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
-import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -78,11 +80,11 @@ public class JvmRuntimeFactory {
 
             builder.setThreadStatus(status);
 
-            builder.setAcquiredMonitors(monitors(info));
-            builder.setAcquiredSynchronizers(locks(info));
+            builder.setAcquiredMonitors(getMonitors(info));
+            builder.setAcquiredSynchronizers(getSynchronizers(info));
             LockInfo lockInfo = info.getLockInfo();
             if (lockInfo != null) {
-                ThreadLock lock = lock(lockInfo);
+                ThreadLock lock = getSynchronizer(lockInfo);
                 if (status.isBlocked()) {
                     builder.setWaitingToLock(lock);
                 } else if (status.isWaiting() || status.isParked()) {
@@ -97,7 +99,12 @@ public class JvmRuntimeFactory {
             state.add(builder);
         }
 
-        return new JvmRuntime(state);
+        String jvmId = String.format(
+                "Dumpling JVM thread dump %s (%s):",
+                System.getProperty("java.vm.name"),
+                System.getProperty("java.vm.version")
+        );
+        return new JvmRuntime(state, new Date(), jvmId);
     }
 
     private Map<Long, ThreadInfo> infos() {
@@ -107,37 +114,5 @@ public class JvmRuntimeFactory {
         }
 
         return infos;
-    }
-
-    private List<ThreadLock.Monitor> monitors(final ThreadInfo threadInfo) {
-        final MonitorInfo[] monitors = threadInfo.getLockedMonitors();
-
-        final List<ThreadLock.Monitor> locks = new ArrayList<ThreadLock.Monitor>(monitors.length);
-
-        for (MonitorInfo info: monitors) {
-            locks.add(monitor(info));
-        }
-
-        return locks;
-    }
-
-    private List<ThreadLock> locks(final ThreadInfo threadInfo) {
-        final LockInfo[] synchronizers = threadInfo.getLockedSynchronizers();
-
-        final List<ThreadLock> locks = new ArrayList<ThreadLock>(synchronizers.length);
-
-        for (LockInfo info: synchronizers) {
-            locks.add(lock(info));
-        }
-
-        return locks;
-    }
-
-    private ThreadLock.Monitor monitor(final MonitorInfo info) {
-        return new ThreadLock.Monitor(lock(info), info.getLockedStackDepth());
-    }
-
-    private @Nonnull ThreadLock lock(final LockInfo info) {
-        return new ThreadLock(info.getClassName(), info.getIdentityHashCode());
     }
 }

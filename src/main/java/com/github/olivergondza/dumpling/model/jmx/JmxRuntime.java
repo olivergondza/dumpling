@@ -23,6 +23,7 @@
  */
 package com.github.olivergondza.dumpling.model.jmx;
 
+import java.util.Date;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -38,8 +39,8 @@ import com.github.olivergondza.dumpling.model.mxbean.MXBeanRuntime;
  */
 public final class JmxRuntime extends MXBeanRuntime<JmxRuntime, JmxThreadSet, JmxThread> {
 
-    public JmxRuntime(@Nonnull Set<JmxThread.Builder> builders) {
-        super(builders);
+    public JmxRuntime(@Nonnull Set<JmxThread.Builder> builders, @Nonnull Date captured, @Nonnull String jvmId) {
+        super(builders, captured, jvmId);
     }
 
     @Override

@@ -23,9 +23,17 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
+import static com.github.olivergondza.dumpling.factory.MXBeanFactoryUtils.getMonitors;
+import static com.github.olivergondza.dumpling.factory.MXBeanFactoryUtils.getSynchronizer;
+import static com.github.olivergondza.dumpling.factory.MXBeanFactoryUtils.getSynchronizers;
+
 import java.io.File;
 import java.io.IOException;
-import java.lang.Thread.State;
+import java.lang.management.LockInfo;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -34,17 +42,18 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
-import javax.management.JMException;
-import javax.management.MBeanException;
+import javax.management.JMX;
 import javax.management.MBeanServerConnection;
+import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import javax.management.openmbean.CompositeData;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
@@ -52,8 +61,6 @@ import javax.management.remote.JMXServiceURL;
 import com.github.olivergondza.dumpling.cli.CliRuntimeFactory;
 import com.github.olivergondza.dumpling.cli.CommandFailedException;
 import com.github.olivergondza.dumpling.cli.ProcessStream;
-import com.github.olivergondza.dumpling.model.StackTrace;
-import com.github.olivergondza.dumpling.model.ThreadLock;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 import com.github.olivergondza.dumpling.model.jmx.JmxRuntime;
 import com.github.olivergondza.dumpling.model.jmx.JmxThread;
@@ -66,6 +73,17 @@ import com.github.olivergondza.dumpling.model.jmx.JmxThread;
  * @author ogondza
  */
 public final class JmxRuntimeFactory implements CliRuntimeFactory<JmxRuntime> {
+
+    private static final ObjectName THREADING_MBEAN;
+    private static final ObjectName RUNTIME_MBEAN;
+    static {
+        try {
+            THREADING_MBEAN = new ObjectName(ManagementFactory.THREAD_MXBEAN_NAME);
+            RUNTIME_MBEAN = new ObjectName(ManagementFactory.RUNTIME_MXBEAN_NAME);
+        } catch (MalformedObjectNameException ex) {
+            throw new AssertionError(ex);
+        }
+    }
 
     @Override
     public @Nonnull String getKind() {
@@ -108,102 +126,51 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory<JmxRuntime> {
     }
 
     private @Nonnull JmxRuntime fromConnection(@Nonnull MBeanServerConnection connection) {
-        try {
-            return extractRuntime(connection);
-        } catch (MBeanException ex) {
-            throw new FailedToInitializeJmxConnection("Remote MBean thrown an exception", ex);
-        } catch (JMException ex) {
-            throw new FailedToInitializeJmxConnection("Remote method call failed", ex);
-        } catch (IOException ex) {
-            throw new FailedToInitializeJmxConnection("Remote connection broken", ex);
-        }
+        return extractRuntime(connection);
     }
 
-    private @Nonnull JmxRuntime extractRuntime(@Nonnull MBeanServerConnection connection) throws MBeanException, JMException, IOException {
-        final CompositeData[] threads = getRemoteThreads(connection);
-        HashSet<JmxThread.Builder> builders = new HashSet<JmxThread.Builder>(threads.length);
+    private @Nonnull JmxRuntime extractRuntime(@Nonnull MBeanServerConnection connection) {
+        final List<ThreadInfo> threads = getRemoteThreads(connection);
+        HashSet<JmxThread.Builder> builders = new HashSet<JmxThread.Builder>(threads.size());
 
-        for (CompositeData thread: threads) {
-            @Nonnull State state = Thread.State.valueOf((String) thread.get("threadState"));
-
+        for (ThreadInfo thread: threads) {
             JmxThread.Builder builder = new JmxThread.Builder()
-                    .setName((String) thread.get("threadName"))
-                    .setId((Long) thread.get("threadId"))
-                    .setStacktrace(getStackTrace(thread))
+                    .setName(thread.getThreadName())
+                    .setId(thread.getThreadId())
+                    .setStacktrace(thread.getStackTrace())
+                    .setAcquiredMonitors(getMonitors(thread))
+                    .setAcquiredSynchronizers(getSynchronizers(thread))
             ;
 
-            builder.setThreadStatus(ThreadStatus.fromState(state, builder.getStacktrace().head()));
+            final ThreadStatus status = ThreadStatus.fromState(thread.getThreadState(), builder.getStacktrace().head());
 
-            final List<ThreadLock.Monitor> monitors = getMonitors(thread);
-            final List<ThreadLock> synchonizers = getSynchronizers(thread);
+            builder.setThreadStatus(status);
 
-            builder.setAcquiredMonitors(monitors).setAcquiredSynchronizers(synchonizers);
-
-            final CompositeData lockInfo = (CompositeData) thread.get("lockInfo");
+            final LockInfo lockInfo = thread.getLockInfo();
             if (lockInfo != null) {
-                builder.setWaitingToLock(createLock(lockInfo));
+                builder.setWaitingToLock(getSynchronizer(lockInfo));
             }
 
             builders.add(builder);
         }
 
-        return new JmxRuntime(builders);
+        return new JmxRuntime(builders, new Date(), getVmName(connection));
     }
 
-    private List<ThreadLock.Monitor> getMonitors(CompositeData thread) {
-        final CompositeData[] rawMonitors = (CompositeData[]) thread.get("lockedMonitors");
-        if (rawMonitors.length == 0) return Collections.emptyList();
-
-        final List<ThreadLock.Monitor> monitors = new ArrayList<ThreadLock.Monitor>(rawMonitors.length);
-        for (CompositeData rm: rawMonitors) {
-            monitors.add(new ThreadLock.Monitor(
-                    createLock(rm), (Integer) rm.get("lockedStackDepth")
-            ));
-        }
-        return monitors;
+    private List<ThreadInfo> getRemoteThreads(@Nonnull MBeanServerConnection connection) {
+        ThreadMXBean proxy = JMX.newMXBeanProxy(connection, THREADING_MBEAN, ThreadMXBean.class);
+        return Arrays.asList(proxy.dumpAllThreads(true, true));
     }
 
-    private List<ThreadLock> getSynchronizers(CompositeData thread) {
-        final CompositeData[] rawSynchonizers = (CompositeData[]) thread.get("lockedSynchronizers");
-        if (rawSynchonizers.length == 0) return Collections.emptyList();
+    @SuppressWarnings("null")
+    private @Nonnull String getVmName(@Nonnull MBeanServerConnection connection) {
+        RuntimeMXBean proxy = JMX.newMXBeanProxy(connection, RUNTIME_MBEAN, RuntimeMXBean.class);
+        Map<String, String> props = proxy.getSystemProperties();
 
-        final List<ThreadLock> synchonizers = new ArrayList<ThreadLock>(rawSynchonizers.length);
-        for (CompositeData rs: rawSynchonizers) {
-            synchonizers.add(createLock(rs));
-        }
-        return synchonizers;
-    }
-
-    private @Nonnull ThreadLock createLock(CompositeData rm) {
-        return new ThreadLock(
-                (String) rm.get("className"),
-                (Integer) rm.get("identityHashCode")
-        );
-    }
-
-    private @Nonnull StackTraceElement[] getStackTrace(CompositeData thread) {
-        final CompositeData[] traceSource = (CompositeData[]) thread.get("stackTrace");
-        final StackTraceElement[] traceFrames = new StackTraceElement[traceSource.length];
-        for (int i = 0; i < traceSource.length; i++) {
-            final CompositeData frame = traceSource[i];
-
-            final String className = (String) frame.get("className");
-            final String methodName = (String) frame.get("methodName");
-            final String fileName = (String) frame.get("fileName");
-            final int lineNumber = (Integer) frame.get("lineNumber");
-
-            traceFrames[i] = StackTrace.element(className, methodName, fileName, lineNumber);
-        }
-        return traceFrames;
-    }
-
-    private CompositeData[] getRemoteThreads(@Nonnull MBeanServerConnection connection) throws MBeanException, JMException, IOException {
-        // [blockedCount, blockedTime, inNative, lockInfo, lockName, lockOwnerId, lockOwnerName, lockedMonitors, lockedSynchronizers, stackTrace, suspended, threadId, threadName, threadState, waitedCount, waitedTime]
-        return (CompositeData[]) connection.invoke(
-                new ObjectName("java.lang:type=Threading"),
-                "dumpAllThreads",
-                new Boolean[] {true, true},
-                new String[] {boolean.class.getName(), boolean.class.getName()}
+        return String.format(
+                "Dumpling JMX thread dump %s (%s):",
+                props.get("java.vm.name"),
+                props.get("java.vm.version")
         );
     }
 
@@ -225,7 +192,7 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory<JmxRuntime> {
                 method.setAccessible(true);
                 return (MBeanServerConnection) method.invoke(null, pid);
             } catch (InvocationTargetException ex) {
-                Throwable cause = ex.getCause(); // Unwrap and rethrow as FailedToInitializeJmxConnection is necessary
+                Throwable cause = ex.getCause(); // Unwrap and rethrow as FailedToInitializeJmxConnection if necessary
                 if (cause instanceof FailedToInitializeJmxConnection) throw (FailedToInitializeJmxConnection) cause;
                 throw new FailedToInitializeJmxConnection(cause);
             } catch (ClassNotFoundException ex) {
@@ -338,7 +305,6 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory<JmxRuntime> {
 
         private JMXServiceURL getServiceUrl() {
             try {
-                //return new JMXServiceURL("rmi", host, port);
                 return new JMXServiceURL("service:jmx:rmi:///jndi/rmi://" + host + ":" + port + "/jmxrmi");
             } catch (MalformedURLException ex) {
                 throw new FailedToInitializeJmxConnection(ex);
@@ -347,6 +313,7 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory<JmxRuntime> {
     }
 
     public static final class FailedToInitializeJmxConnection extends RuntimeException {
+        private static final long serialVersionUID = 1L;
 
         public FailedToInitializeJmxConnection(Throwable ex) {
             super(ex.getMessage(), ex);
