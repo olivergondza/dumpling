@@ -23,9 +23,8 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
-import static com.github.olivergondza.dumpling.factory.MXBeanFactoryUtils.getMonitors;
+import static com.github.olivergondza.dumpling.factory.MXBeanFactoryUtils.fillThreadInfoData;
 import static com.github.olivergondza.dumpling.factory.MXBeanFactoryUtils.getSynchronizer;
-import static com.github.olivergondza.dumpling.factory.MXBeanFactoryUtils.getSynchronizers;
 
 import java.io.File;
 import java.io.IOException;
@@ -134,17 +133,8 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory<JmxRuntime> {
         HashSet<JmxThread.Builder> builders = new HashSet<JmxThread.Builder>(threads.size());
 
         for (ThreadInfo thread: threads) {
-            JmxThread.Builder builder = new JmxThread.Builder()
-                    .setName(thread.getThreadName())
-                    .setId(thread.getThreadId())
-                    .setStacktrace(thread.getStackTrace())
-                    .setAcquiredMonitors(getMonitors(thread))
-                    .setAcquiredSynchronizers(getSynchronizers(thread))
-            ;
-
-            final ThreadStatus status = ThreadStatus.fromState(thread.getThreadState(), builder.getStacktrace().head());
-
-            builder.setThreadStatus(status);
+            JmxThread.Builder builder = new JmxThread.Builder();
+            final ThreadStatus status = fillThreadInfoData(thread, builder);
 
             final LockInfo lockInfo = thread.getLockInfo();
             if (lockInfo != null) {

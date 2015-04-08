@@ -23,9 +23,8 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
-import static com.github.olivergondza.dumpling.factory.MXBeanFactoryUtils.getMonitors;
+import static com.github.olivergondza.dumpling.factory.MXBeanFactoryUtils.fillThreadInfoData;
 import static com.github.olivergondza.dumpling.factory.MXBeanFactoryUtils.getSynchronizer;
-import static com.github.olivergondza.dumpling.factory.MXBeanFactoryUtils.getSynchronizers;
 
 import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
@@ -67,21 +66,11 @@ public class JvmRuntimeFactory {
             if (info == null) continue;
 
             Builder builder = new JvmThread.Builder(thread)
-                    .setName(info.getThreadName())
-                    .setId(info.getThreadId())
                     .setDaemon(thread.isDaemon())
                     .setPriority(thread.getPriority())
-                    .setStacktrace(info.getStackTrace())
             ;
+            final ThreadStatus status = fillThreadInfoData(info, builder);
 
-            final ThreadStatus status = ThreadStatus.fromState(
-                    info.getThreadState(), builder.getStacktrace().head()
-            );
-
-            builder.setThreadStatus(status);
-
-            builder.setAcquiredMonitors(getMonitors(info));
-            builder.setAcquiredSynchronizers(getSynchronizers(info));
             LockInfo lockInfo = info.getLockInfo();
             if (lockInfo != null) {
                 ThreadLock lock = getSynchronizer(lockInfo);

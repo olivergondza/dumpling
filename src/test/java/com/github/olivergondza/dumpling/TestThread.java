@@ -64,6 +64,8 @@ public final class TestThread {
                 }
             };
         };
+        thread.setDaemon(true);
+        thread.setPriority(7);
         thread.start();
 
         try {

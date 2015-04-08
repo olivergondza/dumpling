@@ -32,6 +32,8 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import com.github.olivergondza.dumpling.model.ThreadLock;
+import com.github.olivergondza.dumpling.model.ThreadStatus;
+import com.github.olivergondza.dumpling.model.mxbean.MXBeanThread;
 
 /**
  * Useful functions to convert MXBean structures to Dumpling ones.
@@ -39,6 +41,19 @@ import com.github.olivergondza.dumpling.model.ThreadLock;
  * @author ogondza
  */
 /*package*/ class MXBeanFactoryUtils {
+
+    /*package*/ static ThreadStatus fillThreadInfoData(ThreadInfo thread, MXBeanThread.Builder<?> builder) {
+        builder.setName(thread.getThreadName())
+                .setId(thread.getThreadId())
+                .setStacktrace(thread.getStackTrace())
+                .setAcquiredMonitors(getMonitors(thread))
+                .setAcquiredSynchronizers(getSynchronizers(thread))
+        ;
+
+        final ThreadStatus status = ThreadStatus.fromState(thread.getThreadState(), builder.getStacktrace().head());
+        builder.setThreadStatus(status);
+        return status;
+    }
 
     /*package*/ static @Nonnull List<ThreadLock.Monitor> getMonitors(final ThreadInfo threadInfo) {
         final MonitorInfo[] monitors = threadInfo.getLockedMonitors();
