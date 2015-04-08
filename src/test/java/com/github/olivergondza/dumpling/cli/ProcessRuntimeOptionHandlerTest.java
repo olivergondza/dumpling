@@ -33,10 +33,24 @@ import com.github.olivergondza.dumpling.Util;
 public class ProcessRuntimeOptionHandlerTest extends AbstractCliTest {
 
     @Test
-    public void read() throws Exception {
+    public void readStdin() throws Exception {
         stdin(Util.resourceFile("deadlock.log"));
         exitValue = run("deadlocks", "--in", "threaddump", "-");
 
         assertThat(exitValue, equalTo(1));
+    }
+
+    @Test
+    public void compatibility() throws Exception {
+        String path = Util.resourceFile("blocking-chain.log").getAbsolutePath();
+        exitValue = run("threaddump", "--in", "threaddump", path, "-p");
+        assertThat(this, succeeded());
+        String expected = out.toString();
+
+        exitValue = run("threaddump", "--in", "threaddump:" + path, "-p");
+        assertThat(this, succeeded());
+        String actual = out.toString();
+
+        assertThat(expected, equalTo(actual));
     }
 }

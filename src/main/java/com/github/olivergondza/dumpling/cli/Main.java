@@ -98,17 +98,30 @@ public class Main {
 
         @Override
         public int parseArguments(Parameters params) throws CmdLineException {
+
             String scheme = namedParameter("KIND", params, 0);
+
+            String locator;
+            int read;
+            int delim = scheme.indexOf(':');
+            if (delim == -1) {
+                locator = namedParameter("LOCATOR", params, 1);
+                read = 2;
+            } else {
+                locator = scheme.substring(delim + 1);
+                scheme = scheme.substring(0, delim);
+                read = 1;
+            }
+
             CliRuntimeFactory<?> factory = getFactory(scheme);
             if (factory == null) throw new CmdLineException(owner, "Unknown runtime source kind: " + scheme);
 
-            String locator = namedParameter("LOCATOR", params, 1);
             ProcessRuntime<?, ?, ?> runtime = factory.createRuntime(locator, system);
             if (runtime == null) throw new AssertionError(factory.getClass() + " failed to create runtime");
 
             setter.addValue(runtime);
 
-            return 2;
+            return read;
         }
 
         private @Nonnull String namedParameter(String name, Parameters params, int index) throws CmdLineException {
