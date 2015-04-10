@@ -37,19 +37,22 @@ public class GrepCommandTest extends AbstractCliTest {
     public void cli() throws Exception {
         final String log = Util.resourceFile("producer-consumer.log").getAbsolutePath();
 
-        run("grep", "thread.name == 'blocked_thread'", "--in", "threaddump", log);
+        run("grep", "thread.name == 'blocked_thread'", "--in", "threaddump:" + log);
         assertThat(this, succeeded());
         assertThat(err.toString(), equalTo(String.format("Threads: 1%n")));
 
         assertThat(out.toString(), containsString("\"blocked_thread\""));
         assertThat(out.toString(), not(containsString("\"owning_thread\"")));
 
-        run("grep", "false", "--in", "threaddump", log);
+        run("grep", "false", "--in", "threaddump:" + log);
         assertThat(exitValue, equalTo(1));
         assertThat(err.toString(), equalTo(String.format("Threads: 0%n")));
 
         assertThat(out.toString(), not(containsString("\"blocked_thread\"")));
         assertThat(out.toString(), not(containsString("\"owning_thread\"")));
+
+        run("grep", "--in", "threaddump:" + log);
+        assertThat(exitValue, equalTo(-1));
     }
 
     @Test

@@ -49,7 +49,7 @@ public class GrepCommand implements CliCommand {
     @Option(name = "-p", aliases = {"--porcelain"}, usage = "Show in a format designed for machine consumption")
     private boolean porcelain = false;
 
-    @Argument(metaVar = "PREDICATE", usage = "Groovy expression used as a filtering criteria")
+    @Argument(metaVar = "PREDICATE", usage = "Groovy expression used as a filtering criteria", required = true)
     private String predicate;
 
     @Override
