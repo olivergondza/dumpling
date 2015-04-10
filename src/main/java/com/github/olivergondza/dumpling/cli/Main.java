@@ -134,7 +134,7 @@ public class Main {
 
         @Override
         public String getDefaultMetaVariable() {
-            return "KIND LOCATOR";
+            return "KIND:LOCATOR";
         }
 
         /*package*/ static @Nonnull List<CliRuntimeFactory<?>> getFactories() {

@@ -76,7 +76,7 @@ public class HelpCommand implements CliCommand {
             out.printf("%n\t%s%n", handler.getDescription());
         }
 
-        out.printf("%nAvailable factories:%n%n");
+        out.printf("%nAvailable runtime source KINDs:%n%n");
         for (CliRuntimeFactory<?> factory: Main.ProcessRuntimeOptionHandler.getFactories()) {
             out.println(factory.getKind());
             out.printf("\t%s%n", factory.getDescription());
