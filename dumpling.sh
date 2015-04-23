@@ -37,6 +37,32 @@ function download() {
   fi
 }
 
+function working_java() {
+  $1 -version > /dev/null 2>&1
+  return $?
+}
+
+function run_java() {
+  if working_java "java"; then
+    exe="java"
+  else
+    # Find interpreter examining running processes
+    candidates=`ps -ef | awk '{ print $8 }' | grep bin/java\\b`
+    for candidate in $candidates; do
+      if working_java $candidate; then
+        exe=$candidate
+        break
+      fi
+    done
+
+    if [ "$exe" == "" ]; then
+      echo "No java interpreter found. Make sure there is one on PATH" >&2
+      exit 1
+    fi
+  fi
+  $exe "$@"
+}
+
 dir="$( cd "$( dirname "$0" )" && pwd )"
 
 if [ `ls $dir/target/dumpling-*-shaded.jar 2> /dev/null | wc -l` != 1 ]; then
@@ -54,4 +80,4 @@ else
   jar=`ls $dir/target/dumpling-*-shaded.jar | head -n 1`
 fi
 
-java -jar "$jar" "$@"
+run_java -jar "$jar" "$@"
