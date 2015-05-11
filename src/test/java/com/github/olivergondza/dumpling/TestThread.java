@@ -100,7 +100,7 @@ public final class TestThread {
 
         try {
             process.exitValue();
-            throw new AssertionError("Test process process terminated prematurelly");
+            throw new AssertionError("Test process terminated prematurelly");
         } catch (IllegalThreadStateException ex) {
             return process;
         }
