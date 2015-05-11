@@ -12,7 +12,7 @@
     <connection>scm:git:git://github.com/olivergondza/dumpling.git</connection>
     <developerConnection>scm:git:git@github.com:olivergondza/dumpling.git</developerConnection>
     <url>https://github.com/olivergondza/dumpling</url>
-    <tag>HEAD</tag>
+    <tag>dumpling-1.0-SNAPSHOT</tag>
   </scm>
 
   <licenses>
