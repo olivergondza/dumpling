@@ -193,6 +193,21 @@ public class DeadlocksTest extends AbstractCliTest {
         assertThat(out, containsString("%nDeadlocks: 1%n"));
     }
 
+    @Test
+    public void synchronizerDeadlock() throws Exception {
+        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "synchronizer_deadlock.log"));
+        String report = new Deadlocks().query(runtime.getThreads()).toString();
+        assertThat(report, containsString(Util.multiline(
+                "Deadlock #1:",
+                "\"Executing labels(hudson.slaves.NodeProvisionerTest)\" prio=10 tid=139758839826432 nid=27543",
+                "\tWaiting on <0xf1cf3470> (a java.util.concurrent.locks.ReentrantLock$NonfairSync)",
+                "\tAcquired * <0xf253d388> (a java.util.concurrent.locks.ReentrantReadWriteLock$NonfairSync)",
+                "\"AtmostOneTaskExecutor[hudson.model.Queue$1@2f485891] [#15]\" daemon prio=10 tid=139757837897728 nid=28180",
+                "\tWaiting on <0xf253d388> (a java.util.concurrent.locks.ReentrantReadWriteLock$NonfairSync)",
+                "\tAcquired * <0xf1cf3470> (a java.util.concurrent.locks.ReentrantLock$NonfairSync)"
+        )));
+    }
+
     private Set<JvmThreadSet> deadlocks(JvmRuntime runtime) {
         return new Deadlocks().query(runtime.getThreads()).getDeadlocks();
     }
