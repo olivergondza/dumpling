@@ -727,6 +727,20 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertThat(out.toString(), startsWith(expected));
     }
 
+    @Test // HotSpot seems to produce threaddump without blank lines between threads in case of deadlock
+    public void noBlankLines() throws Exception {
+        ThreadDumpRuntime runtime = runtimeFrom("no_blank_lines.log");
+        String expected = String.format("%s%n%s%n",
+                "2015-05-13 03:27:18", "Full thread dump Java HotSpot(TM) 64-Bit Server VM (24.65-b04 mixed mode):"
+        );
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        runtime.toString(new PrintStream(out), Mode.HUMAN);
+        assertThat(out.toString(), startsWith(expected));
+
+        assertThat(runtime.getThreads().size(), equalTo(9));
+    }
+
     private ThreadDumpRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {
         return new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), resource));
     }

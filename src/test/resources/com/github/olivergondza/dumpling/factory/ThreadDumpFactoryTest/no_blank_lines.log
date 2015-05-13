@@ -1,0 +1,23 @@
+2015-05-13 03:27:18
+Full thread dump Java HotSpot(TM) 64-Bit Server VM (24.65-b04 mixed mode):
+"Service Thread" daemon prio=10 tid=0x00007f8d8c120000 nid=0x227a runnable [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+"C2 CompilerThread1" daemon prio=10 tid=0x00007f8d8c11e000 nid=0x2279 waiting on condition [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+"C2 CompilerThread0" daemon prio=10 tid=0x00007f8d8c11b000 nid=0x2278 waiting on condition [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+"Signal Dispatcher" daemon prio=10 tid=0x00007f8d8c119800 nid=0x2277 waiting on condition [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+"Finalizer" daemon prio=10 tid=0x00007f8d8c0f1800 nid=0x2274 in Object.wait() [0x00007f8d90995000]
+   java.lang.Thread.State: WAITING (on object monitor)
+	at java.lang.Object.wait(Native Method)
+	- waiting on <0x00000000f01e1ee8> (a java.lang.ref.ReferenceQueue$Lock)
+	at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:135)
+	- locked <0x00000000f01e1ee8> (a java.lang.ref.ReferenceQueue$Lock)
+	at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:151)
+	at java.lang.ref.Finalizer$FinalizerThread.run(Finalizer.java:209)
+"VM Thread" prio=10 tid=0x00007f8d8c0eb000 nid=0x226f runnable 
+"GC task thread#0 (ParallelGC)" prio=10 tid=0x00007f8d8c01e800 nid=0x226a runnable 
+"GC task thread#1 (ParallelGC)" prio=10 tid=0x00007f8d8c020800 nid=0x226b runnable 
+"VM Periodic Task Thread" prio=10 tid=0x00007f8d8c123000 nid=0x227b waiting on condition 
+JNI global references: 545
