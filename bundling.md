@@ -11,6 +11,9 @@ prio: 10
 
 To make Dumpling part of your application and inspect threads from within, following dependency needs to be available:
 
+{% assign repo = site.github.public_repositories | where: "name", site.github_repo | first %}
+{{ repo.tags | size }}
+
 ```xml
 <dependency>
   <groupId>com.github.olivergondza</groupId>
