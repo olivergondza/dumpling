@@ -1,14 +1,6 @@
 2014-08-22 18:37:19
 Full thread dump OpenJDK 64-Bit Server VM (24.65-b04 mixed mode):
 
-"monitorOwnerInObjectWait" prio=10 tid=0x00007fb348317000 nid=0x46f3 in Object.wait() [0x00007fb336942000]
-   java.lang.Thread.State: WAITING (on object monitor)
-	at java.lang.Object.wait(Native Method)
-	- waiting on <0x00000007d7557718> (a java.lang.Object)
-	at java.lang.Object.wait(Object.java:503)
-	at com.github.olivergondza.dumpling.factory.JvmRuntimeFactoryTest$8.run(JvmRuntimeFactoryTest.java:226)
-	- locked <0x00000007d7557718> (a java.lang.Object)
-
 "main" prio=10 tid=0x00007fb348008800 nid=0x46e6 waiting on condition [0x00007fb34f3c4000]
    java.lang.Thread.State: TIMED_WAITING (sleeping)
 	at java.lang.Thread.sleep(Native Method)
@@ -44,24 +36,20 @@ Full thread dump OpenJDK 64-Bit Server VM (24.65-b04 mixed mode):
 	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:115)
 	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:75)
 
-"waitingToReacquireMonitorAfterWait" prio=10 tid=0x00007fe8a8327800 nid=0x3094 in Object.wait() [0x00007fe8a4ffe000]
+"blockedReacquiringWaitingOn" prio=10 tid=0x00007fe8a8327800 nid=0x3094 in Object.wait() [0x00007fe8a4ffe000]
    java.lang.Thread.State: BLOCKED (on object monitor)
-        at java.lang.Object.wait(Native Method)
-        - waiting on <0x00000007d757b550> (a java.lang.Object)
-        at java.lang.Object.wait(Object.java:503)
-        at com.github.olivergondza.dumpling.factory.ThreadDumpFactoryTest$1.run(ThreadDumpFactoryTest.java:689)
-        - locked <0x00000007d757b550> (a java.lang.Object)
+	at java.lang.Object.wait(Native Method)
+	- waiting on <0x00000007d757b550> (a java.lang.Object)
+	at java.lang.Object.wait(Object.java:503)
+	at com.github.olivergondza.dumpling.factory.ThreadDumpFactoryTest$1.run(ThreadDumpFactoryTest.java:689)
+	- locked <0x00000007d757b550> (a java.lang.Object)
 
-"waiting_in_nested_synchronized" prio=10 tid=0x00007f81ec312000 nid=0x6868 in Object.wait() [0x00007f81e364f000]
-   java.lang.Thread.State: WAITING (on object monitor)
-        at java.lang.Object.wait(Native Method)
-        - waiting on <0x00000007d757b9a8> (a java.lang.Object)
-        at java.lang.Object.wait(Object.java:503)
-        at com.github.olivergondza.dumpling.factory.ThreadDumpFactoryTest$1.run(ThreadDumpFactoryTest.java:697)
-        - locked <0x00000007d757b988> (a java.lang.Object)
-        - locked <0x00000007d757b998> (a java.lang.Object)
-        - locked <0x00000007d757b9a8> (a java.lang.Object)
-        - locked <0x00000007d757b998> (a java.lang.Object)
-        - locked <0x00000007d757b988> (a java.lang.Object)
+"blockedReacquiringLocked" prio=10 tid=0x00002b0a66949000 nid=0xa5d in Object.wai
+   java.lang.Thread.State: BLOCKED (on object monitor)
+	at java.lang.Object.wait(Native Method)
+	- locked <0x00000007d757b550> (a java.lang.Object)
+	at java.lang.Object.wait(Object.java:503)
+	at com.github.olivergondza.dumpling.factory.ThreadDumpFactoryTest$1.run(ThreadDumpFactoryTest.java:689)
+	- locked <0x00000007d757b550> (a java.lang.Object)
 
 JNI global references: 126

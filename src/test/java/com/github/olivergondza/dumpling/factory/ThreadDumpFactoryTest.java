@@ -31,6 +31,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -739,6 +740,31 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         assertThat(out.toString(), startsWith(expected));
 
         assertThat(runtime.getThreads().size(), equalTo(9));
+    }
+
+    @Test
+    public void inObjectWait() throws Exception {
+        ThreadDumpRuntime runtime = runtimeFrom("in-object-wait.log");
+        ThreadDumpThread blockedWaitingOn = runtime.getThreads().where(nameIs("blockedReacquiringWaitingOn")).onlyThread();
+        ThreadDumpThread blockedLocked = runtime.getThreads().where(nameIs("blockedReacquiringLocked")).onlyThread();
+
+        ThreadLock expected = new ThreadLock("java.lang.Object", 33677620560L);
+
+        assertThat(blockedWaitingOn.getStatus(), equalTo(ThreadStatus.BLOCKED));
+        assertTrue(blockedWaitingOn.getAcquiredLocks().isEmpty());
+        assertThat(blockedWaitingOn.getWaitingToLock(), equalTo(expected));
+
+        assertThat(blockedLocked.getStatus(), equalTo(ThreadStatus.BLOCKED));
+        assertTrue(blockedLocked.getAcquiredLocks().isEmpty());
+        assertThat(blockedLocked.getWaitingToLock(), equalTo(expected));
+    }
+
+    @Test // Do not require tab indented stacktraces
+    public void doNotRequireTabs() throws Exception {
+        ThreadDumpRuntime runtime = runtimeFrom("no-tabs.log");
+        ThreadDumpThread thread = runtime.getThreads().where(nameIs("main")).onlyThread();
+
+        assertThat(thread.getStackTrace().getElements().size(), equalTo(3));
     }
 
     private ThreadDumpRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {
