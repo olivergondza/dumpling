@@ -80,4 +80,6 @@ else
   jar=`ls $dir/target/dumpling-*-shaded.jar | head -n 1`
 fi
 
-run_java -jar "$jar" "$@"
+# Performance optimization for single runtime queries, provide DUMPLING_OPTS to override
+: ${DUMPLING_OPTS="-XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Xmx256M -Xms256M"}
+run_java $DUMPLING_OPTS -jar "$jar" "$@"
