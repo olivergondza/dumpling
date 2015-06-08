@@ -60,8 +60,8 @@ public class GroovyRuntimeTest extends AbstractCliTest {
         run(command);
 
         assertThat(err.toString(), equalTo(""));
-        assertThat(this, succeeded());
         assertThat(out.toString().trim(), containsString("true"));
+        assertThat(this, succeeded());
     }
 
     @Theory
@@ -70,8 +70,8 @@ public class GroovyRuntimeTest extends AbstractCliTest {
         run(command);
 
         assertThat(err.toString(), equalTo(""));
-        assertThat(this, succeeded());
         assertThat(out.toString().trim(), containsString("[owning_thread]"));
+        assertThat(this, succeeded());
     }
 
     @Theory
@@ -89,9 +89,9 @@ public class GroovyRuntimeTest extends AbstractCliTest {
         stdin(String.format(script, file.getAbsolutePath()));
         run(command);
 
-        assertThat(exitValue, equalTo(0));
         assertThat(err.toString(), isEmptyString());
         assertThat(out.toString(), containsString("\"main\""));
+        assertThat(exitValue, equalTo(0));
     }
 
     @Theory
@@ -109,9 +109,9 @@ public class GroovyRuntimeTest extends AbstractCliTest {
         stdin(String.format(script, Util.currentPid()));
         run(command);
 
-        assertThat(exitValue, equalTo(0));
         assertThat(err.toString(), isEmptyString());
         assertThat(out.toString(), containsString("\"remotely-observed-thread\""));
+        assertThat(exitValue, equalTo(0));
     }
 
     @Theory
@@ -129,9 +129,9 @@ public class GroovyRuntimeTest extends AbstractCliTest {
         stdin(String.format(script, Util.currentPid()));
         run(command);
 
-        assertThat(exitValue, equalTo(0));
         assertThat(err.toString(), isEmptyString());
         assertThat(out.toString(), containsString("\"remotely-observed-thread\""));
+        assertThat(exitValue, equalTo(0));
     }
 
     @Theory
@@ -149,9 +149,9 @@ public class GroovyRuntimeTest extends AbstractCliTest {
         stdin(String.format(script, TestThread.JMX_CONNECTION));
         run(command);
 
-        assertThat(exitValue, equalTo(0));
         assertThat(err.toString(), isEmptyString());
         assertThat(out.toString(), containsString("\"remotely-observed-thread\""));
+        assertThat(exitValue, equalTo(0));
     }
 
     @Theory
@@ -176,9 +176,9 @@ public class GroovyRuntimeTest extends AbstractCliTest {
         stdin("out.println('stdout content'); err.println('stderr content');%n");
         run(command);
 
-        assertThat(exitValue, equalTo(0));
         assertThat(err.toString(), containsString("stderr content"));
         assertThat(out.toString(), containsString("stdout content"));
+        assertThat(exitValue, equalTo(0));
     }
 
     @Theory
