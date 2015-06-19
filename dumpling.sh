@@ -26,7 +26,7 @@
 
 function download() {
   metadata_url="https://oss.sonatype.org/content/repositories/releases/com/github/olivergondza/dumpling/maven-metadata.xml"
-  latest=`wget --no-check-certificate $metadata_url -O - 2> /dev/null | grep \<latest\> | sed -e "s/<[^>]*>//g" -e "s/\s*//"`
+  latest=$(wget --no-check-certificate $metadata_url -O - 2> /dev/null | grep \<latest\> | sed -e "s/<[^>]*>//g" -e "s/\s*//")
   jar_url="https://oss.sonatype.org/content/repositories/releases/com/github/olivergondza/dumpling/$latest/dumpling-$latest-shaded.jar"
   echo "Downloading Dumpling $latest now..." >&2
   wget --no-check-certificate -nv -O $1 $jar_url
@@ -47,7 +47,7 @@ function run_java() {
     exe="java"
   else
     # Find interpreter examining running processes
-    candidates=`ps -ef | awk '{ print $8 }' | grep bin/java\\b`
+    candidates=$(ps -ef | awk '{ print $8 }' | grep bin/java\\b)
     for candidate in $candidates; do
       if working_java $candidate; then
         exe=$candidate
@@ -65,11 +65,11 @@ function run_java() {
 
 dir="$( cd "$( dirname "$0" )" && pwd )"
 
-if [ `ls $dir/target/dumpling-*-shaded.jar 2> /dev/null | wc -l` != 1 ]; then
+if [ $(ls $dir/target/dumpling-*-shaded.jar 2> /dev/null | wc -l) != 1 ]; then
   if [ -f $dir/pom.xml -a -d $dir/src/ ]; then
     echo "No dumpling.jar found, building it now..." >&2
     mvn clean package -DskipTests -f "$dir/pom.xml" > /dev/null
-    jar=`ls $dir/target/dumpling-*-shaded.jar | head -n 1`
+    jar=$(ls $dir/target/dumpling-*-shaded.jar | head -n 1)
   else
     jar="$dir/dumpling.jar"
     if [ ! -f $jar ]; then
@@ -77,7 +77,7 @@ if [ `ls $dir/target/dumpling-*-shaded.jar 2> /dev/null | wc -l` != 1 ]; then
     fi
   fi
 else
-  jar=`ls $dir/target/dumpling-*-shaded.jar | head -n 1`
+  jar=$(ls $dir/target/dumpling-*-shaded.jar | head -n 1)
 fi
 
 # Performance optimization for single runtime queries, provide DUMPLING_OPTS to override
