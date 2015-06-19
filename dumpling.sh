@@ -66,7 +66,7 @@ function run_java() {
 dir="$( cd "$( dirname "$0" )" && pwd )"
 
 if [ $(ls $dir/target/dumpling-*-shaded.jar 2> /dev/null | wc -l) != 1 ]; then
-  if [ -f $dir/pom.xml -a -d $dir/src/ ]; then
+  if [ -d $dir/src/ -a grep -q com.github.olivergondza.dumpling.cli.Main $dir/pom.xml 2> /dev/null ]; then
     echo "No dumpling.jar found, building it now..." >&2
     mvn clean package -DskipTests -f "$dir/pom.xml" > /dev/null
     jar=$(ls $dir/target/dumpling-*-shaded.jar | head -n 1)
