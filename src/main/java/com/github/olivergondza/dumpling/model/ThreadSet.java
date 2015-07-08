@@ -41,6 +41,8 @@ import com.github.olivergondza.dumpling.query.SingleThreadSetQuery;
 /**
  * Collection of threads in certain {@link ProcessRuntime}.
  *
+ * Potentially empty subset of all the threads.
+ *
  * @author ogondza
  * @see ProcessRuntime#getThreads()
  */

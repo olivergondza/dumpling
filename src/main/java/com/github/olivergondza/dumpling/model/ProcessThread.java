@@ -85,22 +85,25 @@ public class ProcessThread<
     /**
      * Java thread id.
      *
-     * @return Null if not provided.
+     * @return <tt>null</tt> when not available in threaddump.
      */
-    public Long getId() {
+    public @CheckForNull Long getId() {
         return state.id;
     }
 
     /**
      * Native thread id.
      *
-     * @return Null if not provided.
+     * @return <tt>null</tt> when not available in threaddump.
      */
-    public Long getNid() {
+    public @CheckForNull Long getNid() {
         return state.nid;
     }
 
-    public Long getTid() {
+    /**
+     * @return <tt>null</tt> when not available in threaddump.
+     */
+    public @CheckForNull Long getTid() {
         return state.tid;
     }
 
