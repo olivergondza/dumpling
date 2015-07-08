@@ -206,45 +206,45 @@ public class ThreadSet<
         return runtime.getThreadSet(threads);
     }
 
-    // Groovy interop
+    // Groovy interop methods, declared package private as it is not part of an API
 
-    public @Nonnull SetType grep() {
+    /*package*/ @Nonnull SetType grep() {
         // Do not invoke grep(Collection) as it was added in 2.0
         @SuppressWarnings({"unchecked", "null"})
         final @Nonnull Collection<ThreadType> grep = DefaultGroovyMethods.grep((Object) threads);
         return derive(grep);
     }
 
-    public @Nonnull SetType grep(Object filter) {
+    /*package*/ @Nonnull SetType grep(Object filter) {
         // Do not invoke grep(Collection, Object) as it was added in 2.0
         @SuppressWarnings({"unchecked", "null"})
         final @Nonnull Collection<ThreadType> grep = DefaultGroovyMethods.grep((Object) threads, filter);
         return derive(grep);
     }
 
-    public @Nonnull SetType findAll() {
+    /*package*/ @Nonnull SetType findAll() {
         @SuppressWarnings("null")
         final @Nonnull Collection<ThreadType> ret = DefaultGroovyMethods.findAll(threads);
         return derive(ret);
     }
 
-    public @Nonnull SetType findAll(Closure<ThreadType> predicate) {
+    /*package*/ @Nonnull SetType findAll(Closure<ThreadType> predicate) {
         @SuppressWarnings("null")
         final @Nonnull Collection<ThreadType> ret = DefaultGroovyMethods.findAll(threads, predicate);
         return derive(ret);
     }
 
-    public @Nonnull ThreadSet<SetType, RuntimeType, ThreadType> asImmutable() {
+    /*package*/ @Nonnull ThreadSet<SetType, RuntimeType, ThreadType> asImmutable() {
         return this;
     }
 
-    public @Nonnull SetType toSet() {
+    /*package*/ @Nonnull SetType toSet() {
         return (SetType) this;
     }
 
-    public @Nonnull SetType intersect(SetType other) {
-        if (!runtime.equals(other.runtime)) throw new IllegalStateException(
-                "Unable to intersect thread sets bound to different runtime"
+    /*package*/ @Nonnull SetType intersect(SetType other) {
+        if (!runtime.equals(other.runtime)) throw new IllegalArgumentException(
+                "Unable to intersect ThreadSets bound to different ProcessRuntimes"
         );
 
         @SuppressWarnings("null")
@@ -252,9 +252,9 @@ public class ThreadSet<
         return derive(intersect);
     }
 
-    public @Nonnull SetType plus(SetType other) {
-        if (!runtime.equals(other.runtime)) throw new IllegalStateException(
-                "Unable to merge thread sets bound to different runtime"
+    /*package*/ @Nonnull SetType plus(SetType other) {
+        if (!runtime.equals(other.runtime)) throw new IllegalArgumentException(
+                "Unable to merge ThreadSets bound to different ProcessRuntimes"
         );
 
         @SuppressWarnings("null")

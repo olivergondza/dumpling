@@ -242,6 +242,15 @@ public class GroovyRuntimeTest extends AbstractCliTest {
     }
 
     @Theory
+    public void groovyIntersectDifferentRuntime(String command) {
+        stdin("D.load.jvm.threads.intersect(D.load.jvm.threads)%n");
+        run(command);
+
+        assertThat(err.toString(), containsString("java.lang.IllegalArgumentException"));
+        assertThat(err.toString(), containsString("Unable to intersect ThreadSets bound to different ProcessRuntimes"));
+    }
+
+    @Theory
     public void groovyPlus(String command) {
         stdin("rt = D.load.jvm; threadSum = rt.threads + rt.threads; print threadSum.getClass()%n");
         run(command);
@@ -249,6 +258,15 @@ public class GroovyRuntimeTest extends AbstractCliTest {
         assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), containsString("class com.github.olivergondza.dumpling.model.jvm.JvmThreadSet"));
         assertThat(this, succeeded());
+    }
+
+    @Theory
+    public void groovyPlusDifferentRuntime(String command) {
+        stdin("D.load.jvm.threads + D.load.jvm.threads%n");
+        run(command);
+
+        assertThat(err.toString(), containsString("java.lang.IllegalArgumentException"));
+        assertThat(err.toString(), containsString("Unable to merge ThreadSets bound to different ProcessRuntimes"));
     }
 
     @Theory
