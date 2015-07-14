@@ -24,6 +24,8 @@
 package com.github.olivergondza.dumpling;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -86,5 +88,19 @@ public class Util {
         );
 
         return elem;
+    }
+
+    public static String streamToString(InputStream os) {
+        final StringBuilder out = new StringBuilder();
+        byte[] buffer = new byte[1024];
+        try {
+            while (os.read(buffer) != -1) {
+                out.append(new String(buffer));
+            }
+        } catch (IOException ex) {
+            throw new Error(ex);
+        }
+
+        return out.toString();
     }
 }

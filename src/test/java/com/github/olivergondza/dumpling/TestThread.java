@@ -99,8 +99,11 @@ public final class TestThread {
         Util.pause(1000);
 
         try {
-            process.exitValue();
-            throw new AssertionError("Test process terminated prematurelly");
+            int exit = process.exitValue();
+            String err = Util.streamToString(process.getErrorStream());
+            throw new AssertionError(String.format(
+                    "Test process terminated prematurelly: %d%nSTDERR:%n%s", exit, err
+            ));
         } catch (IllegalThreadStateException ex) {
             return process;
         }

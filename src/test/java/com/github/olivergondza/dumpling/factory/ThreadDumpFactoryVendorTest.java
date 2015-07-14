@@ -25,6 +25,7 @@ package com.github.olivergondza.dumpling.factory;
 
 import static com.github.olivergondza.dumpling.Util.only;
 import static com.github.olivergondza.dumpling.Util.pause;
+import static com.github.olivergondza.dumpling.Util.streamToString;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -309,23 +310,10 @@ public class ThreadDumpFactoryVendorTest {
         }
 
         private Error reportProblem(int exit, Exception cause) {
-            StringBuilder out = new StringBuilder();
-            StringBuilder err = new StringBuilder();
-            try {
-                byte[] buffer = new byte[1024];
-                while (process.getErrorStream().read(buffer) != -1) {
-                    out.append(new String(buffer));
-                }
-                while (process.getInputStream().read(buffer) != -1) {
-                    err.append(new String(buffer));
-                }
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-
             AssertionError error = new AssertionError(
                     "Process under test terminated prematurelly. Exit code: "
-                    + exit + "\nSTDOUT: " + out + "\nSTDERR: " + err
+                    + exit + "\nSTDOUT: " + streamToString(process.getInputStream())
+                    + "\nSTDERR: " + streamToString(process.getErrorStream())
             );
             error.initCause(cause);
             return error;
