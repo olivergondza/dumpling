@@ -88,6 +88,7 @@ public final class TestThread {
         args.add("-Dcom.sun.management.jmxremote.local.only=false");
         args.add("-Dcom.sun.management.jmxremote.authenticate=" + auth);
         args.add("-Dcom.sun.management.jmxremote.ssl=false");
+        args.add("-Djava.rmi.server.hostname=127.0.0.1");
         if (auth) {
             args.add("-Dcom.sun.management.jmxremote.password.file=" + getCredFile("jmxremote.password"));
             args.add("-Dcom.sun.management.jmxremote.access.file=" + getCredFile("jmxremote.access"));
