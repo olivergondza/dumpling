@@ -183,7 +183,7 @@ public class GroovyRuntimeTest extends AbstractCliTest {
 
     @Theory
     public void groovyGrep(String command) {
-        stdin("print D.load.jvm.threads.grep().getClass();%n");
+        stdin("def threads = D.load.jvm.threads; assert threads == threads.grep(); println threads.class;%n");
         run(command);
 
         assertThat(err.toString(), equalTo(""));
@@ -193,7 +193,8 @@ public class GroovyRuntimeTest extends AbstractCliTest {
 
     @Theory
     public void groovyGrepWithArg(String command) {
-        stdin("print D.load.jvm.threads.grep { it.name == 'blocked_thread' }.getClass()%n");
+        final String name = Thread.currentThread().getName();
+        stdin("def threads = D.load.jvm.threads.grep { it.name == '" + name + "' }; assert threads.size() == 1; println threads.class%n");
         run(command);
 
         assertThat(err.toString(), equalTo(""));
@@ -203,7 +204,7 @@ public class GroovyRuntimeTest extends AbstractCliTest {
 
     @Theory
     public void groovyFindAll(String command) {
-        stdin("print D.load.jvm.threads.findAll().getClass()%n");
+        stdin("def threads = D.load.jvm.threads; assert threads == threads.findAll(); println threads.getClass()%n");
         run(command);
 
         assertThat(err.toString(), equalTo(""));
@@ -213,7 +214,8 @@ public class GroovyRuntimeTest extends AbstractCliTest {
 
     @Theory
     public void groovyFindAllWithArg(String command) {
-        stdin("print D.load.jvm.threads.findAll { it.name == 'blocked_thread' }.getClass()%n");
+        final String name = Thread.currentThread().getName();
+        stdin("def threads = D.load.jvm.threads.findAll { it.name == '" + name + "' }; assert threads.size() == 1; println threads.getClass()%n");
         run(command);
 
         assertThat(err.toString(), equalTo(""));
@@ -223,7 +225,7 @@ public class GroovyRuntimeTest extends AbstractCliTest {
 
     @Theory
     public void groovyAsImmutable(String command) {
-        stdin("print D.load.jvm.threads.asImmutable().getClass()%n");
+        stdin("def threads = D.load.jvm.threads; assert threads.asImmutable() == threads; print threads.getClass()%n");
         run(command);
 
         assertThat(err.toString(), equalTo(""));
@@ -233,7 +235,7 @@ public class GroovyRuntimeTest extends AbstractCliTest {
 
     @Theory
     public void groovyIntersect(String command) {
-        stdin("rt = D.load.jvm; print rt.threads.intersect(rt.threads).getClass()%n");
+        stdin("def threads = D.load.jvm.threads; def intersected = threads.intersect(threads); assert threads == intersected; print intersected.getClass()%n");
         run(command);
 
         assertThat(err.toString(), equalTo(""));
