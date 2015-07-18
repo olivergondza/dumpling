@@ -42,9 +42,6 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
-import com.github.olivergondza.dumpling.cli.CliRuntimeFactory;
-import com.github.olivergondza.dumpling.cli.CommandFailedException;
-import com.github.olivergondza.dumpling.cli.ProcessStream;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.StackTrace;
 import com.github.olivergondza.dumpling.model.ThreadLock;
@@ -59,7 +56,7 @@ import com.github.olivergondza.dumpling.model.dump.ThreadDumpThread.Builder;
  *
  * @author ogondza
  */
-public class ThreadDumpFactory implements CliRuntimeFactory<ThreadDumpRuntime> {
+public class ThreadDumpFactory {
 
     private static final StackTraceElement WAIT_TRACE_ELEMENT = StackTrace.nativeElement("java.lang.Object", "wait");
 
@@ -77,30 +74,6 @@ public class ThreadDumpFactory implements CliRuntimeFactory<ThreadDumpRuntime> {
             "^\"(.*)\" ([^\\n\\r]+)(?:" + NL + "\\s+java.lang.Thread.State: ([^\\n\\r]+)(?:" + NL + "(.+))?)?",
             Pattern.DOTALL
     );
-
-    @Override
-    public @Nonnull String getKind() {
-        return "threaddump";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Parse threaddrump from file, or standard input when '-' provided as a locator.";
-    }
-
-    @Override
-    public @Nonnull ThreadDumpRuntime createRuntime(@Nonnull String locator, @Nonnull ProcessStream process) throws CommandFailedException {
-        if ("-".equals(locator)) {
-            // Read stdin
-            return fromStream(process.in());
-        }
-
-        try {
-            return fromFile(new File(locator));
-        } catch (IOException ex) {
-            throw new CommandFailedException(ex);
-        }
-    }
 
     /**
      * Create runtime from thread dump.

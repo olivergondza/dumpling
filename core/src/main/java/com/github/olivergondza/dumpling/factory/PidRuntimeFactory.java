@@ -27,9 +27,6 @@ import java.io.IOException;
 
 import javax.annotation.Nonnull;
 
-import com.github.olivergondza.dumpling.cli.CliRuntimeFactory;
-import com.github.olivergondza.dumpling.cli.CommandFailedException;
-import com.github.olivergondza.dumpling.cli.ProcessStream;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
 
@@ -43,7 +40,7 @@ import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
  *
  * @author ogondza
  */
-public class PidRuntimeFactory implements CliRuntimeFactory<ThreadDumpRuntime> {
+public class PidRuntimeFactory {
 
     private final @Nonnull String javaHome;
 
@@ -53,30 +50,6 @@ public class PidRuntimeFactory implements CliRuntimeFactory<ThreadDumpRuntime> {
 
     public PidRuntimeFactory(@Nonnull String javaHome) {
         this.javaHome = javaHome;
-    }
-
-    @Override
-    public @Nonnull String getKind() {
-        return "process";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Create runtime from running process identified by PID.";
-    }
-
-    /**
-     * @deprecated Use {@link #fromProcess(int)} instead.
-     */
-    @Deprecated
-    public @Nonnull ThreadDumpRuntime forProcess(int pid) {
-        try {
-            return fromProcess(pid);
-        } catch (IOException ex) {
-            throw new CommandFailedException("Unable to invoke jstack: " + ex.getMessage(), ex);
-        } catch (InterruptedException ex) {
-            throw new CommandFailedException("jstack invocation interrupted: " + ex.getMessage(), ex);
-        }
     }
 
     /**
@@ -98,17 +71,6 @@ public class PidRuntimeFactory implements CliRuntimeFactory<ThreadDumpRuntime> {
         return runtime;
     }
 
-    @Override
-    public @Nonnull ThreadDumpRuntime createRuntime(String locator, ProcessStream streams) throws CommandFailedException {
-        try {
-            return fromProcess(pid(locator));
-        } catch (IOException ex) {
-            throw new CommandFailedException("Unable to invoke jstack: " + ex.getMessage(), ex);
-        } catch (InterruptedException ex) {
-            throw new CommandFailedException("jstack invocation interrupted: " + ex.getMessage(), ex);
-        }
-    }
-
     private void validateResult(Process process, int ret) throws IOException {
         if (ret == 0) return;
 
@@ -118,14 +80,14 @@ public class PidRuntimeFactory implements CliRuntimeFactory<ThreadDumpRuntime> {
             sb.append(new String(buffer));
         }
 
-        throw new CommandFailedException("jstack failed with code " + ret + ": " + sb.toString().trim());
+        throw new IOException("jstack failed with code " + ret + ": " + sb.toString().trim());
     }
 
     private int pid(String locator) {
         try {
             return Integer.parseInt(locator.trim());
         } catch (NumberFormatException ex) {
-            throw new CommandFailedException("Unable to parse '" + locator + "' as process ID", ex);
+            throw new IllegalArgumentException("Unable to parse '" + locator + "' as process ID", ex);
         }
     }
 

@@ -36,11 +36,6 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.Option;
-
-import com.github.olivergondza.dumpling.cli.CliCommand;
-import com.github.olivergondza.dumpling.cli.ProcessStream;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
@@ -69,33 +64,6 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
             ThreadType extends ProcessThread<ThreadType, SetType, RuntimeType>
     > Result<SetType, RuntimeType, ThreadType> query(SetType threads) {
         return new Result<SetType, RuntimeType, ThreadType>(threads, showStackTraces);
-    }
-
-    public final static class Command implements CliCommand {
-
-        @Option(name = "-i", aliases = {"--in"}, required = true, usage = "Input for process runtime")
-        private ProcessRuntime<?, ?, ?> runtime;
-
-        @Option(name = "--show-stack-traces", usage = "List stack traces of all threads involved")
-        private boolean showStackTraces = false;
-
-        @Override
-        public String getName() {
-            return "top-contenders";
-        }
-
-        @Override
-        public String getDescription() {
-            return "Detect top-contenders, threads that block largest number of other threads";
-        }
-
-        @Override
-        public int run(@Nonnull ProcessStream process) throws CmdLineException {
-            @SuppressWarnings({"unchecked", "rawtypes"})
-            Result<?, ?, ?> result = new Result(runtime.getThreads(), showStackTraces);
-            result.printInto(process.out());
-            return result.exitCode();
-        }
     }
 
     public final static class Result<

@@ -57,9 +57,6 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import com.github.olivergondza.dumpling.cli.CliRuntimeFactory;
-import com.github.olivergondza.dumpling.cli.CommandFailedException;
-import com.github.olivergondza.dumpling.cli.ProcessStream;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 import com.github.olivergondza.dumpling.model.jmx.JmxRuntime;
 import com.github.olivergondza.dumpling.model.jmx.JmxThread;
@@ -71,7 +68,7 @@ import com.github.olivergondza.dumpling.model.jmx.JmxThread;
  *
  * @author ogondza
  */
-public final class JmxRuntimeFactory implements CliRuntimeFactory<JmxRuntime> {
+public final class JmxRuntimeFactory {
 
     private static final ObjectName THREADING_MBEAN;
     private static final ObjectName RUNTIME_MBEAN;
@@ -81,25 +78,6 @@ public final class JmxRuntimeFactory implements CliRuntimeFactory<JmxRuntime> {
             RUNTIME_MBEAN = new ObjectName(ManagementFactory.RUNTIME_MXBEAN_NAME);
         } catch (MalformedObjectNameException ex) {
             throw new AssertionError(ex);
-        }
-    }
-
-    @Override
-    public @Nonnull String getKind() {
-        return "jmx";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Create runtime from JMX process identified by PID or HOST:PORT combination. Credentials can be provided as USER:PASSWORD@HOST:PORT.";
-    }
-
-    @Override
-    public @Nonnull JmxRuntime createRuntime(@Nonnull String locator, @Nonnull ProcessStream process) throws CommandFailedException {
-        try {
-            return fromConnection(locateConnection(locator));
-        } catch (FailedToInitializeJmxConnection ex) {
-            throw new CommandFailedException(ex);
         }
     }
 

@@ -32,11 +32,6 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.Option;
-
-import com.github.olivergondza.dumpling.cli.CliCommand;
-import com.github.olivergondza.dumpling.cli.ProcessStream;
 import com.github.olivergondza.dumpling.model.ModelObject;
 import com.github.olivergondza.dumpling.model.ModelObject.Mode;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
@@ -68,33 +63,6 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
             ThreadType extends ProcessThread<ThreadType, SetType, RuntimeType>
     > Result<SetType, RuntimeType, ThreadType> query(SetType threads) {
         return new Result<SetType, RuntimeType, ThreadType>(threads, showStackTraces);
-    }
-
-    public final static class Command implements CliCommand {
-
-        @Option(name = "-i", aliases = {"--in"}, required = true, usage = "Input for process runtime")
-        private ProcessRuntime<?, ?, ?> runtime;
-
-        @Option(name = "--show-stack-traces", usage = "List stack traces of all threads involved")
-        private boolean showStackTraces = false;
-
-        @Override
-        public String getName() {
-            return "blocking-tree";
-        }
-
-        @Override
-        public String getDescription() {
-            return "Print trees of blocking threads";
-        }
-
-        @Override
-        public int run(@Nonnull ProcessStream process) throws CmdLineException {
-            @SuppressWarnings({"unchecked", "rawtypes"})
-            Result<?, ?, ?> result = new Result(runtime.getThreads(), showStackTraces);
-            result.printInto(process.out());
-            return result.exitCode();
-        }
     }
 
     /**

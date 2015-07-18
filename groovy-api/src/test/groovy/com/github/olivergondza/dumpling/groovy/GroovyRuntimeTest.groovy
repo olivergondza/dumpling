@@ -21,24 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.github.olivergondza.dumpling.groovy;
+package com.github.olivergondza.dumpling.groovy
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.codehaus.groovy.control.CompilerConfiguration
+import org.codehaus.groovy.control.customizers.ImportCustomizer
+import org.junit.Test
 
-/**
- * Mark class that is supposed to extend Dumpling class.
- *
- * All methods and static method will be applied via MetaClass.
- * @author ogondza
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface GroovyExtension {
-    /**
-     * The class to extend.
-     */
-    Class<?> value();
+class GroovyRuntimeTest {
+
+    private static final GroovyInterpretterConfig CONFIG = new GroovyInterpretterConfig();
+
+    def runScript(String script) {
+        CONFIG.setupDecorateMethods();
+
+        CompilerConfiguration cc = new CompilerConfiguration();
+        ImportCustomizer imports = new ImportCustomizer();
+        for (String starImport: CONFIG.getStarImports()) {
+            imports.addStarImports(starImport);
+        }
+        for (String staticStar: CONFIG.getStaticStars()) {
+            imports.addStaticStars(staticStar);
+        }
+        cc.addCompilationCustomizers(imports);
+
+        GroovyShell shell = new GroovyShell(cc);
+        return shell.run("def rt = new JvmRuntimeFactory().currentRuntime();" + script, "dumpling-script", Arrays.asList());
+    }
+
+    @Test
+    def size() {
+        runScript("assert rt.threads.size() > 1");
+    }
 }
