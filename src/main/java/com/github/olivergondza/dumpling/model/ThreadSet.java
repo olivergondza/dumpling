@@ -23,8 +23,6 @@
  */
 package com.github.olivergondza.dumpling.model;
 
-import groovy.lang.Closure;
-
 import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,8 +31,6 @@ import java.util.Iterator;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
-
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import com.github.olivergondza.dumpling.query.SingleThreadSetQuery;
 
@@ -208,59 +204,7 @@ public class ThreadSet<
         return runtime.getThreadSet(threads);
     }
 
-    // Groovy interop methods, declared package private as it is not part of an API
-
-    /*package*/ @Nonnull SetType grep() {
-        // Do not invoke grep(Collection) as it was added in 2.0
-        @SuppressWarnings({"unchecked", "null"})
-        final @Nonnull Collection<ThreadType> grep = DefaultGroovyMethods.grep((Object) threads);
-        return derive(grep);
-    }
-
-    /*package*/ @Nonnull SetType grep(Object filter) {
-        // Do not invoke grep(Collection, Object) as it was added in 2.0
-        @SuppressWarnings({"unchecked", "null"})
-        final @Nonnull Collection<ThreadType> grep = DefaultGroovyMethods.grep((Object) threads, filter);
-        return derive(grep);
-    }
-
-    /*package*/ @Nonnull SetType findAll() {
-        @SuppressWarnings("null")
-        final @Nonnull Collection<ThreadType> ret = DefaultGroovyMethods.findAll(threads);
-        return derive(ret);
-    }
-
-    /*package*/ @Nonnull SetType findAll(Closure<ThreadType> predicate) {
-        @SuppressWarnings("null")
-        final @Nonnull Collection<ThreadType> ret = DefaultGroovyMethods.findAll(threads, predicate);
-        return derive(ret);
-    }
-
-    /*package*/ @Nonnull ThreadSet<SetType, RuntimeType, ThreadType> asImmutable() {
-        return this;
-    }
-
-    /*package*/ @Nonnull SetType toSet() {
-        return (SetType) this;
-    }
-
-    /*package*/ @Nonnull SetType intersect(SetType other) {
-        if (!runtime.equals(other.runtime)) throw new IllegalArgumentException(
-                "Unable to intersect ThreadSets bound to different ProcessRuntimes"
-        );
-
-        @SuppressWarnings("null")
-        final @Nonnull Collection<ThreadType> intersect = DefaultGroovyMethods.intersect(threads, other.threads);
-        return derive(intersect);
-    }
-
-    /*package*/ @Nonnull SetType plus(SetType other) {
-        if (!runtime.equals(other.runtime)) throw new IllegalArgumentException(
-                "Unable to merge ThreadSets bound to different ProcessRuntimes"
-        );
-
-        @SuppressWarnings("null")
-        final @Nonnull Collection<ThreadType> plus = DefaultGroovyMethods.plus(threads, other.threads);
-        return derive(plus);
+    public @Nonnull Set<ThreadType> getThreadsAsSet() {
+        return threads;
     }
 }

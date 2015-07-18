@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014 Red Hat, Inc.
+ * Copyright (c) 2015 Red Hat, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,43 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.github.olivergondza.dumpling.cli;
+package com.github.olivergondza.dumpling.groovy;
 
-import java.io.InputStream;
-import java.io.PrintStream;
-
-import javax.annotation.Nonnull;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Input/output stream aggregator.
+ * Mark class that is supposed to extend Dumpling class.
  *
+ * All methods and static method will be applied via MetaClass.
  * @author ogondza
  */
-public final class ProcessStream {
-
-    private final @Nonnull InputStream in;
-    private final @Nonnull PrintStream out;
-    private final @Nonnull PrintStream err;
-
-    public static @Nonnull ProcessStream system() {
-        return new ProcessStream(System.in, System.out, System.err);
-    }
-
-    public ProcessStream(@Nonnull InputStream in, @Nonnull PrintStream out, @Nonnull PrintStream err) {
-        this.in = in;
-        this.out = out;
-        this.err = err;
-    }
-
-    public @Nonnull InputStream in() {
-        return in;
-    }
-
-    public @Nonnull PrintStream out() {
-        return out;
-    }
-
-    public @Nonnull PrintStream err() {
-        return err;
-    }
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface GroovyExtension {
+    /**
+     * The class to extend.
+     */
+    Class<?> value();
 }

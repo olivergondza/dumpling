@@ -34,6 +34,7 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
+import com.github.olivergondza.dumpling.groovy.GroovyInterpretterConfig;
 import com.github.olivergondza.dumpling.model.ModelObject.Mode;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ThreadSet;
@@ -64,6 +65,7 @@ public class GrepCommand implements CliCommand {
 
     @Override
     public int run(ProcessStream process) throws CmdLineException {
+        CONFIG.setupDecorateMethods();
         CompilerConfiguration cc = new CompilerConfiguration();
         ImportCustomizer imports = new ImportCustomizer();
         for (String starImport: CONFIG.getStarImports()) {

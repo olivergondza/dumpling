@@ -21,9 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.github.olivergondza.dumpling.cli;
+package com.github.olivergondza.dumpling.groovy;
 
 import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,15 +41,27 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
+
+import com.github.olivergondza.dumpling.cli.ProcessStream;
 import com.github.olivergondza.dumpling.factory.JmxRuntimeFactory;
 import com.github.olivergondza.dumpling.factory.JvmRuntimeFactory;
 import com.github.olivergondza.dumpling.factory.PidRuntimeFactory;
 import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 
-/*package*/ class GroovyInterpretterConfig {
+/**
+ * Groovy interpreter config suitable for running Dumpling CLI.
+ *
+ * @author ogondza
+ */
+public class GroovyInterpretterConfig {
 
-    /*package*/ Collection<String> getStarImports() {
+    /**
+     * All class imports.
+     */
+    public Collection<String> getStarImports() {
         return Arrays.asList(
                 "com.github.olivergondza.dumpling.cli",
                 "com.github.olivergondza.dumpling.factory",
@@ -57,7 +70,10 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
         );
     }
 
-    /*package*/ Collection<String> getStaticStars() {
+    /**
+     * All static imports.
+     */
+    public Collection<String> getStaticStars() {
         return Arrays.asList("com.github.olivergondza.dumpling.model.ProcessThread");
     }
 
@@ -66,7 +82,7 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
      *
      * Dumpling exposed API is available via <tt>D</tt> property.
      */
-    /*package*/ Binding getDefaultBinding(@Nonnull ProcessStream stream, @Nonnull List<String> args, @Nullable ProcessRuntime<?, ?, ?> runtime) {
+    public Binding getDefaultBinding(@Nonnull ProcessStream stream, @Nonnull List<String> args, @Nullable ProcessRuntime<?, ?, ?> runtime) {
         Binding binding = new Binding();
         binding.setProperty("out", stream.out());
         binding.setProperty("err", stream.err());
@@ -77,6 +93,42 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
         binding.setProperty("$load", new LoadCommand(stream, "$load")); // Compatibility
 
         return binding;
+    }
+
+    private static boolean DECORATED = false;
+    public void setupDecorateMethods() {
+        if (DECORATED) return;
+
+        CompilerConfiguration cc = new CompilerConfiguration();
+        ImportCustomizer imports = new ImportCustomizer();
+        for (String starImport: this.getStarImports()) {
+            imports.addStarImports(starImport);
+        }
+        for (String staticStar: this.getStaticStars()) {
+            imports.addStaticStars(staticStar);
+        }
+        cc.addCompilationCustomizers(imports);
+
+        GroovyShell shell = new GroovyShell(cc);
+        try {
+            shell.run(
+                    "import org.codehaus.groovy.runtime.DefaultGroovyMethods;" +
+                    "def mc = ThreadSet.metaClass;" +
+                    "mc.asImmutable << { -> delegate };" +
+                    "mc.toSet << { -> delegate };" +
+                    "mc.grep << { Object filter -> delegate.derive(DefaultGroovyMethods.grep(delegate.threadsAsSet, filter)) };" +
+                    "mc.grep << { -> delegate.derive(delegate.threadsAsSet.grep()) };" +
+                    "mc.findAll << { Closure closure -> delegate.derive(DefaultGroovyMethods.findAll((Object) delegate.threadsAsSet, closure)) };" +
+                    "mc.findAll << { -> delegate.derive(delegate.threadsAsSet.findAll()) };" +
+                    "mc.intersect << { rhs -> if (!delegate.getProcessRuntime().equals(rhs.getProcessRuntime())) throw new IllegalArgumentException('Unable to intersect ThreadSets bound to different ProcessRuntimes'); return delegate.derive(DefaultGroovyMethods.intersect(delegate.threadsAsSet, rhs.threadsAsSet)) };" +
+                    "mc.plus << { rhs -> if (!delegate.getProcessRuntime().equals(rhs.getProcessRuntime())) throw new IllegalArgumentException('Unable to merge ThreadSets bound to different ProcessRuntimes'); return delegate.derive(DefaultGroovyMethods.plus(delegate.threadsAsSet, rhs.threadsAsSet)) };",
+                    "dumpling-metaclass-setup",
+                    Arrays.asList()
+            );
+        } catch (Exception ex) {
+            throw new AssertionError("Unable to decorate object model", ex);
+        }
+        DECORATED = true;
     }
 
     /**

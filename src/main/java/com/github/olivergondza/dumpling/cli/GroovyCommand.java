@@ -43,6 +43,7 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
+import com.github.olivergondza.dumpling.groovy.GroovyInterpretterConfig;
 import com.github.olivergondza.dumpling.model.ModelObject;
 import com.github.olivergondza.dumpling.model.ModelObject.Mode;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
@@ -80,6 +81,7 @@ public class GroovyCommand implements CliCommand {
 
     @Override
     public int run(ProcessStream process) throws CmdLineException {
+        CONFIG.setupDecorateMethods();
         Binding binding = CONFIG.getDefaultBinding(process, args, runtime);
         if (runtime != null) {
             binding.setProperty("runtime", runtime); // Compatibility
