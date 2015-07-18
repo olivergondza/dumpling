@@ -1,12 +1,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.olivergondza</groupId>
-  <artifactId>dumpling</artifactId>
+  <artifactId>dumpling-parent</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <packaging>jar</packaging>
+  <packaging>pom</packaging>
   <name>DSL based threaddump analyzer</name>
   <url>https://github.com/olivergondza/dumpling</url>
   <description>Dumpling is an object model and domain specific language to represent and query the state of process threads and their lock based dependencies</description>
+  
+  <modules>
+    <module>core</module>
+    <module>groovy-api</module>
+  </modules>
 
   <scm>
     <connection>scm:git:git://github.com/olivergondza/dumpling.git</connection>
