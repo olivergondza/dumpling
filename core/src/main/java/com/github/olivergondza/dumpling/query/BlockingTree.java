@@ -84,7 +84,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
 
         private final @Nonnull SetType deadlockedThreads;
 
-        private Result(@Nonnull SetType threads, boolean showStackTraces) {
+        /*package*/ Result(@Nonnull SetType threads, boolean showStackTraces) {
             super(showStackTraces);
             deadlocks = DEADLOCKS.query(threads);
             deadlockedThreads = deadlocks.involvedThreads();

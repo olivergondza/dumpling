@@ -28,6 +28,7 @@ import static com.github.olivergondza.dumpling.Util.pause;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
@@ -56,7 +57,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
-import com.github.olivergondza.dumpling.cli.AbstractCliTest;
 import com.github.olivergondza.dumpling.model.ModelObject.Mode;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.StackTrace;
@@ -66,7 +66,7 @@ import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpThread;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpThreadSet;
 
-public class ThreadDumpFactoryTest extends AbstractCliTest {
+public class ThreadDumpFactoryTest {
 
     @Test
     public void openJdk7_60() throws Exception {
@@ -597,14 +597,6 @@ public class ThreadDumpFactoryTest extends AbstractCliTest {
         );
 
         assertEquals(actual, expected);
-    }
-
-    @Test
-    public void cliNoSuchFile() {
-        run("deadlocks", "--in", "threaddump", "/there_is_no_such_file");
-        assertThat(exitValue, equalTo(-1));
-        assertThat(err.toString(), containsString("/there_is_no_such_file (No such file or directory)"));
-        assertThat(out.toString(), equalTo(""));
     }
 
     // Thread state and locks might not be consistent with each other.

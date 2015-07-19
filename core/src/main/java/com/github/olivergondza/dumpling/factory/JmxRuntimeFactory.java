@@ -81,6 +81,28 @@ public final class JmxRuntimeFactory {
         }
     }
 
+    public @Nonnull JmxRuntime forConnectionString(@Nonnull String locator) throws FailedToInitializeJmxConnection {
+        try {
+            int pid = Integer.parseInt(locator);
+            return forLocalProcess(pid);
+        } catch (NumberFormatException ex) {
+            // No a PID - remote process
+        }
+
+        String username = null;
+        String password = null;
+        List<String> chunks = Arrays.asList(locator.split("[:@]"));
+        Collections.reverse(chunks);
+
+        int port = Integer.parseInt(chunks.get(0));
+        String host = chunks.get(1);
+        if (chunks.size() == 4) {
+            password = chunks.get(2);
+            username = chunks.get(3);
+        }
+        return forRemoteProcess(host, port, username, password);
+    }
+
     public @Nonnull JmxRuntime forRemoteProcess(@Nonnull String host, int port) throws FailedToInitializeJmxConnection {
         return forRemoteProcess(host, port, null, null);
     }
@@ -91,15 +113,6 @@ public final class JmxRuntimeFactory {
 
     public @Nonnull JmxRuntime forLocalProcess(int pid) throws FailedToInitializeJmxConnection {
         return fromConnection(new LocalConnector(pid).getServerConnection());
-    }
-
-    private @Nonnull MBeanServerConnection locateConnection(@Nonnull String locator) throws FailedToInitializeJmxConnection {
-        try {
-            int pid = Integer.parseInt(locator);
-            return new LocalConnector(pid).getServerConnection();
-        } catch (NumberFormatException ex) {
-            return new RemoteConnector(locator).getServerConnection();
-        }
     }
 
     private @Nonnull JmxRuntime fromConnection(@Nonnull MBeanServerConnection connection) {
@@ -229,19 +242,6 @@ public final class JmxRuntimeFactory {
             this.port = port;
             this.username = username;
             this.password = password;
-        }
-
-        /*package*/ RemoteConnector(@Nonnull String locator) {
-
-            List<String> chunks = Arrays.asList(locator.split("[:@]"));
-            Collections.reverse(chunks);
-
-            port = Integer.parseInt(chunks.get(0));
-            host = chunks.get(1);
-            if (chunks.size() == 4) {
-                password = chunks.get(2);
-                username = chunks.get(3);
-            }
         }
 
         @Override

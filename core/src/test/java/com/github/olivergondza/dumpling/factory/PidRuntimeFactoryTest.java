@@ -27,8 +27,8 @@ import static com.github.olivergondza.dumpling.Util.only;
 import static com.github.olivergondza.dumpling.Util.pause;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
@@ -39,13 +39,11 @@ import org.junit.After;
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
-import com.github.olivergondza.dumpling.cli.AbstractCliTest;
-import com.github.olivergondza.dumpling.cli.CommandFailedException;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpThread;
 
-public class PidRuntimeFactoryTest extends AbstractCliTest {
+public class PidRuntimeFactoryTest {
 
     private Thread t;
 
@@ -66,31 +64,11 @@ public class PidRuntimeFactoryTest extends AbstractCliTest {
     }
 
     @Test
-    public void invokeCommand() {
-        setupSleepingThreadWithLock();
-
-        stdin("t = runtime.threads.where(nameIs('sleepingThreadWithLock')).onlyThread(); print \"${t.status}:${t.acquiredLocks.collect{it.className}}\"");
-        run("groovy", "--in", "process", Integer.toString(Util.currentPid()));
-
-        assertThat(err.toString(), equalTo(""));
-        assertThat(out.toString(), equalTo("SLEEPING:[java.util.concurrent.locks.ReentrantLock$NonfairSync]"));
-        assertThat(exitValue, equalTo(0));
-    }
-
-    @Test
-    public void illegalPid() {
-        run("groovy", "--in", "process", "not_a_pid");
-        assertThat(out.toString(), equalTo(""));
-        assertThat(err.toString(), equalTo("Unable to parse 'not_a_pid' as process ID\n"));
-        assertThat(exitValue, not(equalTo(0)));
-    }
-
-    @Test
     public void notAJavaProcess() throws Exception {
         try {
             new PidRuntimeFactory().fromProcess(299);
             fail("No exception thrown");
-        } catch(CommandFailedException ex) {
+        } catch(IOException ex) {
             assertThat(ex.getMessage(), containsString("jstack failed with code "));
             assertThat(ex.getMessage(), containsString("299: No such process"));
         }

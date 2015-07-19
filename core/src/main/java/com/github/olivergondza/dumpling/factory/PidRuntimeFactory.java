@@ -83,14 +83,6 @@ public class PidRuntimeFactory {
         throw new IOException("jstack failed with code " + ret + ": " + sb.toString().trim());
     }
 
-    private int pid(String locator) {
-        try {
-            return Integer.parseInt(locator.trim());
-        } catch (NumberFormatException ex) {
-            throw new IllegalArgumentException("Unable to parse '" + locator + "' as process ID", ex);
-        }
-    }
-
     private String jstackBinary() {
         return javaHome + "/../bin/jstack";
     }

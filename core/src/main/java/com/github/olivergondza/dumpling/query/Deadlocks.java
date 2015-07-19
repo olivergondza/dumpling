@@ -80,7 +80,7 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result<?,
         private final @Nonnull Set<SetType> deadlocks;
         private final @Nonnull SetType involved;
 
-        private Result(@Nonnull SetType input, boolean showStackTraces) {
+        /*package*/ Result(@Nonnull SetType input, boolean showStackTraces) {
             super(showStackTraces);
 
             final HashSet<SetType> deadlocks = new HashSet<SetType>(1);

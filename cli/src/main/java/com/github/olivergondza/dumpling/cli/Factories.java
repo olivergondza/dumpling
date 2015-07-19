@@ -32,13 +32,12 @@ import com.github.olivergondza.dumpling.factory.JmxRuntimeFactory;
 import com.github.olivergondza.dumpling.factory.JmxRuntimeFactory.FailedToInitializeJmxConnection;
 import com.github.olivergondza.dumpling.factory.PidRuntimeFactory;
 import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
-import com.github.olivergondza.dumpling.groovy.CliRuntimeFactory;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
 import com.github.olivergondza.dumpling.model.jmx.JmxRuntime;
 
 final /*package*/ class Factories {
 
-    final /*package*/ static class ThreadDump extends ThreadDumpFactory implements CliRuntimeFactory<ThreadDumpRuntime> {
+    final /*package*/ static class ThreadDump implements CliRuntimeFactory<ThreadDumpRuntime> {
         @Override
         public @Nonnull String getKind() {
             return "threaddump";
@@ -50,21 +49,25 @@ final /*package*/ class Factories {
         }
 
         @Override
-        public @Nonnull ThreadDumpRuntime createRuntime(@Nonnull String locator, @Nonnull ProcessStream process) throws CommandFailedException {
+        public @Nonnull ThreadDumpRuntime createRuntime(
+                @Nonnull String locator, @Nonnull ProcessStream process
+        ) throws CommandFailedException {
+            ThreadDumpFactory factory = new ThreadDumpFactory();
+
             if ("-".equals(locator)) {
                 // Read stdin
-                return fromStream(process.in());
+                return factory.fromStream(process.in());
             }
 
             try {
-                return fromFile(new File(locator));
+                return factory.fromFile(new File(locator));
             } catch (IOException ex) {
                 throw new CommandFailedException(ex);
             }
         }
     }
 
-    final /*package*/ static class Jmx extends JmxRuntimeFactory implements CliRuntimeFactory<ThreadDumpRuntime> {
+    final /*package*/ static class Jmx implements CliRuntimeFactory<JmxRuntime> {
         @Override
         public @Nonnull String getKind() {
             return "jmx";
@@ -77,15 +80,17 @@ final /*package*/ class Factories {
 
         @Override
         public @Nonnull JmxRuntime createRuntime(@Nonnull String locator, @Nonnull ProcessStream process) throws CommandFailedException {
+            JmxRuntimeFactory factory = new JmxRuntimeFactory();
+
             try {
-                return fromConnection(locateConnection(locator));
+                return factory.forConnectionString(locator);
             } catch (FailedToInitializeJmxConnection ex) {
                 throw new CommandFailedException(ex);
             }
         }
     }
 
-    final /*package*/ static class Pid extends PidRuntimeFactory implements CliRuntimeFactory<ThreadDumpRuntime> {
+    final /*package*/ static class Pid implements CliRuntimeFactory<ThreadDumpRuntime> {
 
         @Override
         public @Nonnull String getKind() {
@@ -99,12 +104,21 @@ final /*package*/ class Factories {
 
         @Override
         public @Nonnull ThreadDumpRuntime createRuntime(String locator, ProcessStream streams) throws CommandFailedException {
+            PidRuntimeFactory factory = new PidRuntimeFactory();
             try {
-                return fromProcess(pid(locator));
+                return factory.fromProcess(pid(locator));
             } catch (IOException ex) {
                 throw new CommandFailedException("Unable to invoke jstack: " + ex.getMessage(), ex);
             } catch (InterruptedException ex) {
                 throw new CommandFailedException("jstack invocation interrupted: " + ex.getMessage(), ex);
+            }
+        }
+
+        private int pid(String locator) {
+            try {
+                return Integer.parseInt(locator.trim());
+            } catch (NumberFormatException ex) {
+                throw new CommandFailedException("Unable to parse '" + locator + "' as process ID", ex);
             }
         }
     }

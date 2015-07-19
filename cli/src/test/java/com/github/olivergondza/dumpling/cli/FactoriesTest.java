@@ -21,35 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.github.olivergondza.dumpling.groovy
+package com.github.olivergondza.dumpling.cli;
 
-import org.codehaus.groovy.control.CompilerConfiguration
-import org.codehaus.groovy.control.customizers.ImportCustomizer
-import org.junit.Test
 
-class GroovyRuntimeTest {
+public class FactoriesTest {
 
-    private static final GroovyInterpretterConfig CONFIG = new GroovyInterpretterConfig();
 
-    def runScript(String script) {
-        CONFIG.setupDecorateMethods();
-
-        CompilerConfiguration cc = new CompilerConfiguration();
-        ImportCustomizer imports = new ImportCustomizer();
-        for (String starImport: CONFIG.getStarImports()) {
-            imports.addStarImports(starImport);
-        }
-        for (String staticStar: CONFIG.getStaticStars()) {
-            imports.addStaticStars(staticStar);
-        }
-        cc.addCompilationCustomizers(imports);
-
-        GroovyShell shell = new GroovyShell(cc);
-        return shell.run("def rt = new JvmRuntimeFactory().currentRuntime();" + script, "dumpling-script", Arrays.asList());
-    }
-
-    @Test
-    def void size() {
-        runScript("assert rt.threads.size() > 1");
-    }
 }

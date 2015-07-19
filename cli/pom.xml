@@ -21,18 +21,21 @@
       <artifactId>dumpling-groovy-api</artifactId>
       <version>${project.version}</version>
     </dependency>
-
     <dependency>
-      <groupId>javax.annotation</groupId>
-      <artifactId>jsr250-api</artifactId>
+      <groupId>com.github.olivergondza</groupId>
+      <artifactId>dumpling-test-utils</artifactId>
+      <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>org.reflections</groupId>
       <artifactId>reflections</artifactId>
+      <version>0.9.8</version>
     </dependency>
     <dependency>
       <groupId>args4j</groupId>
       <artifactId>args4j</artifactId>
+      <version>2.0.26</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
@@ -41,6 +44,35 @@
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-groovysh</artifactId>
+      <version>${groovy.version}</version>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>2.3</version>
+        <configuration>
+          <transformers>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+              <mainClass>com.github.olivergondza.dumpling.cli.Main</mainClass>
+            </transformer>
+          </transformers>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

@@ -33,7 +33,7 @@ import com.github.olivergondza.dumpling.cli.ProcessStream;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.query.TopContenders.Result;
 
-public final static class TopContendersCommand implements CliCommand {
+public final class TopContendersCommand implements CliCommand {
 
     @Option(name = "-i", aliases = {"--in"}, required = true, usage = "Input for process runtime")
     private ProcessRuntime<?, ?, ?> runtime;

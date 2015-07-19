@@ -23,7 +23,6 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
-import static com.github.olivergondza.dumpling.TestThread.JMX_CONNECTION;
 import static com.github.olivergondza.dumpling.TestThread.JMX_HOST;
 import static com.github.olivergondza.dumpling.TestThread.JMX_PASSWD;
 import static com.github.olivergondza.dumpling.TestThread.JMX_PORT;
@@ -31,9 +30,8 @@ import static com.github.olivergondza.dumpling.TestThread.JMX_USER;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.fail;
-
-import java.io.ByteArrayInputStream;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,33 +39,30 @@ import org.junit.Test;
 import com.github.olivergondza.dumpling.DisposeRule;
 import com.github.olivergondza.dumpling.Util;
 import com.github.olivergondza.dumpling.TestThread;
-import com.github.olivergondza.dumpling.cli.AbstractCliTest;
-import com.github.olivergondza.dumpling.factory.JmxRuntimeFactory.RemoteConnector;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.StackTrace;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
-import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
 import com.github.olivergondza.dumpling.model.jmx.JmxRuntime;
 
-public class JmxRuntimeFactoryTest extends AbstractCliTest {
+public class JmxRuntimeFactoryTest {
 
     @Rule public DisposeRule disposer = new DisposeRule();
 
-    @Test
-    public void parseRemoteLogin() {
-        RemoteConnector login = new RemoteConnector("localhost:8080");
-        assertThat(login.host, equalTo("localhost"));
-        assertThat(login.port, equalTo(8080));
-        assertThat(login.username, equalTo(null));
-        assertThat(login.password, equalTo(null));
-
-        login = new RemoteConnector("user:passwd@localhost:8080");
-        assertThat(login.host, equalTo("localhost"));
-        assertThat(login.port, equalTo(8080));
-        assertThat(login.username, equalTo("user"));
-        assertThat(login.password, equalTo("passwd"));
-    }
+//    @Test
+//    public void parseRemoteLogin() {
+//        RemoteConnector login = new RemoteConnector("localhost:8080");
+//        assertThat(login.host, equalTo("localhost"));
+//        assertThat(login.port, equalTo(8080));
+//        assertThat(login.username, equalTo(null));
+//        assertThat(login.password, equalTo(null));
+//
+//        login = new RemoteConnector("user:passwd@localhost:8080");
+//        assertThat(login.host, equalTo("localhost"));
+//        assertThat(login.port, equalTo(8080));
+//        assertThat(login.username, equalTo("user"));
+//        assertThat(login.password, equalTo("passwd"));
+//    }
 
     @Test
     public void jmxRemoteConnect() throws Exception {
@@ -106,32 +101,10 @@ public class JmxRuntimeFactoryTest extends AbstractCliTest {
     }
 
     @Test
-    public void jmxRemoteConnectViaCli() throws Exception {
-        runRemoteSut();
-        stdin("runtime.threads.where(nameIs('remotely-observed-thread'))");
-        run("groovy", "--in", "jmx", JMX_CONNECTION);
-
-        // Reuse verification logic re-parsing the output as thread dump
-        ThreadDumpRuntime reparsed = new ThreadDumpFactory().fromStream(new ByteArrayInputStream(out.toByteArray()));
-        assertThreadState(reparsed);
-    }
-
-    @Test
     public void jmxLocalConnect() {
         runLocalSut();
         JmxRuntime runtime = new JmxRuntimeFactory().forLocalProcess(Util.currentPid());
         assertThreadState(runtime);
-    }
-
-    @Test
-    public void jmxLocalConnectViaCli() {
-        runLocalSut();
-        stdin("runtime.threads.where(nameIs('remotely-observed-thread'))");
-        run("groovy", "--in", "jmx", Integer.toString(Util.currentPid()));
-
-        // Reuse verification logic re-parsing the output as thread dump
-        ThreadDumpRuntime reparsed = new ThreadDumpFactory().fromStream(new ByteArrayInputStream(out.toByteArray()));
-        assertThreadState(reparsed);
     }
 
     @Test

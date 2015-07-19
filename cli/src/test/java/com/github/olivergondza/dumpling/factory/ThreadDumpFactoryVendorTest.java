@@ -61,6 +61,8 @@ import com.github.olivergondza.dumpling.model.dump.ThreadDumpThread;
  * in separated process. SUT is picked up by <tt>sut.runtime()</tt> or
  * <tt>sut.thread("name")</tt>, the method will wait for process to be ready.
  *
+ * This belongs to core module though it is convenient to use Dumpling CLI as groovy interpreter.
+ *
  * @author ogondza
  */
 public class ThreadDumpFactoryVendorTest {

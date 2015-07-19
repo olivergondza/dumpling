@@ -37,7 +37,7 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
-import com.github.olivergondza.dumpling.groovy.GroovyInterpretterConfig;
+import com.github.olivergondza.dumpling.groovy.InterpretterConfig;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 
 /**
@@ -49,7 +49,7 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
  */
 public class GroovyshCommand implements CliCommand {
 
-    private static final GroovyInterpretterConfig CONFIG = new GroovyInterpretterConfig();
+    private static final InterpretterConfig CONFIG = new InterpretterConfig();
 
     @Option(name = "-i", aliases = {"--in"}, usage = "Input for process runtime")
     private ProcessRuntime<?, ?, ?> runtime;

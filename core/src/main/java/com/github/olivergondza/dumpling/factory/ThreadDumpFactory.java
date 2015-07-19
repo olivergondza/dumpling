@@ -89,7 +89,7 @@ public class ThreadDumpFactory {
         }
     }
 
-    /*package*/ @Nonnull ThreadDumpRuntime fromStream(InputStream stream) {
+    public @Nonnull ThreadDumpRuntime fromStream(InputStream stream) {
         Set<ThreadDumpThread.Builder> threads = new LinkedHashSet<ThreadDumpThread.Builder>();
         List<String> header = new ArrayList<String>();
 

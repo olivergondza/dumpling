@@ -26,7 +26,6 @@ package com.github.olivergondza.dumpling.query;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameContains;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.File;
@@ -41,14 +40,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
-import com.github.olivergondza.dumpling.cli.AbstractCliTest;
 import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpThread;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpThreadSet;
 import com.github.olivergondza.dumpling.query.BlockingTree.Tree;
 
-public class BlockingTreeTest extends AbstractCliTest {
+public class BlockingTreeTest {
 
     private ThreadDumpRuntime runtime;
     private ThreadDumpThread a, aa, aaa, ab, b, ba;
@@ -183,64 +181,5 @@ public class BlockingTreeTest extends AbstractCliTest {
         ));
 
         assertThat(new BlockingTree().query(runtime.getThreads()).getTrees(), equalTo(expected));
-    }
-
-    @Test
-    public void cliQuery() {
-        run("blocking-tree", "--in", "threaddump", blockingTreeLog.getAbsolutePath());
-        assertThat(err.toString(), equalTo(""));
-
-        assertQueryListing(out.toString());
-    }
-
-    @Test
-    public void toStringNoTraces() {
-        assertQueryListing(new BlockingTree().query(runtime.getThreads()).toString());
-    }
-
-    private void assertQueryListing(String out) {
-        // Roots
-        assertThat(out, containsString("\"a\""));
-        assertThat(out, containsString("%n\"b\""));
-
-        // Blocked by roots
-        assertThat(out, containsString("%n\t\"aa\""));
-        assertThat(out, containsString("%n\t\"ab\""));
-        assertThat(out, containsString("%n\t\"ba\""));
-
-        // Deeply nested
-        assertThat(out, containsString("%n\t\t\"aaa\""));
-
-        assertThat(out, not(containsString("%n\"aaa\" prio=10 tid=139918763419648 nid=31957%n")));
-    }
-
-    @Test
-    public void cliQueryTraces() {
-        run("blocking-tree", "--show-stack-traces", "--in", "threaddump", blockingTreeLog.getAbsolutePath());
-        assertThat(err.toString(), equalTo(""));
-
-        final String stdout = out.toString();
-        assertLongQueryListing(stdout);
-    }
-
-    @Test
-    public void toStringTraces() {
-        assertLongQueryListing(new BlockingTree().showStackTraces().query(runtime.getThreads()).toString());
-    }
-
-    private void assertLongQueryListing(final String out) {
-        // Roots
-        assertThat(out, containsString("\"a\""));
-        assertThat(out, containsString("%n\"b\""));
-
-        // Blocked by roots
-        assertThat(out, containsString("%n\t\"aa\""));
-        assertThat(out, containsString("%n\t\"ab\""));
-        assertThat(out, containsString("%n\t\"ba\""));
-
-        // Deeply nested
-        assertThat(out, containsString("%n\t\t\"aaa\""));
-
-        assertThat(out, containsString("%n\"aaa\" prio=10 tid=139918763419648 nid=31957%n"));
     }
 }

@@ -34,14 +34,14 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
-import com.github.olivergondza.dumpling.groovy.GroovyInterpretterConfig;
+import com.github.olivergondza.dumpling.groovy.InterpretterConfig;
 import com.github.olivergondza.dumpling.model.ModelObject.Mode;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
 public class GrepCommand implements CliCommand {
 
-    private static final GroovyInterpretterConfig CONFIG = new GroovyInterpretterConfig();
+    private static final InterpretterConfig CONFIG = new InterpretterConfig();
     private static final String SCRIPT_STUB = "D.runtime.threads.grep { thread -> %s }";
 
     @Option(name = "-i", aliases = {"--in"}, usage = "Input for process runtime")

@@ -76,7 +76,7 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
         private final @Nonnull SetType involved;
         private final @Nonnegative int blocked;
 
-        private Result(SetType threads, boolean showStacktraces) {
+        /*package*/ Result(SetType threads, boolean showStacktraces) {
             super(showStacktraces);
             final Set<ThreadType> involved = new LinkedHashSet<ThreadType>();
             final Map<ThreadType, SetType> contenders = new TreeMap<ThreadType, SetType>(new Comparator<ThreadType>() {
