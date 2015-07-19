@@ -79,10 +79,13 @@ public final class TestThread {
 
     /* Client is expected to dispose the thread */
     public static Process runJmxObservableProcess(boolean auth) throws Exception {
+        String //cp = "target/test-classes:target/classes"; // Current module
+        cp = TestThread.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+
         List<String> args = new ArrayList<String>();
         args.add("java");
         args.add("-cp");
-        args.add("target/test-classes:target/classes");
+        args.add(cp);
         args.add("-Dcom.sun.management.jmxremote");
         args.add("-Dcom.sun.management.jmxremote.port=" + JMX_PORT);
         args.add("-Dcom.sun.management.jmxremote.local.only=false");
