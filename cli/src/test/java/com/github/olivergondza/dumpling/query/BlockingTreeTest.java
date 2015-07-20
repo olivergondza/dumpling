@@ -27,15 +27,30 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.io.InputStream;
+
+import org.junit.Before;
 import org.junit.Test;
 
+import com.github.olivergondza.dumpling.Util;
 import com.github.olivergondza.dumpling.cli.AbstractCliTest;
+import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
+import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
 
 public class BlockingTreeTest extends AbstractCliTest {
 
+    private String logPath;
+    private ThreadDumpRuntime runtime;
+
+    @Before
+    public void setUp() {
+        logPath = Util.asFile(Util.resource("jstack/blocking-tree.log")).getAbsolutePath();
+        runtime = new ThreadDumpFactory().fromStream(Util.resource("jstack/blocking-tree.log"));
+    }
+
     @Test
     public void cliQuery() {
-        run("blocking-tree", "--in", "threaddump", blockingTreeLog.getAbsolutePath());
+        run("blocking-tree", "--in", "threaddump", logPath);
         assertThat(err.toString(), equalTo(""));
 
         assertQueryListing(out.toString());
@@ -64,7 +79,7 @@ public class BlockingTreeTest extends AbstractCliTest {
 
     @Test
     public void cliQueryTraces() {
-        run("blocking-tree", "--show-stack-traces", "--in", "threaddump", blockingTreeLog.getAbsolutePath());
+        run("blocking-tree", "--show-stack-traces", "--in", "threaddump", logPath);
         assertThat(err.toString(), equalTo(""));
 
         final String stdout = out.toString();

@@ -35,9 +35,8 @@ import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 
 import com.github.olivergondza.dumpling.DisposeRule;
-import com.github.olivergondza.dumpling.Util;
 import com.github.olivergondza.dumpling.TestThread;
-import com.github.olivergondza.dumpling.factory.ThreadDumpFactoryTest;
+import com.github.olivergondza.dumpling.Util;
 
 /**
  * Test interoperability between groovy and groovysh command.
@@ -66,7 +65,7 @@ public class GroovyRuntimeTest extends AbstractCliTest {
 
     @Theory
     public void filter(String command) throws Exception {
-        stdin("D.load.threaddump('" + Util.resourceFile("producer-consumer.log") + "').threads.where(nameIs('owning_thread')).collect { it.name };%n");
+        stdin("D.load.threaddump('" + Util.asFile(Util.resource("jstack/producer-consumer.log")) + "').threads.where(nameIs('owning_thread')).collect { it.name };%n");
         run(command);
 
         assertThat(err.toString(), equalTo(""));
@@ -76,21 +75,21 @@ public class GroovyRuntimeTest extends AbstractCliTest {
 
     @Theory
     public void loadTreaddump(String command) throws Exception {
-        assertLoadThreaddump(command, "D.load.threaddump('%s').threads.where(nameIs('main'));%n");
+        assertLoadThreaddump(command, "D.load.threaddump('%s').threads.where(nameIs('blocked_thread'));%n");
     }
 
     @Theory
     public void loadTreaddumpDolar(String command) throws Exception {
-        assertLoadThreaddump(command, "$load.threaddump('%s').threads.where(nameIs('main'));%n");
+        assertLoadThreaddump(command, "$load.threaddump('%s').threads.where(nameIs('blocked_thread'));%n");
     }
 
     private void assertLoadThreaddump(String command, String script) throws Exception {
-        File file = Util.resourceFile(ThreadDumpFactoryTest.class, "openjdk-1.7.0_60.log");
+        File file = Util.asFile(Util.resource("jstack/producer-consumer.log"));
         stdin(String.format(script, file.getAbsolutePath()));
         run(command);
 
         assertThat(err.toString(), isEmptyString());
-        assertThat(out.toString(), containsString("\"main\""));
+        assertThat(out.toString(), containsString("\"blocked_thread\""));
         assertThat(exitValue, equalTo(0));
     }
 

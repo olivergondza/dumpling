@@ -28,7 +28,7 @@ import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import java.io.File;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -50,12 +50,11 @@ public class BlockingTreeTest {
 
     private ThreadDumpRuntime runtime;
     private ThreadDumpThread a, aa, aaa, ab, b, ba;
-    private File blockingTreeLog;
 
     @Before
     public void setUp() throws Exception {
-        blockingTreeLog = Util.resourceFile("blocking-tree.log");
-        runtime = new ThreadDumpFactory().fromFile(blockingTreeLog);
+        InputStream blockingTreeLog = Util.resource("jstack/blocking-tree.log");
+        runtime = new ThreadDumpFactory().fromStream(blockingTreeLog);
         a = singleThread("a");
         aa = singleThread("aa");
         aaa = singleThread("aaa");
@@ -149,7 +148,7 @@ public class BlockingTreeTest {
 
     @Test
     public void deadlock() throws Exception {
-        runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock.log"));
+        runtime = new ThreadDumpFactory().fromStream(Util.resource("jstack/deadlock.log"));
 
         ThreadDumpThread blocking = runtime.getThreads().where(nameContains("ajp-127.0.0.1-8009-24")).onlyThread();
         ThreadDumpThread blocked = runtime.getThreads().where(nameContains("ajp-127.0.0.1-8009-133")).onlyThread();
@@ -164,7 +163,7 @@ public class BlockingTreeTest {
 
     @Test
     public void handleThreadsBlockedOnDeadlocks() throws Exception {
-        runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock-and-friends.log"));
+        runtime = new ThreadDumpFactory().fromStream(Util.resource("jstack/deadlock-and-friends.log"));
         ThreadDumpThreadSet ts = runtime.getThreads();
 
         @SuppressWarnings("unchecked")

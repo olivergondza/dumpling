@@ -34,7 +34,7 @@ public class ProcessRuntimeOptionHandlerTest extends AbstractCliTest {
 
     @Test
     public void readStdin() throws Exception {
-        stdin(Util.resourceFile("deadlock.log"));
+        stdin(Util.resource("jstack/deadlock.log"));
         exitValue = run("deadlocks", "--in", "threaddump", "-");
 
         assertThat(exitValue, equalTo(1));
@@ -42,7 +42,7 @@ public class ProcessRuntimeOptionHandlerTest extends AbstractCliTest {
 
     @Test
     public void compatibility() throws Exception {
-        String path = Util.resourceFile("blocking-chain.log").getAbsolutePath();
+        String path = Util.asFile(Util.resource("jstack/blocking-chain.log")).getAbsolutePath();
         exitValue = run("threaddump", "--in", "threaddump", path, "-p");
         assertThat(this, succeeded());
         String expected = out.toString();

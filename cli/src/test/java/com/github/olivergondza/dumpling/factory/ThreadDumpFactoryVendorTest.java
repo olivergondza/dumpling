@@ -35,7 +35,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 import javax.annotation.Nonnull;
@@ -254,11 +253,9 @@ public class ThreadDumpFactoryVendorTest {
         @Override
         public Statement apply(final Statement base, FrameworkMethod method, Object target) {
             try {
-                process = run(Util.resourceFile(
+                process = run(Util.asFile(Util.resource(
                         ThreadDumpFactoryVendorTest.class, method.getName() + ".groovy"
-                ));
-            } catch (URISyntaxException ex) {
-                throw new AssertionError(ex);
+                )));
             } catch (Exception ex) {
                 throw new AssertionError(ex);
             }

@@ -39,7 +39,7 @@ public class TopContendersTest {
 
     @Test
     public void trivial() throws Exception {
-        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("producer-consumer.log"));
+        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromStream(Util.resource("jstack/producer-consumer.log"));
 
         TopContenders.Result<ThreadDumpThreadSet, ThreadDumpRuntime, ThreadDumpThread> contenders = new TopContenders().query(runtime.getThreads());
 
@@ -51,7 +51,7 @@ public class TopContendersTest {
 
     @Test
     public void contenders() throws Exception {
-        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "contention.log"));
+        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromStream(Util.resource("jstack/contention.log"));
 
         TopContenders.Result<ThreadDumpThreadSet, ThreadDumpRuntime, ThreadDumpThread> contenders = new TopContenders().query(runtime.getThreads());
 

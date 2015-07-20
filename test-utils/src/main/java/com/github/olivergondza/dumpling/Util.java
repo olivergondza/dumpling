@@ -24,11 +24,10 @@
 package com.github.olivergondza.dumpling;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Iterator;
 
 import javax.annotation.Nonnull;
@@ -37,18 +36,46 @@ public class Util {
 
     public static final @Nonnull String NL = System.getProperty("line.separator", "\n");
 
-    public static File resourceFile(Class<?> testClass, String resource) throws URISyntaxException {
-        URL res = testClass.getResource(testClass.getSimpleName() + "/" + resource);
+    public static InputStream resource(Class<?> testClass, String resource) {
+        InputStream res = testClass.getResourceAsStream(testClass.getSimpleName() + "/" + resource);
         if (res == null) throw new AssertionError("Resource does not exist: " + testClass.getSimpleName() + "/" + resource);
-
-        return new File(res.toURI());
+        return res;
     }
 
-    public static File resourceFile(String resource) throws URISyntaxException {
-        URL res = Util.class.getResource(resource);
+    public static InputStream resource(String resource) {
+        if (!resource.startsWith("/")) {
+            resource = "/" + resource;
+        }
+        InputStream res = Util.class.getResourceAsStream(resource);
         if (res == null) throw new AssertionError("Resource does not exist: " + resource);
+        return res;
+    }
 
-        return new File(res.toURI());
+    public static File asFile(InputStream is) {
+        File file = null;
+        try {
+            file = File.createTempFile("dumpling", "streamFile");
+            file.deleteOnExit();
+
+            FileWriter fw = new FileWriter(file);
+            try {
+                byte[] buffer = new byte[1024];
+                int length;
+                while ((length = is.read(buffer)) != -1) {
+                    fw.append(new String(buffer, 0, length));
+                }
+            } finally {
+                fw.close();
+            }
+
+            return file;
+        } catch (IOException ex) {
+            if (file != null) {
+                file.delete();
+            }
+            throw new AssertionError(ex);
+        }
+
     }
 
     public static void pause(int time) {

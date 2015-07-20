@@ -41,7 +41,7 @@ public class ThreadSetTest {
 
     @Test
     public void blockedAndBlocking() throws Exception {
-        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("blocking-chain.log"));
+        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromStream(Util.resource("jstack/blocking-chain.log"));
         ThreadDumpThreadSet root = runtime.getThreads().where(nameIs("root"));
         ThreadDumpThreadSet blocking = runtime.getThreads().where(nameContains(Pattern.compile("blocking1")));
         ThreadDumpThreadSet blocked = runtime.getThreads().where(nameContains(Pattern.compile("blocked1")));

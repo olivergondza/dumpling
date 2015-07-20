@@ -35,9 +35,12 @@ import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
 
 public class TopContendersTest extends AbstractCliTest {
+
+    private final String logPath = Util.asFile(Util.resource("jstack/contention.log")).getAbsolutePath();
+
     @Test
     public void cliQuery() throws Exception {
-        run("top-contenders", "--in", "threaddump", Util.resourceFile(getClass(), "contention.log").getAbsolutePath());
+        run("top-contenders", "--in", "threaddump", logPath);
         assertThat(err.toString(), equalTo(""));
         assertListing(out.toString());
         assertThat(exitValue, equalTo(1)); // Number of blocking threads
@@ -45,7 +48,7 @@ public class TopContendersTest extends AbstractCliTest {
 
     @Test
     public void toStringNoTraces() throws Exception {
-        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "contention.log"));
+        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromStream(Util.resource("jstack/contention.log"));
         assertListing(new TopContenders().query(runtime.getThreads()).toString());
     }
 
@@ -67,7 +70,7 @@ public class TopContendersTest extends AbstractCliTest {
 
     @Test
     public void cliQueryTraces() throws Exception {
-        run("top-contenders", "--show-stack-traces", "--in", "threaddump", Util.resourceFile(getClass(), "contention.log").getAbsolutePath());
+        run("top-contenders", "--show-stack-traces", "--in", "threaddump", logPath);
         assertThat(err.toString(), equalTo(""));
         assertLongListing(out.toString());
         assertThat(exitValue, equalTo(1)); // Number of blocking threads
@@ -75,7 +78,7 @@ public class TopContendersTest extends AbstractCliTest {
 
     @Test
     public void toStringWithTraces() throws Exception {
-        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "contention.log"));
+        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromStream(Util.resource("jstack/contention.log"));
         assertLongListing(new TopContenders().showStackTraces().query(runtime.getThreads()).toString());
     }
 

@@ -26,30 +26,28 @@ package com.github.olivergondza.dumpling.cli;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import java.io.File;
-
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
-import com.github.olivergondza.dumpling.factory.ThreadDumpFactoryTest;
 
 public class GroovyshCommandTest extends AbstractCliTest {
 
+    private final String logPath = Util.asFile(Util.resource("jstack/deadlock.log")).getAbsolutePath();
+
     @Test
-    public void test() throws Exception {
-        File file = Util.resourceFile(ThreadDumpFactoryTest.class, "openjdk-1.7.0_60.log");
-        stdin("load('" + file.getAbsolutePath() + "').threads.size();%n");
+    public void test() {
+        stdin("load('" + logPath + "').threads.size();%n");
         run("groovysh");
 
-        assertThat(out.toString(), containsString(" 35%n"));
+        assertThat(out.toString(), containsString(" 18%n"));
         assertThat(this, succeeded());
         assertThat(err.toString(), containsString("load(String) command is deprecated. Use 'D.load.threaddump(String)"));
     }
 
     @Test
-    public void useInputRuntime() throws Exception {
+    public void useInputRuntime() {
         stdin("D.runtime.threads.size()%n");
-        run("groovysh", "--in", "threaddump", Util.resourceFile("deadlock.log").getAbsolutePath());
+        run("groovysh", "--in", "threaddump", logPath);
 
         assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), containsString(" 18%n"));

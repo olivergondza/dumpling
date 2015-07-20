@@ -51,6 +51,10 @@ public abstract class AbstractCliTest {
         return exitValue = new Main().run(args, new ProcessStream(in, new PrintStream(out), new PrintStream(err)));
     }
 
+    protected void stdin(InputStream stream) {
+        in = stream;
+    }
+
     protected void stdin(String string) {
         try {
             in = new ByteArrayInputStream(String.format(string).getBytes("UTF-8"));

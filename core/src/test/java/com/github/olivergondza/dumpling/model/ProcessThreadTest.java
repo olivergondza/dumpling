@@ -26,9 +26,9 @@ package com.github.olivergondza.dumpling.model;
 import static com.github.olivergondza.dumpling.model.ProcessThread.acquiredLock;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static com.github.olivergondza.dumpling.model.ProcessThread.waitingToLock;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.fail;
 
@@ -45,13 +45,13 @@ import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpThread;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpThreadSet;
 
-public class ProcessTheadTest {
+public class ProcessThreadTest {
 
     private final ThreadDumpFactory factory = new ThreadDumpFactory();
 
     @Test
     public void printLocksOnCorrectPosionInStackTrace() throws Exception {
-        String dump = factory.fromFile(Util.resourceFile("producer-consumer.log")).getThreads().toString();
+        String dump = factory.fromStream(Util.resource("jstack/producer-consumer.log")).getThreads().toString();
 
         assertThat(dump, containsString(Util.formatTrace(
                 "at hudson.model.Queue.getItem(Queue.java:719)",
@@ -72,12 +72,12 @@ public class ProcessTheadTest {
 
     @Test
     public void differentWaitingVerbs() throws Exception {
-        ThreadDumpRuntime runtime = factory.fromFile(Util.resourceFile("deadlock.log"));
+        ThreadDumpRuntime runtime = factory.fromStream(Util.resource("jstack/deadlock.log"));
         assertThat(runtime.getThreads().toString(), containsString(
                 "- waiting to lock <0x404325338> (a hudson.model.Hudson)"
         ));
 
-        runtime = factory.fromFile(Util.resourceFile(ThreadDumpFactoryTest.class, "oraclejdk-1.7.0_51.log"));
+        runtime = factory.fromStream(Util.resource(ThreadDumpFactoryTest.class, "oraclejdk-1.7.0_51.log"));
         assertThat(runtime.getThreads().where(nameIs("MSC service thread 1-2")).toString(), containsString(
                 "- parking to wait for <0x7007d87c8> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)"
         ));
@@ -85,7 +85,7 @@ public class ProcessTheadTest {
 
     @Test
     public void filterByLocks() throws Exception {
-        ThreadDumpThreadSet threads = factory.fromFile(Util.resourceFile("producer-consumer.log")).getThreads();
+        ThreadDumpThreadSet threads = factory.fromStream(Util.resource("jstack/producer-consumer.log")).getThreads();
         assertThat(threads.where(nameIs("blocked_thread")), equalTo(threads.where(waitingToLock("hudson.model.Queue"))));
         assertThat(threads.where(nameIs("owning_thread")), equalTo(threads.where(acquiredLock("hudson.model.Queue"))));
     }

@@ -34,9 +34,12 @@ import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
 
 public class DeadlocksTest extends AbstractCliTest {
+;
+    private final String logPath = Util.asFile(Util.resource("jstack/deadlock.log")).getAbsolutePath();
+
     @Test
     public void cliQuery() throws Exception {
-        run("deadlocks", "--in", "threaddump", Util.resourceFile("deadlock.log").getAbsolutePath());
+        run("deadlocks", "--in", "threaddump", logPath);
         assertThat(err.toString(), equalTo(""));
         assertListing(out.toString());
 
@@ -45,7 +48,7 @@ public class DeadlocksTest extends AbstractCliTest {
 
     @Test
     public void toStringNoTraces() throws Exception {
-        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock.log"));
+        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromStream(Util.resource("jstack/deadlock.log"));
         assertListing(new Deadlocks().query(runtime.getThreads()).toString());
     }
 
@@ -66,7 +69,7 @@ public class DeadlocksTest extends AbstractCliTest {
 
     @Test
     public void cliQueryTraces() throws Exception {
-        run("deadlocks", "--show-stack-traces", "--in", "threaddump", Util.resourceFile("deadlock.log").getAbsolutePath());
+        run("deadlocks", "--show-stack-traces", "--in", "threaddump", logPath);
         assertThat(err.toString(), equalTo(""));
         assertLongListing(out.toString());
 
@@ -75,7 +78,7 @@ public class DeadlocksTest extends AbstractCliTest {
 
     @Test
     public void toStringWithTraces() throws Exception {
-        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock.log"));
+        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromStream(Util.resource("jstack/deadlock.log"));
         assertLongListing(new Deadlocks().showStackTraces().query(runtime.getThreads()).toString());
     }
 

@@ -63,7 +63,7 @@ public class GroovyCommandTest extends AbstractCliTest {
 
     @Test
     public void porcelain() throws Exception {
-        final String log = Util.resourceFile("producer-consumer.log").getAbsolutePath();
+        final String log = Util.asFile(Util.resource("jstack/producer-consumer.log")).getAbsolutePath();
 
         stdin("D.runtime.threads%n");
         run("groovy", "--in", "threaddump", log);

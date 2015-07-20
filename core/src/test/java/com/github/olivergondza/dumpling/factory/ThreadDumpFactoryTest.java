@@ -37,6 +37,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -55,6 +56,7 @@ import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.collection.IsEmptyCollection;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.github.olivergondza.dumpling.Util;
 import com.github.olivergondza.dumpling.model.ModelObject.Mode;
@@ -556,7 +558,7 @@ public class ThreadDumpFactoryTest {
     @Test
     public void preserveThreadOrder() throws Exception {
 
-        ThreadDumpThreadSet threads = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "self-lock.log")).getThreads();
+        ThreadDumpThreadSet threads = new ThreadDumpFactory().fromStream(Util.resource(getClass(), "self-lock.log")).getThreads();
 
         List<String> expectedNames = Arrays.asList(
                 "Service Thread",
@@ -759,8 +761,18 @@ public class ThreadDumpFactoryTest {
         assertThat(thread.getStackTrace().getElements().size(), equalTo(3));
     }
 
+    @Test
+    public void isStreamClosed() throws Exception {
+        InputStream stream = Util.resource(getClass(), "in-object-wait.log");
+        InputStream mock = Mockito.spy(stream);
+
+        new ThreadDumpFactory().fromStream(mock);
+
+        Mockito.verify(mock).close();
+    }
+
     private ThreadDumpRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {
-        return new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), resource));
+        return new ThreadDumpFactory().fromStream(Util.resource(getClass(), resource));
     }
 
     private ThreadDumpRuntime runtime(ThreadDumpThread.Builder... builders) {

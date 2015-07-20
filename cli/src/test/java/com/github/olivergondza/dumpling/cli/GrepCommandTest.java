@@ -35,7 +35,7 @@ public class GrepCommandTest extends AbstractCliTest {
 
     @Test
     public void cli() throws Exception {
-        final String log = Util.resourceFile("producer-consumer.log").getAbsolutePath();
+        final String log = Util.asFile(Util.resource("jstack/producer-consumer.log")).getAbsolutePath();
 
         run("grep", "thread.name == 'blocked_thread'", "--in", "threaddump:" + log);
         assertThat(this, succeeded());
@@ -57,7 +57,7 @@ public class GrepCommandTest extends AbstractCliTest {
 
     @Test
     public void porcelain() throws Exception {
-        final String log = Util.resourceFile("producer-consumer.log").getAbsolutePath();
+        final String log = Util.asFile(Util.resource("jstack/producer-consumer.log")).getAbsolutePath();
 
         run("grep", "thread.status.blocked", "--in", "threaddump", log);
         assertThat(out.toString(), containsString("\"blocked_thread\" prio=10 tid=47088345200640 nid=32297"));

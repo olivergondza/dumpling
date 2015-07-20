@@ -34,7 +34,7 @@ public class ThreaddumpCommandTest extends AbstractCliTest {
 
     @Test
     public void cli() throws Exception {
-        run("threaddump", "--in", "threaddump", Util.resourceFile("deadlock.log").getAbsolutePath());
+        run("threaddump", "--in", "threaddump", Util.asFile(Util.resource("jstack/deadlock.log")).getAbsolutePath());
         assertThat(this, succeeded());
         assertThat(err.toString(), equalTo(""));
 
@@ -50,7 +50,7 @@ public class ThreaddumpCommandTest extends AbstractCliTest {
 
     @Test
     public void porcelain() throws Exception {
-        final String log = Util.resourceFile("producer-consumer.log").getAbsolutePath();
+        final String log = Util.asFile(Util.resource("jstack/producer-consumer.log")).getAbsolutePath();
 
         run("threaddump", "--in", "threaddump", log);
         assertThat(this, succeeded());

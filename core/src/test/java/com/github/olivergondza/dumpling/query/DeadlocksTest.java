@@ -122,7 +122,7 @@ public class DeadlocksTest {
 
     @Test
     public void doNotReportThreadsNotPartOfTheCycle() throws Exception {
-        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile("deadlock-and-friends.log"));
+        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromStream(Util.resource("jstack/deadlock-and-friends.log"));
         Result<ThreadDumpThreadSet, ThreadDumpRuntime, ThreadDumpThread> result = new Deadlocks().query(runtime.getThreads());
         Set<ThreadDumpThreadSet> deadlocks = result.getDeadlocks();
         assertThat("Deadlock count", deadlocks.size(), equalTo(1));
@@ -135,7 +135,7 @@ public class DeadlocksTest {
 
     @Test
     public void synchronizerDeadlock() throws Exception {
-        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromFile(Util.resourceFile(getClass(), "synchronizer_deadlock.log"));
+        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromStream(Util.resource(getClass(), "synchronizer_deadlock.log"));
         String report = new Deadlocks().query(runtime.getThreads()).toString();
         assertThat(report, containsString(Util.multiline(
                 "Deadlock #1:",

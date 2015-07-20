@@ -23,9 +23,12 @@
  */
 package com.github.olivergondza.dumpling;
 
+import static com.github.olivergondza.dumpling.Util.pause;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.Nonnull;
 
@@ -77,6 +80,22 @@ public final class TestThread {
         return thread;
     }
 
+    public static Thread setupSleepingThreadWithLock() {
+        final ReentrantLock lock = new ReentrantLock();
+        Thread thread = new Thread("sleepingThreadWithLock") {
+            @Override
+            public void run() {
+                lock.lock();
+                pause(10000);
+            }
+        };
+        thread.start();
+        while(!lock.isLocked()) {
+            pause(1000);
+        }
+        return thread;
+    }
+
     /* Client is expected to dispose the thread */
     public static Process runJmxObservableProcess(boolean auth) throws Exception {
         String //cp = "target/test-classes:target/classes"; // Current module
@@ -97,7 +116,6 @@ public final class TestThread {
             args.add("-Dcom.sun.management.jmxremote.access.file=" + getCredFile("jmxremote.access"));
         }
         args.add("com.github.olivergondza.dumpling.TestThread");
-
         final Process process = new ProcessBuilder(args).start();
 
         Util.pause(1000);
@@ -114,7 +132,7 @@ public final class TestThread {
     }
 
     private static String getCredFile(String path) throws Exception {
-        String file = Util.resourceFile(TestThread.class, path).getAbsolutePath();
+        String file = Util.asFile(Util.resource(TestThread.class, path)).getAbsolutePath();
         // Workaround http://jira.codehaus.org/browse/MRESOURCES-132
         new ProcessBuilder("chmod", "600", file).start().waitFor();
         return file;

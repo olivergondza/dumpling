@@ -24,7 +24,6 @@
 package com.github.olivergondza.dumpling.factory;
 
 import static com.github.olivergondza.dumpling.Util.only;
-import static com.github.olivergondza.dumpling.Util.pause;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -33,23 +32,24 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.util.concurrent.locks.ReentrantLock;
 
-import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 
+import com.github.olivergondza.dumpling.DisposeRule;
 import com.github.olivergondza.dumpling.Util;
+import com.github.olivergondza.dumpling.TestThread;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpThread;
 
 public class PidRuntimeFactoryTest {
 
-    private Thread t;
+    @Rule public DisposeRule disposer = new DisposeRule();
 
     @Test
     public void invokeFactory() throws Exception {
-        setupSleepingThreadWithLock();
+        disposer.register(TestThread.setupSleepingThreadWithLock());
 
         ThreadDumpRuntime pidRuntime = new PidRuntimeFactory().fromProcess(Util.currentPid());
 
@@ -82,30 +82,6 @@ public class PidRuntimeFactoryTest {
             fail("No exception thrown");
         } catch(IOException ex) {
             assertThat(ex.getMessage(), containsString("Cannot run program"));
-        }
-    }
-
-    private Thread setupSleepingThreadWithLock() {
-        final ReentrantLock lock = new ReentrantLock();
-        this.t = new Thread("sleepingThreadWithLock") {
-            @Override
-            public void run() {
-                lock.lock();
-                pause(10000);
-            }
-        };
-        this.t.start();
-        while(!lock.isLocked()) {
-            pause(1000);
-        }
-        return this.t;
-    }
-
-    @After
-    @SuppressWarnings("deprecation")
-    public void tearDown() {
-        if (t != null) {
-            t.stop();
         }
     }
 }

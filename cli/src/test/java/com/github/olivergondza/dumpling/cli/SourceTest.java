@@ -24,19 +24,30 @@
 package com.github.olivergondza.dumpling.cli;
 
 import static com.github.olivergondza.dumpling.TestThread.JMX_CONNECTION;
+import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.ByteArrayInputStream;
 
+import org.junit.Rule;
 import org.junit.Test;
 
+import com.github.olivergondza.dumpling.DisposeRule;
 import com.github.olivergondza.dumpling.Util;
+import com.github.olivergondza.dumpling.TestThread;
 import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
+import com.github.olivergondza.dumpling.model.ProcessRuntime;
+import com.github.olivergondza.dumpling.model.ProcessThread;
+import com.github.olivergondza.dumpling.model.StackTrace;
+import com.github.olivergondza.dumpling.model.ThreadStatus;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
 
 public class SourceTest extends AbstractCliTest {
+
+    @Rule public DisposeRule disposer = new DisposeRule();
+
     @Test
     public void cliNoSuchFile() {
         run("deadlocks", "--in", "threaddump", "/there_is_no_such_file");
@@ -47,7 +58,7 @@ public class SourceTest extends AbstractCliTest {
 
     @Test
     public void jmxRemoteConnectViaCli() throws Exception {
-        runRemoteSut();
+        disposer.register(TestThread.runJmxObservableProcess(false));
         stdin("runtime.threads.where(nameIs('remotely-observed-thread'))");
         run("groovy", "--in", "jmx", JMX_CONNECTION);
 
@@ -58,7 +69,7 @@ public class SourceTest extends AbstractCliTest {
 
     @Test
     public void jmxLocalConnectViaCli() {
-        runLocalSut();
+        disposer.register(TestThread.runThread());
         stdin("runtime.threads.where(nameIs('remotely-observed-thread'))");
         run("groovy", "--in", "jmx", Integer.toString(Util.currentPid()));
 
@@ -67,9 +78,34 @@ public class SourceTest extends AbstractCliTest {
         assertThreadState(reparsed);
     }
 
+    private void assertThreadState(ProcessRuntime<?, ?, ?> runtime) {
+        ProcessThread<?, ?, ?> actual = runtime.getThreads().where(nameIs("remotely-observed-thread")).onlyThread();
+        StackTrace trace = actual.getStackTrace();
+
+        assertThat(actual.getName(), equalTo("remotely-observed-thread"));
+        assertThat(actual.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
+        // TODO other attributes
+
+        // Test class and method name only as MXBean way offer filename too while thread dump way does not
+        final StackTraceElement innerFrame = trace.getElement(0);
+        assertThat(innerFrame.getClassName(), equalTo("java.lang.Object"));
+        assertThat(innerFrame.getMethodName(), equalTo("wait"));
+
+        // Do not assert line number as it changes between JDK versions
+        final StackTraceElement waitElement = trace.getElement(1);
+        assertThat(waitElement.getClassName(), equalTo("java.lang.Object"));
+        assertThat(waitElement.getMethodName(), equalTo("wait"));
+        assertThat(waitElement.getFileName(), equalTo("Object.java"));
+
+        final StackTraceElement testFrame = trace.getElement(2);
+        assertThat(testFrame.getClassName(), equalTo("com.github.olivergondza.dumpling.TestThread$1"));
+        assertThat(testFrame.getMethodName(), equalTo("run"));
+        assertThat(testFrame.getFileName(), equalTo("TestThread.java"));
+    }
+
     @Test
     public void invokeCommand() {
-        setupSleepingThreadWithLock();
+        disposer.register(TestThread.setupSleepingThreadWithLock());
 
         stdin("t = runtime.threads.where(nameIs('sleepingThreadWithLock')).onlyThread(); print \"${t.status}:${t.acquiredLocks.collect{it.className}}\"");
         run("groovy", "--in", "process", Integer.toString(Util.currentPid()));
