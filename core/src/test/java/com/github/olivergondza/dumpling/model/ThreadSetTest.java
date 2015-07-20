@@ -25,7 +25,7 @@ package com.github.olivergondza.dumpling.model;
 
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameContains;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.regex.Pattern;

@@ -77,7 +77,7 @@ public abstract class AbstractCliTest {
      * Clients are supposed to use <tt>%n</tt> instead of newline char.
      */
     protected Matcher<String> containsString(String str) {
-        return org.hamcrest.CoreMatchers.containsString(
+        return org.hamcrest.Matchers.containsString(
                 String.format(str)
         );
     }

@@ -25,7 +25,7 @@ package com.github.olivergondza.dumpling.factory;
 
 import static com.github.olivergondza.dumpling.Util.only;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertFalse;

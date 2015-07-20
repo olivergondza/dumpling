@@ -28,7 +28,7 @@ import static com.github.olivergondza.dumpling.TestThread.JMX_PASSWD;
 import static com.github.olivergondza.dumpling.TestThread.JMX_PORT;
 import static com.github.olivergondza.dumpling.TestThread.JMX_USER;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.fail;

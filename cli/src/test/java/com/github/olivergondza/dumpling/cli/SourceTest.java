@@ -25,8 +25,8 @@ package com.github.olivergondza.dumpling.cli;
 
 import static com.github.olivergondza.dumpling.TestThread.JMX_CONNECTION;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.ByteArrayInputStream;
