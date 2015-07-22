@@ -50,7 +50,6 @@ public class GroovyInterpretterConfig {
      * All class imports.
      */
     public Collection<String> getStarImports() {
-        setupDecorateMethods();
         return IMPORTS;
     }
 
@@ -74,29 +73,34 @@ public class GroovyInterpretterConfig {
         return cc;
     }
 
-    private static boolean DECORATED = false;
-    private void setupDecorateMethods() {
-        if (DECORATED) return;
+    /**
+     * Decorate Dumpling API with groovy extensions.
+     */
+    public void setupDecorateMethods() {
+        synchronized (IMPORTS) {
+            if (DECORATED) return;
 
-        GroovyShell shell = new GroovyShell(getCompilerConfiguration());
-        try {
-            shell.run(
-                    "import org.codehaus.groovy.runtime.DefaultGroovyMethods;" +
-                    "def mc = ThreadSet.metaClass;" +
-                    "mc.asImmutable << { -> delegate };" +
-                    "mc.toSet << { -> delegate };" +
-                    "mc.grep << { Object filter -> delegate.derive(DefaultGroovyMethods.grep(delegate.threadsAsSet, filter)) };" +
-                    "mc.grep << { -> delegate.derive(delegate.threadsAsSet.grep()) };" +
-                    "mc.findAll << { Closure closure -> delegate.derive(DefaultGroovyMethods.findAll((Object) delegate.threadsAsSet, closure)) };" +
-                    "mc.findAll << { -> delegate.derive(delegate.threadsAsSet.findAll()) };" +
-                    "mc.intersect << { rhs -> if (!delegate.getProcessRuntime().equals(rhs.getProcessRuntime())) throw new IllegalArgumentException('Unable to intersect ThreadSets bound to different ProcessRuntimes'); return delegate.derive(DefaultGroovyMethods.intersect(delegate.threadsAsSet, rhs.threadsAsSet)) };" +
-                    "mc.plus << { rhs -> if (!delegate.getProcessRuntime().equals(rhs.getProcessRuntime())) throw new IllegalArgumentException('Unable to merge ThreadSets bound to different ProcessRuntimes'); return delegate.derive(DefaultGroovyMethods.plus(delegate.threadsAsSet, rhs.threadsAsSet)) };",
-                    "dumpling-metaclass-setup",
-                    Arrays.asList()
-            );
-        } catch (Exception ex) {
-            throw new AssertionError("Unable to decorate object model", ex);
+            GroovyShell shell = new GroovyShell(getCompilerConfiguration());
+            try {
+                shell.run(
+                        "import org.codehaus.groovy.runtime.DefaultGroovyMethods;" +
+                        "def mc = ThreadSet.metaClass;" +
+                        "mc.asImmutable << { -> delegate };" +
+                        "mc.toSet << { -> delegate };" +
+                        "mc.grep << { Object filter -> delegate.derive(DefaultGroovyMethods.grep(delegate.threadsAsSet, filter)) };" +
+                        "mc.grep << { -> delegate.derive(delegate.threadsAsSet.grep()) };" +
+                        "mc.findAll << { Closure closure -> delegate.derive(DefaultGroovyMethods.findAll((Object) delegate.threadsAsSet, closure)) };" +
+                        "mc.findAll << { -> delegate.derive(delegate.threadsAsSet.findAll()) };" +
+                        "mc.intersect << { rhs -> if (!delegate.getProcessRuntime().equals(rhs.getProcessRuntime())) throw new IllegalArgumentException('Unable to intersect ThreadSets bound to different ProcessRuntimes'); return delegate.derive(DefaultGroovyMethods.intersect(delegate.threadsAsSet, rhs.threadsAsSet)) };" +
+                        "mc.plus << { rhs -> if (!delegate.getProcessRuntime().equals(rhs.getProcessRuntime())) throw new IllegalArgumentException('Unable to merge ThreadSets bound to different ProcessRuntimes'); return delegate.derive(DefaultGroovyMethods.plus(delegate.threadsAsSet, rhs.threadsAsSet)) };",
+                        "dumpling-metaclass-setup",
+                        Arrays.asList()
+                );
+            } catch (Exception ex) {
+                throw new AssertionError("Unable to decorate object model", ex);
+            }
+            DECORATED = true;
         }
-        DECORATED = true;
     }
+    private static boolean DECORATED = false;
 }
