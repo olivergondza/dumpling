@@ -28,8 +28,6 @@ import groovy.lang.GroovyShell;
 
 import java.util.Arrays;
 
-import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
@@ -65,18 +63,8 @@ public class GrepCommand implements CliCommand {
 
     @Override
     public int run(ProcessStream process) throws CmdLineException {
-        CONFIG.setupDecorateMethods();
-        CompilerConfiguration cc = new CompilerConfiguration();
-        ImportCustomizer imports = new ImportCustomizer();
-        for (String starImport: CONFIG.getStarImports()) {
-            imports.addStarImports(starImport);
-        }
-        for (String staticStar: CONFIG.getStaticStars()) {
-            imports.addStaticStars(staticStar);
-        }
-        cc.addCompilationCustomizers(imports);
         Binding binding = CONFIG.getDefaultBinding(process, Arrays.<String>asList(), runtime);
-        GroovyShell shell = new GroovyShell(binding, cc);
+        GroovyShell shell = new GroovyShell(binding, CONFIG.getCompilerConfiguration());
 
         String script = String.format(SCRIPT_STUB, predicate);
         ThreadSet<?, ?, ?> set = (ThreadSet<?, ?, ?>) shell.run(script, "dumpling-script", Arrays.asList());

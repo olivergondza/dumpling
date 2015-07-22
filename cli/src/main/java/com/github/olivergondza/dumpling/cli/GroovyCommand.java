@@ -37,8 +37,6 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
@@ -81,23 +79,12 @@ public class GroovyCommand implements CliCommand {
 
     @Override
     public int run(ProcessStream process) throws CmdLineException {
-        CONFIG.setupDecorateMethods();
         Binding binding = CONFIG.getDefaultBinding(process, args, runtime);
         if (runtime != null) {
             binding.setProperty("runtime", runtime); // Compatibility
         }
 
-        CompilerConfiguration cc = new CompilerConfiguration();
-        ImportCustomizer imports = new ImportCustomizer();
-        for (String starImport: CONFIG.getStarImports()) {
-            imports.addStarImports(starImport);
-        }
-        for (String staticStar: CONFIG.getStaticStars()) {
-            imports.addStaticStars(staticStar);
-        }
-        cc.addCompilationCustomizers(imports);
-
-        GroovyShell shell = new GroovyShell(binding, cc);
+        GroovyShell shell = new GroovyShell(binding, CONFIG.getCompilerConfiguration());
         Object exitVal = shell.run(getScript(process), "dumpling-script", Arrays.asList());
         if (exitVal != null) {
             if (exitVal instanceof ModelObject) {

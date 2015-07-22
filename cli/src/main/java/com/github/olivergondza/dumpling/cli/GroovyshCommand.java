@@ -75,7 +75,6 @@ public class GroovyshCommand implements CliCommand {
         // Do not use .inputrc as jline does not interpret it correctly: https://github.com/jline/jline2/issues/51
         System.setProperty("jline.inputrc", "~/.no.inputrc");
 
-        CONFIG.setupDecorateMethods();
         Groovysh groovysh = new Groovysh(this.getClass().getClassLoader(), CONFIG.getDefaultBinding(process, args, runtime), io);
 
         groovysh.getImports().addAll(getImports());

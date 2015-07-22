@@ -27,6 +27,7 @@ import groovy.lang.GroovyShell;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
@@ -38,40 +39,46 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
  */
 public class GroovyInterpretterConfig {
 
+    private static final List<String> STATIC_IMPORTS = Arrays.asList("com.github.olivergondza.dumpling.model.ProcessThread");
+    private static final List<String> IMPORTS = Arrays.asList(
+            "com.github.olivergondza.dumpling.cli",
+            "com.github.olivergondza.dumpling.factory",
+            "com.github.olivergondza.dumpling.model",
+            "com.github.olivergondza.dumpling.query"
+    );
     /**
      * All class imports.
      */
     public Collection<String> getStarImports() {
-        return Arrays.asList(
-                "com.github.olivergondza.dumpling.cli",
-                "com.github.olivergondza.dumpling.factory",
-                "com.github.olivergondza.dumpling.model",
-                "com.github.olivergondza.dumpling.query"
-        );
+        setupDecorateMethods();
+        return IMPORTS;
     }
 
     /**
      * All static imports.
      */
     public Collection<String> getStaticStars() {
-        return Arrays.asList("com.github.olivergondza.dumpling.model.ProcessThread");
+        return STATIC_IMPORTS;
     }
 
-    private static boolean DECORATED = false;
-    public void setupDecorateMethods() {
-        if (DECORATED) return;
-
+    public CompilerConfiguration getCompilerConfiguration() {
         CompilerConfiguration cc = new CompilerConfiguration();
         ImportCustomizer imports = new ImportCustomizer();
-        for (String starImport: this.getStarImports()) {
+        for (String starImport: IMPORTS) {
             imports.addStarImports(starImport);
         }
-        for (String staticStar: this.getStaticStars()) {
+        for (String staticStar: STATIC_IMPORTS) {
             imports.addStaticStars(staticStar);
         }
         cc.addCompilationCustomizers(imports);
+        return cc;
+    }
 
-        GroovyShell shell = new GroovyShell(cc);
+    private static boolean DECORATED = false;
+    private void setupDecorateMethods() {
+        if (DECORATED) return;
+
+        GroovyShell shell = new GroovyShell(getCompilerConfiguration());
         try {
             shell.run(
                     "import org.codehaus.groovy.runtime.DefaultGroovyMethods;" +
