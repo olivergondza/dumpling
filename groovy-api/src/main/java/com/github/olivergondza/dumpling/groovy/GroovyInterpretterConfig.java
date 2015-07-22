@@ -23,6 +23,7 @@
  */
 package com.github.olivergondza.dumpling.groovy;
 
+import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 
 import java.util.Arrays;
@@ -60,6 +61,9 @@ public class GroovyInterpretterConfig {
         return STATIC_IMPORTS;
     }
 
+    /**
+     * Get default compiler configuration for {@link GroovyShell}.
+     */
     public CompilerConfiguration getCompilerConfiguration() {
         CompilerConfiguration cc = new CompilerConfiguration();
         ImportCustomizer imports = new ImportCustomizer();
@@ -77,10 +81,17 @@ public class GroovyInterpretterConfig {
      * Decorate Dumpling API with groovy extensions.
      */
     public void setupDecorateMethods() {
+        setupDecorateMethods(this.getClass().getClassLoader());
+    }
+
+    /**
+     * Decorate Dumpling API with groovy extensions.
+     */
+    public void setupDecorateMethods(ClassLoader cl) {
         synchronized (IMPORTS) {
             if (DECORATED) return;
 
-            GroovyShell shell = new GroovyShell(getCompilerConfiguration());
+            GroovyShell shell = new GroovyShell(cl, new Binding(), getCompilerConfiguration());
             try {
                 shell.run(
                         "import org.codehaus.groovy.runtime.DefaultGroovyMethods;" +
@@ -97,7 +108,9 @@ public class GroovyInterpretterConfig {
                         Arrays.asList()
                 );
             } catch (Exception ex) {
-                throw new AssertionError("Unable to decorate object model", ex);
+                AssertionError err = new AssertionError("Unable to decorate object model");
+                err.initCause(ex);
+                throw err; // Java 6
             }
             DECORATED = true;
         }

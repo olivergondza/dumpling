@@ -66,6 +66,7 @@ public class GrepCommand implements CliCommand {
         Binding binding = CONFIG.getDefaultBinding(process, Arrays.<String>asList(), runtime);
         GroovyShell shell = new GroovyShell(binding, CONFIG.getCompilerConfiguration());
 
+        CONFIG.setupDecorateMethods();
         String script = String.format(SCRIPT_STUB, predicate);
         ThreadSet<?, ?, ?> set = (ThreadSet<?, ?, ?>) shell.run(script, "dumpling-script", Arrays.asList());
 

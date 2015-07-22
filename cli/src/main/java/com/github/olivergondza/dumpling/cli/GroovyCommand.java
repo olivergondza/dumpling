@@ -85,6 +85,7 @@ public class GroovyCommand implements CliCommand {
         }
 
         GroovyShell shell = new GroovyShell(binding, CONFIG.getCompilerConfiguration());
+        CONFIG.setupDecorateMethods();
         Object exitVal = shell.run(getScript(process), "dumpling-script", Arrays.asList());
         if (exitVal != null) {
             if (exitVal instanceof ModelObject) {
