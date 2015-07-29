@@ -64,12 +64,14 @@ function run_java() {
 }
 
 dir="$( cd "$( dirname "$0" )" && pwd )"
+cli="$dir/cli"
 
-if [ $(ls $dir/target/dumpling-*-shaded.jar 2> /dev/null | wc -l) != 1 ]; then
-  if [ -d $dir/src/ -a grep -q com.github.olivergondza.dumpling.cli.Main $dir/pom.xml 2> /dev/null ]; then
+if [ $(ls $cli/target/dumpling-*-shaded.jar 2> /dev/null | wc -l) != 1 ]; then
+  grep -q com.github.olivergondza.dumpling.cli.Main $cli/pom.xml 2> /dev/null
+  if [ $? == 0 ]; then
     echo "No dumpling.jar found, building it now..." >&2
-    mvn clean package -DskipTests -f "$dir/pom.xml" > /dev/null
-    jar=$(ls $dir/target/dumpling-*-shaded.jar | head -n 1)
+    mvn clean package -DskipTests -f "$cli/pom.xml" > /dev/null
+    jar=$(ls $cli/target/dumpling-*-shaded.jar | head -n 1)
   else
     jar="$dir/dumpling.jar"
     if [ ! -f $jar ]; then
@@ -77,7 +79,7 @@ if [ $(ls $dir/target/dumpling-*-shaded.jar 2> /dev/null | wc -l) != 1 ]; then
     fi
   fi
 else
-  jar=$(ls $dir/target/dumpling-*-shaded.jar | head -n 1)
+  jar=$(ls $cli/target/dumpling-*-shaded.jar | head -n 1)
 fi
 
 # Performance optimization for single runtime queries, provide DUMPLING_OPTS to override
