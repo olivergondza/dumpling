@@ -207,7 +207,7 @@ public enum ThreadStatus {
         throw new AssertionError("No matching ThreadState");
     }
 
-    public static @Nonnull ThreadStatus fromState(@Nonnull Thread.State state, @Nonnull StackTraceElement head) {
+    public static @Nonnull ThreadStatus fromState(@Nonnull Thread.State state, @CheckForNull StackTraceElement head) {
         switch (state) {
             case NEW: return NEW;
             case RUNNABLE: return RUNNABLE;
@@ -219,7 +219,8 @@ public enum ThreadStatus {
         }
     }
 
-    private static @Nonnull ThreadStatus waitingState(boolean timed, @Nonnull StackTraceElement head) {
+    private static @Nonnull ThreadStatus waitingState(boolean timed, @CheckForNull StackTraceElement head) {
+        if (head == null) return ThreadStatus.UNKNOWN;
         if ("sleep".equals(head.getMethodName()) && "java.lang.Thread".equals(head.getClassName())) return SLEEPING;
         if ("wait".equals(head.getMethodName()) && "java.lang.Object".equals(head.getClassName())) {
             return timed ? IN_OBJECT_WAIT_TIMED : IN_OBJECT_WAIT;
