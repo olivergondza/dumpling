@@ -8,3 +8,6 @@ github_username: olivergondza
 
 # Build settings
 markdown: redcarpet
+
+gems:
+  - jekyll-feed
