@@ -26,6 +26,7 @@ package com.github.olivergondza.dumpling.model;
 import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -51,12 +52,7 @@ public abstract class ProcessRuntime<
     public ProcessRuntime(@Nonnull Set<? extends ProcessThread.Builder<?>> builders) {
         this.threads = createThreads(builders);
         this.emptySet = createSet(Collections.<ThreadType>emptySet());
-
-        int buildersSize = builders.size();
-        int threadsSize = threads.size();
-        if (buildersSize != threadsSize) throw new IllegalRuntimeStateException(
-                "%d builders produced %d threads", buildersSize, threadsSize
-        );
+        checkSanity();
     }
 
     private @Nonnull SetType createThreads(@Nonnull Set<? extends ProcessThread.Builder<?>> builders) {
@@ -64,7 +60,41 @@ public abstract class ProcessRuntime<
         for (ProcessThread.Builder<?> builder: builders) {
             threads.add(createThread(builder));
         }
+
+        int buildersSize = builders.size();
+        int threadsSize = threads.size();
+        if (buildersSize != threadsSize) throw new IllegalRuntimeStateException(
+                "%d builders produced %d threads", buildersSize, threadsSize
+        );
+
         return createSet(Collections.unmodifiableSet(threads));
+    }
+
+    private void checkSanity() {
+        // At most one thread should own the monitor/synchronizer
+        HashMap<ThreadLock, ThreadType> monitors = new HashMap<ThreadLock, ThreadType>();
+        HashMap<ThreadLock, ThreadType> synchronizers = new HashMap<ThreadLock, ThreadType>();
+        for (ThreadType t: threads) {
+            for (ThreadLock lock: t.getAcquiredMonitors()) {
+                ThreadType existing = monitors.put(lock, t);
+                if (existing != null) {
+                    throw new IllegalRuntimeStateException(
+                            "Multiple threads own the same monitor '%s':%n%s%n%nAND%n%n%s%n",
+                            lock, existing, t
+                    );
+                }
+            }
+
+            for (ThreadLock lock: t.getAcquiredSynchronizers()) {
+                ThreadType existing = synchronizers.put(lock, t);
+                if (existing != null) {
+                    throw new IllegalRuntimeStateException(
+                            "Multiple threads own the same synchronizer '%s':%n%s%n%nAND%n%n%s%n",
+                            lock, existing, t
+                    );
+                }
+            }
+        }
     }
 
     protected abstract @Nonnull SetType createSet(@Nonnull Set<ThreadType> threads);

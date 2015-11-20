@@ -322,7 +322,7 @@ public class ProcessThread<
             return (BuilderType) this;
         }
 
-        public @Nonnull BuilderType setStacktrace(@Nonnull StackTraceElement[] stackTrace) {
+        public @Nonnull BuilderType setStacktrace(@Nonnull StackTraceElement... stackTrace) {
             this.stackTrace = new StackTrace(stackTrace);
             return (BuilderType) this;
         }
@@ -369,6 +369,12 @@ public class ProcessThread<
         public @Nonnull BuilderType setAcquiredMonitors(List<ThreadLock.Monitor> monitors) {
             this.acquiredMonitors = Collections.unmodifiableList(monitors);
             return (BuilderType) this;
+        }
+
+        public @Nonnull BuilderType setAcquiredMonitors(ThreadLock.Monitor... monitors) {
+            ArrayList<Monitor> data = new ArrayList<ThreadLock.Monitor>(monitors.length);
+            Collections.addAll(data, monitors);
+            return setAcquiredMonitors(data);
         }
 
         private String getHeader() {
