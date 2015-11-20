@@ -53,6 +53,11 @@ import com.github.olivergondza.dumpling.model.jvm.JvmThread.Builder;
 public class JvmRuntimeFactory {
 
     private ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+    private static String jvmId = String.format(
+            "Dumpling JVM thread dump %s (%s):",
+            System.getProperty("java.vm.name"),
+            System.getProperty("java.vm.version")
+    );
 
     public @Nonnull JvmRuntime currentRuntime() {
         Set<Thread> threads = Thread.getAllStackTraces().keySet();
@@ -88,11 +93,6 @@ public class JvmRuntimeFactory {
             state.add(builder);
         }
 
-        String jvmId = String.format(
-                "Dumpling JVM thread dump %s (%s):",
-                System.getProperty("java.vm.name"),
-                System.getProperty("java.vm.version")
-        );
         return new JvmRuntime(state, new Date(), jvmId);
     }
 
