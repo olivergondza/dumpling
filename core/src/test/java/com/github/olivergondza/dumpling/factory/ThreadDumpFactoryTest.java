@@ -26,9 +26,9 @@ package com.github.olivergondza.dumpling.factory;
 import static com.github.olivergondza.dumpling.Util.only;
 import static com.github.olivergondza.dumpling.Util.pause;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
@@ -769,6 +769,16 @@ public class ThreadDumpFactoryTest {
         new ThreadDumpFactory().fromStream(mock);
 
         Mockito.verify(mock).close();
+    }
+
+    @Test
+    public void fixupHotspotUpdatingThreadStateInNonAtomicWay() throws Exception {
+        ThreadDumpRuntime runtime = runtimeFrom("issue-46.log");
+        ThreadDumpThread thread = runtime.getThreads().where(nameIs("Jenkins-cron-thread-8")).onlyThread();
+
+        assertTrue(thread.getStatus().isRunnable());
+        assertEquals(1, thread.getAcquiredMonitors().size());
+        assertEquals(1, thread.getAcquiredSynchronizers().size());
     }
 
     private ThreadDumpRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {

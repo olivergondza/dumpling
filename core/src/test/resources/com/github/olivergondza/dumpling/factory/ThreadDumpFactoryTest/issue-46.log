@@ -1,0 +1,54 @@
+2015-04-13 14:18:38
+Full thread dump Java HotSpot(TM) 64-Bit Server VM (20.14-b01 mixed mode):
+
+"Jenkins-cron-thread-8" daemon prio=10 tid=0x00000000a5fdc800 nid=0x34e8 waiting for monitor entry [0x00002b2e589c0000]
+   java.lang.Thread.State: BLOCKED (on object monitor)
+	at hudson.model.Queue.maintain(Queue.java:1067)
+	- locked <0x0000000407008ab8> (a hudson.model.Queue)
+	at hudson.model.Queue$MaintainTask.doRun(Queue.java:2089)
+	at hudson.triggers.SafeTimerTask.run(SafeTimerTask.java:54)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:439)
+	at java.util.concurrent.FutureTask$Sync.innerRunAndReset(FutureTask.java:317)
+	at java.util.concurrent.FutureTask.runAndReset(FutureTask.java:150)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$101(ScheduledThreadPoolExecutor.java:98)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.runPeriodic(ScheduledThreadPoolExecutor.java:180)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:204)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(ThreadPoolExecutor.java:895)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:918)
+	at java.lang.Thread.run(Thread.java:662)
+
+   Locked ownable synchronizers:
+	- <0x000000040d21a940> (a java.util.concurrent.locks.ReentrantLock$NonfairSync)
+
+
+"VM Thread" prio=10 tid=0x000000005a01c800 nid=0x31c9 runnable 
+
+"GC task thread#0 (ParallelGC)" prio=10 tid=0x0000000059fb7000 nid=0x31bc runnable 
+
+"GC task thread#1 (ParallelGC)" prio=10 tid=0x0000000059fb9000 nid=0x31bd runnable 
+
+"GC task thread#2 (ParallelGC)" prio=10 tid=0x0000000059fba800 nid=0x31be runnable 
+
+"GC task thread#3 (ParallelGC)" prio=10 tid=0x0000000059fbc800 nid=0x31bf runnable 
+
+"GC task thread#4 (ParallelGC)" prio=10 tid=0x0000000059fbe800 nid=0x31c0 runnable 
+
+"GC task thread#5 (ParallelGC)" prio=10 tid=0x0000000059fc0000 nid=0x31c1 runnable 
+
+"GC task thread#6 (ParallelGC)" prio=10 tid=0x0000000059fc2000 nid=0x31c2 runnable 
+
+"GC task thread#7 (ParallelGC)" prio=10 tid=0x0000000059fc4000 nid=0x31c3 runnable 
+
+"GC task thread#8 (ParallelGC)" prio=10 tid=0x0000000059fc6000 nid=0x31c4 runnable 
+
+"GC task thread#9 (ParallelGC)" prio=10 tid=0x0000000059fc7800 nid=0x31c5 runnable 
+
+"GC task thread#10 (ParallelGC)" prio=10 tid=0x0000000059fc9800 nid=0x31c6 runnable 
+
+"GC task thread#11 (ParallelGC)" prio=10 tid=0x0000000059fcb800 nid=0x31c7 runnable 
+
+"GC task thread#12 (ParallelGC)" prio=10 tid=0x0000000059fcd000 nid=0x31c8 runnable 
+
+"VM Periodic Task Thread" prio=10 tid=0x00002b2e2c260000 nid=0x31d3 waiting on condition 
+
+JNI global references: 1329

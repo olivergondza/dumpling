@@ -131,13 +131,13 @@ public class ThreadDumpFactory {
 
         final String trace = matcher.group(4);
         if (trace != null) {
-            builder = initStacktrace(builder, trace);
+            builder = initStacktrace(builder, trace, singleThread);
         }
 
         return builder;
     }
 
-    private Builder initStacktrace(Builder builder, String trace) {
+    private Builder initStacktrace(Builder builder, String trace, String wholeThread) {
         ArrayList<StackTraceElement> traceElements = new ArrayList<StackTraceElement>();
 
         List<ThreadLock.Monitor> monitors = new ArrayList<ThreadLock.Monitor>();
@@ -229,11 +229,18 @@ public class ThreadDumpFactory {
             waitingOnLock = null;
         }
 
+        // https://github.com/olivergondza/dumpling/issues/46
+        if (status.isBlocked() && waitingToLock == null) {
+            // It appears the lock is changed from "waiting to" to "locked" while status still claims the thread is BLOCKED
+            // Adjust status to RUNNABLE
+            builder.setThreadStatus(status = ThreadStatus.RUNNABLE);
+        }
+
         if (waitingToLock != null && !status.isBlocked()) throw new IllegalRuntimeStateException(
-                "%s thread declares waitingTo lock: >>>%n%s%n<<<%n", status, trace
+                "%s thread declares waitingTo lock: >>>%n%s%n<<<%n", status, wholeThread
         );
         if (waitingOnLock != null && !status.isWaiting() && !status.isParked()) throw new IllegalRuntimeStateException(
-                "%s thread declares waitingOn lock: >>>%n%s%n<<<%n", status, trace
+                "%s thread declares waitingOn lock: >>>%n%s%n<<<%n", status, wholeThread
         );
 
         builder.setAcquiredMonitors(monitors);

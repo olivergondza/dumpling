@@ -31,7 +31,7 @@ public class ProcessRuntimeTest {
             fail();
         } catch (IllegalRuntimeStateException ex) {
             assertThat(ex.getMessage(), containsString(
-                    "Multiple threads own the same monitor (<0x2a> (a java.lang.Object)):"
+                    "Multiple threads own the same monitor '<0x2a> (a java.lang.Object)':"
             ));
         }
     }
@@ -49,7 +49,7 @@ public class ProcessRuntimeTest {
             fail();
         } catch (IllegalRuntimeStateException ex) {
             assertThat(ex.getMessage(), containsString(
-                    "Multiple threads own the same synchronizer (<0x2a> (a java.lang.Object)):"
+                    "Multiple threads own the same synchronizer '<0x2a> (a java.lang.Object)':"
             ));
         }
     }
