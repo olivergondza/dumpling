@@ -18,6 +18,9 @@
       {% endif %}
     {% endfor %}
     <li>
+      <a class="page-link" href="http://olivergondza.github.io/tags#dumpling">Blog</a>
+    </li>
+    <li>
       <a class="page-link" href="{{ site.baseurl }}/refdoc/">Reference:</a>
     </li>
     {% assign pages = site.pages | where: "category", "refdoc" | sort: "prio" | reverse %}
