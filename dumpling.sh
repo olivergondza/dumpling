@@ -25,9 +25,16 @@
 # CLI Dumpling wrapper for unix. Read more: https://olivergondza.github.io/dumpling/cli.html
 
 function download() {
-  metadata_url="https://oss.sonatype.org/content/repositories/releases/com/github/olivergondza/dumpling/maven-metadata.xml"
-  latest=$(wget --no-check-certificate $metadata_url -O - 2> /dev/null | grep \<latest\> | sed -e "s/<[^>]*>//g" -e "s/\s*//")
-  jar_url="https://oss.sonatype.org/content/repositories/releases/com/github/olivergondza/dumpling/$latest/dumpling-$latest-shaded.jar"
+  if [ "$DUMPLING_SNAPSHOTS" == "true" ]; then
+    DUMPLING_SNAPSHOTS="snapshots"
+  else
+    DUMPLING_SNAPSHOTS="releases"
+  fi
+
+  url_prefix="https://oss.sonatype.org/content/repositories/${DUMPLING_SNAPSHOTS}/com/github/olivergondza/dumpling"
+  metadata_url="${url_prefix}/maven-metadata.xml"
+  latest=$(wget --no-check-certificate $metadata_url -O - 2> /dev/null | grep \<version\> | sed -e "s/\s*<[^>]*>//g" | tail -n 1)
+  jar_url="${url_prefix}/$latest/dumpling-$latest-shaded.jar"
   echo "Downloading Dumpling $latest now..." >&2
   wget --no-check-certificate -nv -O $1 $jar_url
   if [ $? != 0 ]; then
