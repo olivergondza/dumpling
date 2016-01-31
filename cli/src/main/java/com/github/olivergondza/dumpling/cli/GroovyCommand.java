@@ -26,6 +26,7 @@ package com.github.olivergondza.dumpling.cli;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -58,8 +59,11 @@ public class GroovyCommand implements CliCommand {
     @Option(name = "-i", aliases = {"--in"}, usage = "Input for process runtime")
     private ProcessRuntime<?, ?, ?> runtime;
 
-    @Option(name = "-s", aliases = {"--script"}, usage = "Script to execute")
-    private File script;
+    @Option(name = "-s", aliases = {"--script"}, usage = "Script file to execute")
+    private String script;
+
+    @Option(name = "-e", aliases = {"--expression"}, usage = "Script expression to execute")
+    private String expression;
 
     @Option(name = "-p", aliases = {"--porcelain"}, usage = "Show in a format designed for machine consumption")
     private boolean porcelain = false;
@@ -107,7 +111,10 @@ public class GroovyCommand implements CliCommand {
 
     private InputStreamReader getScript(ProcessStream process) {
         InputStream scriptStream = process.in();
-        if (script != null) {
+
+        if (expression != null && !expression.isEmpty()) {
+            scriptStream = new ByteArrayInputStream(expression.getBytes());
+        } else if (script != null && !"-".equals(script)) {
             try {
                 scriptStream = new FileInputStream(script);
             } catch (FileNotFoundException ex) {
