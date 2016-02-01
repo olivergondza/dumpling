@@ -34,6 +34,7 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.OptionDef;
+import org.kohsuke.args4j.OptionHandlerRegistry;
 import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Parameters;
 import org.kohsuke.args4j.spi.Setter;
@@ -57,10 +58,13 @@ public class Main {
         System.exit(exitCode);
     }
 
-    /*package*/ int run(@Nonnull String[] args, @Nonnull ProcessStream system) {
-        CmdLineParser.registerHandler(CliCommand.class, CliCommandOptionHandler.class);
-        CmdLineParser.registerHandler(ProcessRuntime.class, ProcessRuntimeOptionHandler.class);
-        ProcessRuntimeOptionHandler.system = system;
+    /*package*/ int run(@Nonnull String[] args, @Nonnull final ProcessStream system) {
+        OptionHandlerRegistry.getRegistry().registerHandler(CliCommand.class, CliCommandOptionHandler.class);
+        OptionHandlerRegistry.getRegistry().registerHandler(ProcessRuntime.class, new OptionHandlerRegistry.OptionHandlerFactory() {
+            public OptionHandler<?> getHandler(CmdLineParser parser, OptionDef o, Setter setter) {
+                return new ProcessRuntimeOptionHandler(parser, o, setter, system);
+            }
+        });
 
         CmdLineParser parser = new CmdLineParser(this);
 
@@ -89,11 +93,11 @@ public class Main {
 
     public static class ProcessRuntimeOptionHandler extends OptionHandler<ProcessRuntime<?, ?, ?>> {
 
-        // TODO: this is awful but I found no better way
-        private static ProcessStream system;
+        private final @Nonnull ProcessStream streams;
 
-        public ProcessRuntimeOptionHandler(CmdLineParser parser, OptionDef option, Setter<? super ProcessRuntime<?, ?, ?>> setter) {
+        public ProcessRuntimeOptionHandler(CmdLineParser parser, OptionDef option, Setter<? super ProcessRuntime<?, ?, ?>> setter, ProcessStream streams) {
             super(parser, option, setter);
+            this.streams = streams;
         }
 
         @Override
@@ -116,7 +120,7 @@ public class Main {
             CliRuntimeFactory<?> factory = getFactory(scheme);
             if (factory == null) throw new CmdLineException(owner, "Unknown runtime source kind: " + scheme);
 
-            ProcessRuntime<?, ?, ?> runtime = factory.createRuntime(locator, system);
+            ProcessRuntime<?, ?, ?> runtime = factory.createRuntime(locator, streams);
             if (runtime == null) throw new AssertionError(factory.getClass() + " failed to create runtime");
 
             setter.addValue(runtime);
