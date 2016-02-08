@@ -781,6 +781,15 @@ public class ThreadDumpFactoryTest {
         assertEquals(1, thread.getAcquiredSynchronizers().size());
     }
 
+    @Test
+    public void hexadecimalThreadIdsMightNotHavePrefix() throws Exception {
+        ThreadDumpRuntime runtime = runtimeFrom("issue-59.log");
+        ThreadDumpThread thread = runtime.getThreads().where(nameIs("process reaper")).onlyThread();
+
+        assertEquals(140685595015168L, (long) thread.getTid());
+        assertEquals(5199638528L, (long) thread.getNid());
+    }
+
     private ThreadDumpRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {
         return new ThreadDumpFactory().fromStream(Util.resource(getClass(), resource));
     }

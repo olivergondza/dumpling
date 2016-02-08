@@ -306,9 +306,13 @@ public class ThreadDumpFactory {
     }
 
     private long parseLong(String value) {
-        return value.startsWith("0x")
-                ? Long.parseLong(value.substring(2), 16)
-                : Long.parseLong(value, 10)
-        ;
+        if (value.startsWith("0x")) return Long.parseLong(value.substring(2), 16);
+
+        // Dumpling output
+        if (!value.matches(".*[abcdef].*")) return Long.parseLong(value, 10);
+
+        // Oracle JDK on OS X do not use prefix for tid
+        // https://github.com/olivergondza/dumpling/issues/59
+        return Long.parseLong(value, 16);
     }
 }
