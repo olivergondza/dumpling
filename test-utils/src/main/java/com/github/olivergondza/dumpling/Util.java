@@ -123,6 +123,10 @@ public class Util {
         try {
             while (os.read(buffer) != -1) {
                 out.append(new String(buffer));
+                if (out.length() > 1014 * 1024 * 5) {
+                    out.append("**** TRUNCATED ****");
+                    break;
+                }
             }
         } catch (IOException ex) {
             throw new Error(ex);
