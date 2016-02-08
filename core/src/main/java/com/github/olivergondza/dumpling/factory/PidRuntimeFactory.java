@@ -23,6 +23,7 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
+import java.io.File;
 import java.io.IOException;
 
 import javax.annotation.Nonnull;
@@ -84,6 +85,12 @@ public class PidRuntimeFactory {
     }
 
     private String jstackBinary() {
-        return javaHome + "/../bin/jstack";
+        File jstack = new File(javaHome + "/bin/jstack");
+        if (!jstack.exists()) {
+            // This is the more common variant when java.home points to the jre/ (or other) subdirectory
+            jstack = new File(javaHome + "/../bin/jstack");
+        }
+
+        return jstack.getAbsolutePath();
     }
 }
