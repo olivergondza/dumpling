@@ -24,6 +24,8 @@
 package com.github.olivergondza.dumpling.model;
 
 import java.lang.Thread.State;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.locks.LockSupport;
 
 import javax.annotation.CheckForNull;
@@ -225,10 +227,16 @@ public enum ThreadStatus {
         if ("wait".equals(head.getMethodName()) && "java.lang.Object".equals(head.getClassName())) {
             return timed ? IN_OBJECT_WAIT_TIMED : IN_OBJECT_WAIT;
         }
-        if ("park".equals(head.getMethodName()) && "sun.misc.Unsafe".equals(head.getClassName())) {
+
+        if ("park".equals(head.getMethodName()) && UNSAFE.contains(head.getClassName())) {
             return timed ? PARKED_TIMED : PARKED;
         }
 
         throw new AssertionError("Unable to infer ThreadStatus from WAITING state in " + head);
     }
+
+    public static final List<String> UNSAFE = Arrays.asList(
+            "sun.misc.Unsafe", // hotspot JDK 8 and older
+            "jdk.internal.misc.Unsafe" // hotspot JDK 9
+    );
 }

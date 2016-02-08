@@ -176,8 +176,8 @@ public class ThreadDumpFactoryVendorTest {
         assertThat(main.getWaitingToLock(), nullValue());
         assertThat(main.getWaitingOnLock(), nullValue());
         assertThat(
-                main.getStackTrace().getElement(0),
-                equalTo(StackTrace.nativeElement("sun.misc.Unsafe", "park"))
+                main.getStackTrace().getElement(0).getMethodName(),
+                equalTo("park")
         );
     }
 
@@ -189,8 +189,8 @@ public class ThreadDumpFactoryVendorTest {
         assertThat(main.getWaitingToLock(), nullValue());
         assertThat(main.getWaitingOnLock(), nullValue());
         assertThat(
-                main.getStackTrace().getElement(0),
-                equalTo(StackTrace.nativeElement("sun.misc.Unsafe", "park"))
+                main.getStackTrace().getElement(0).getMethodName(),
+                equalTo("park")
         );
     }
 
@@ -201,8 +201,8 @@ public class ThreadDumpFactoryVendorTest {
         assertThat(main.getAcquiredLocks(), Matchers.<ThreadLock>empty());
         assertThat(main.getWaitingOnLock().getClassName(), equalTo("java.lang.Object"));
         assertThat(
-                main.getStackTrace().getElement(0),
-                equalTo(StackTrace.nativeElement("sun.misc.Unsafe", "park"))
+                main.getStackTrace().getElement(0).getMethodName(),
+                equalTo("park")
         );
     }
 
@@ -213,8 +213,8 @@ public class ThreadDumpFactoryVendorTest {
         assertThat(main.getAcquiredLocks(), Matchers.<ThreadLock>empty());
         assertThat(main.getWaitingOnLock().getClassName(), equalTo("java.lang.Object"));
         assertThat(
-                main.getStackTrace().getElement(0),
-                equalTo(StackTrace.nativeElement("sun.misc.Unsafe", "park"))
+                main.getStackTrace().getElement(0).getMethodName(),
+                equalTo("park")
         );
     }
 
