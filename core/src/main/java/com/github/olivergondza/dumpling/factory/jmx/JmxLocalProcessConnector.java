@@ -25,7 +25,9 @@ package com.github.olivergondza.dumpling.factory.jmx;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.util.Properties;
 
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnectorFactory;
@@ -37,6 +39,7 @@ import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
+import sun.tools.attach.HotSpotVirtualMachine;
 
 /**
  * Wrapper around tools.jar classes to be loaded using isolated classloader.
@@ -80,26 +83,65 @@ import com.sun.tools.attach.VirtualMachine;
         String address = vm.getAgentProperties().getProperty(CONNECTOR_ADDRESS);
         if (address != null) return address;
 
-        String agent = vm.getSystemProperties().getProperty("java.home")
+        Properties systemProperties = vm.getSystemProperties();
+
+        // If the JVM is not able to listen to JMX connections, it is necessary to have the agent loaded.
+        // There does not seem to be a portable way to do so. This mostly works for hotspot:
+        // Java 6 to 8: The management-agent.jar needs to be loaded
+        // Java 7+, jcmd can be used to load the agent
+        // Java 9+, management-agent.jar is deleted
+        // https://bugs.openjdk.java.net/browse/JDK-8043939
+
+        // jcmd approach first
+        if (vm instanceof HotSpotVirtualMachine) {
+            HotSpotVirtualMachine hsvm = (HotSpotVirtualMachine) vm;
+            try {
+                InputStream in = hsvm.executeJCmd("ManagementAgent.start_local");
+                in.close(); // Is there anything interesting?
+            } catch (IOException ex) {
+                throw failed("Unable to load agent", ex);
+            }
+
+            address = vm.getAgentProperties().getProperty(CONNECTOR_ADDRESS);
+            if (address != null) return address;
+
+            throw failed("Unable to get connection address despite agent loaded successfully");
+        }
+
+        String agentPath = systemProperties.getProperty("java.home")
                 + File.separator + "lib" + File.separator
                 + "management-agent.jar"
         ;
+        if (new File(agentPath).exists()) {
+            try {
+                vm.loadAgent(agentPath);
+            } catch (AgentLoadException ex) {
+                throw failed("Unable to load agent", ex);
+            } catch (AgentInitializationException ex) {
+                throw failed("Unable to initialize agent", ex);
+            }
 
-        try {
-            vm.loadAgent(agent);
-        } catch (AgentLoadException ex) {
-            throw failed("Unable to load agent", ex);
-        } catch (AgentInitializationException ex) {
-            throw failed("Unable to initialize agent", ex);
+            address = vm.getAgentProperties().getProperty(CONNECTOR_ADDRESS);
+            if (address != null) return address;
+
+            throw failed("Unable to get connection address despite agent loaded successfully");
         }
 
-        address = vm.getAgentProperties().getProperty(CONNECTOR_ADDRESS);
-        if (address != null) return address;
+        String message = String.format(
+                "Dumpling is talking to unsupported JVM. Report this as a bug together with following details: vendor: %s; version: %s; os: %s",
+                systemProperties.getProperty("java.vm.vendor"),
+                systemProperties.getProperty("java.vm.version"),
+                systemProperties.getProperty("os.version")
+        );
 
-        throw new AssertionError("Agent not loaded");
+        throw failed(message);
     }
 
     private static FailedToInitializeJmxConnection failed(String message, Exception ex) {
         return new JmxRuntimeFactory.FailedToInitializeJmxConnection(message + ": " + ex.getMessage(), ex);
+    }
+
+    private static FailedToInitializeJmxConnection failed(String message) {
+        return new JmxRuntimeFactory.FailedToInitializeJmxConnection(message);
     }
 }

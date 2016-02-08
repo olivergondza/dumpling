@@ -290,5 +290,9 @@ public final class JmxRuntimeFactory {
         public FailedToInitializeJmxConnection(String string, Throwable ex) {
             super(string, ex);
         }
+
+        public FailedToInitializeJmxConnection(String message) {
+            super(message);
+        }
     }
 }
