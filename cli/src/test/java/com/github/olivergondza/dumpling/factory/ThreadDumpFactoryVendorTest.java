@@ -339,14 +339,14 @@ public class ThreadDumpFactoryVendorTest {
         }
 
         private int getPid(Process process) {
-            if (!"java.lang.UNIXProcess".equals(process.getClass().getCanonicalName())) {
-                throw new AssertionError("Only unix processes are supported");
-            }
-
             try {
-                Field pidField = Class.forName("java.lang.UNIXProcess").getDeclaredField("pid");
+                Field pidField = process.getClass().getDeclaredField("pid");
                 pidField.setAccessible(true);
-                return (Integer) pidField.get(process);
+                int pid = (Integer) pidField.get(process);
+                if (pid < 1) {
+                    throw new Error("Unsupported process implementation" + process.getClass());
+                }
+                return pid;
             } catch (Exception e) {
                 throw new AssertionError(e);
             }
