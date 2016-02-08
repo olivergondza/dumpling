@@ -299,18 +299,24 @@ public class ThreadDumpFactoryVendorTest {
 
                     return runtime = waitForInitialized(process);
                 } catch (IOException e) {
-                    int exit = process.exitValue();
-                    throw reportProblem(exit, e);
+                    throw reportProblem(getExitIfDone(process), e);
                 } catch (InterruptedException e) {
-                    int exit = process.exitValue();
-                    throw reportProblem(exit, e);
+                    throw reportProblem(getExitIfDone(process), e);
                 }
+            }
+        }
+
+        private int getExitIfDone(Process p) {
+            try {
+                return process.exitValue();
+            } catch (IllegalThreadStateException _) {
+                return -1;
             }
         }
 
         private Error reportProblem(int exit, Exception cause) {
             AssertionError error = new AssertionError(
-                    "Process under test terminated prematurelly. Exit code: "
+                    "Process under test probably terminated prematurelly. Exit code: "
                     + exit + "\nSTDOUT: " + streamToString(process.getInputStream())
                     + "\nSTDERR: " + streamToString(process.getErrorStream())
             );
