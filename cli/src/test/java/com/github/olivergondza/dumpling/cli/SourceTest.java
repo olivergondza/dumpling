@@ -52,8 +52,8 @@ public class SourceTest extends AbstractCliTest {
     public void cliNoSuchFile() {
         run("deadlocks", "--in", "threaddump", "/there_is_no_such_file");
         assertThat(exitValue, equalTo(-1));
-        assertThat(err.toString(), containsString("/there_is_no_such_file (No such file or directory)"));
         assertThat(out.toString(), equalTo(""));
+        // Error message is platform specific
     }
 
     @Test
@@ -119,7 +119,7 @@ public class SourceTest extends AbstractCliTest {
     public void illegalPid() {
         run("groovy", "--in", "process", "not_a_pid");
         assertThat(out.toString(), equalTo(""));
-        assertThat(err.toString(), equalTo("Unable to parse 'not_a_pid' as process ID\n"));
+        assertThat(err.toString(), containsString("Unable to parse 'not_a_pid' as process ID"));
         assertThat(exitValue, not(equalTo(0)));
     }
 }

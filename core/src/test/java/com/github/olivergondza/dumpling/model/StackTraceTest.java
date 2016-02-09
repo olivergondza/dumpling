@@ -62,6 +62,6 @@ public class StackTraceTest {
                 StackTrace.element("Yyy", "xxx", "Yyy.java")
        );
 
-        assertThat(st.toString(), equalTo("\n\tat Yyy.xxx(Yyy.java:42)\n\tat Yyy.xxx(Yyy.java)\n"));
+        assertThat(st.toString(), equalTo(String.format("%n\tat Yyy.xxx(Yyy.java:42)%n\tat Yyy.xxx(Yyy.java)%n")));
     }
 }
