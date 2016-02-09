@@ -25,7 +25,7 @@ package com.github.olivergondza.dumpling.factory;
 
 import static com.github.olivergondza.dumpling.Util.only;
 import static com.github.olivergondza.dumpling.Util.pause;
-import static com.github.olivergondza.dumpling.Util.streamToString;
+import static com.github.olivergondza.dumpling.Util.currentProcessOut;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -34,7 +34,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 import javax.annotation.Nonnull;
@@ -249,13 +248,19 @@ public class ThreadDumpFactoryVendorTest {
 
         private Process process;
         private ThreadDumpRuntime runtime = null;
+        private File pidFile = null;
 
         @Override
         public Statement apply(final Statement base, FrameworkMethod method, Object target) {
             try {
-                process = run(Util.asFile(Util.resource(
+                String init = Util.asString(Util.resource(
+                        ThreadDumpFactoryVendorTest.class, "_init.groovy"
+                ));
+                String script = Util.asString(Util.resource(
                         ThreadDumpFactoryVendorTest.class, method.getName() + ".groovy"
-                )));
+                ));
+
+                process = run(init + script);
             } catch (Exception ex) {
                 throw new AssertionError(ex);
             }
@@ -272,14 +277,18 @@ public class ThreadDumpFactoryVendorTest {
             };
         }
 
-        private Process run(File resourceFile) throws IOException {
+        private Process run(String script) throws IOException {
+            pidFile = File.createTempFile("dumpling", getClass().getName());
+            //pidFile.deleteOnExit();
             ProcessBuilder pb = new ProcessBuilder(
                     System.getProperty("java.home") + "/bin/java",
                     "-cp", System.getProperty("surefire.real.class.path"), // Inherit from surefire process
                     "com.github.olivergondza.dumpling.cli.Main",
                     "groovy",
-                    "--script", resourceFile.getAbsolutePath()
+                    "--expression", script,
+                    pidFile.getAbsolutePath()
             );
+            pb.toString();
             return pb.start();
         }
 
@@ -297,16 +306,16 @@ public class ThreadDumpFactoryVendorTest {
                 // Still running as expected
                 try {
 
-                    return runtime = waitForInitialized(process);
+                    return runtime = waitForInitialized();
                 } catch (IOException e) {
-                    throw reportProblem(getExitIfDone(process), e);
+                    throw reportProblem(getExitIfDone(), e);
                 } catch (InterruptedException e) {
-                    throw reportProblem(getExitIfDone(process), e);
+                    throw reportProblem(getExitIfDone(), e);
                 }
             }
         }
 
-        private int getExitIfDone(Process p) {
+        private int getExitIfDone() {
             try {
                 return process.exitValue();
             } catch (IllegalThreadStateException _) {
@@ -316,16 +325,16 @@ public class ThreadDumpFactoryVendorTest {
 
         private Error reportProblem(int exit, Exception cause) {
             AssertionError error = new AssertionError(
-                    "Process under test probably terminated prematurelly. Exit code: "
-                    + exit + "\nSTDOUT: " + streamToString(process.getInputStream())
-                    + "\nSTDERR: " + streamToString(process.getErrorStream())
+                    "Process under test probably terminated prematurely. Exit code: "
+                    + exit + "\nSTDOUT: " + currentProcessOut(process.getInputStream())
+                    + "\nSTDERR: " + currentProcessOut(process.getErrorStream())
             );
             error.initCause(cause);
             return error;
         }
 
-        private ThreadDumpRuntime waitForInitialized(Process process) throws IOException, InterruptedException {
-            int pid = getPid(process);
+        private ThreadDumpRuntime waitForInitialized() throws IOException, InterruptedException {
+            int pid = getPid();
             ThreadDumpRuntime runtime = prf.fromProcess(pid);
             for (int i = 0; i < 10; i++) {
                 pause(500);
@@ -344,18 +353,26 @@ public class ThreadDumpFactoryVendorTest {
             throw new AssertionError("Process under test not initialized in time: " + runtime.getThreads());
         }
 
-        private int getPid(Process process) {
-            try {
-                Field pidField = process.getClass().getDeclaredField("pid");
-                pidField.setAccessible(true);
-                int pid = (Integer) pidField.get(process);
-                if (pid < 1) {
-                    throw new Error("Unsupported process implementation" + process.getClass());
+        private int getPid() throws IOException {
+            if (pidFile == null) throw new IOException("pidfile not initialized");
+            IOException ex = null;
+            // Wait for pidfile to be written
+            for (int i = 0; i < 10; i++) {
+                if (pidFile.exists()) {
+                    try {
+                        return Integer.parseInt(Util.fileContents(pidFile).trim());
+                    } catch (NumberFormatException e) {
+                        ex = new IOException("unable to read PID from " + pidFile, e);
+                    }
                 }
-                return pid;
-            } catch (Exception e) {
-                throw new AssertionError(e);
+
+                pause(500);
             }
+
+            throw ex == null
+                    ? new IOException("SUT process not running. pidfile: " + pidFile)
+                    : ex
+            ;
         }
-    };
+    }
 }

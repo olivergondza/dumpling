@@ -122,7 +122,7 @@ public final class TestThread {
 
         try {
             int exit = process.exitValue();
-            String err = Util.streamToString(process.getErrorStream());
+            String err = Util.currentProcessOut(process.getErrorStream());
             throw new AssertionError(String.format(
                     "Test process terminated prematurelly: %d%nSTDERR:%n%s", exit, err
             ));

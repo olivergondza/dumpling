@@ -24,11 +24,14 @@
 package com.github.olivergondza.dumpling;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
 
 import javax.annotation.Nonnull;
 
@@ -75,7 +78,20 @@ public class Util {
             }
             throw new AssertionError(ex);
         }
+    }
 
+    public static String asString(InputStream is) {
+        StringBuilder sb = new StringBuilder();
+        try {
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = is.read(buffer)) != -1) {
+                sb.append(new String(buffer, 0, length));
+            }
+            return sb.toString();
+        } catch (IOException ex) {
+            throw new AssertionError(ex);
+        }
     }
 
     public static void pause(int time) {
@@ -117,21 +133,31 @@ public class Util {
         return elem;
     }
 
-    public static String streamToString(InputStream os) {
+    public static String currentProcessOut(InputStream os) {
         final StringBuilder out = new StringBuilder();
-        byte[] buffer = new byte[1024];
         try {
-            while (os.read(buffer) != -1) {
+            int length = os.available();
+            byte[] buffer = new byte[length];
+            int read = os.read(buffer, 0, length);
+            if (read != -1) { // No out
                 out.append(new String(buffer));
-                if (out.length() > 1014 * 1024 * 5) {
-                    out.append("**** TRUNCATED ****");
-                    break;
-                }
             }
         } catch (IOException ex) {
             throw new Error(ex);
         }
 
         return out.toString();
+    }
+
+    public static String fileContents(File file) throws IOException {
+        Scanner scanner = null;
+        try {
+            scanner = new Scanner(file);
+            return scanner.useDelimiter("\\A").next();
+        } catch (NoSuchElementException ex) {
+            return ""; // empty
+        } finally {
+            if (scanner != null) scanner.close();
+        }
     }
 }
