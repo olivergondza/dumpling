@@ -38,6 +38,7 @@ import java.util.ArrayList;
 
 import javax.annotation.Nonnull;
 
+import com.github.olivergondza.dumpling.model.ModelObject;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -270,6 +271,11 @@ public class ThreadDumpFactoryVendorTest {
                 public void evaluate() throws Throwable {
                     try {
                         base.evaluate();
+                    } catch (AssertionError ex) {
+                        if (runtime != null) {
+                            System.err.println("Parsed runtime:");
+                            runtime.toString(System.err, ModelObject.Mode.MACHINE);
+                        }
                     } finally {
                         if (process != null) process.destroy();
                     }
