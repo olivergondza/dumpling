@@ -50,6 +50,7 @@ import sun.tools.attach.HotSpotVirtualMachine;
  *
  * @author ogondza
  */
+@SuppressWarnings("unused") // Invoked via reflection
 /*package*/ final class JmxLocalProcessConnector {
     private static final String CONNECTOR_ADDRESS = "com.sun.management.jmxremote.localConnectorAddress";
 
@@ -105,7 +106,7 @@ import sun.tools.attach.HotSpotVirtualMachine;
             address = vm.getAgentProperties().getProperty(CONNECTOR_ADDRESS);
             if (address != null) return address;
 
-            throw failed("Unable to get connection address despite agent loaded successfully");
+            throw failedUnsupported("Unable to get connection address despite `jcmd ManagementAgent.start_local` succeeded", systemProperties);
         }
 
         String agentPath = systemProperties.getProperty("java.home")
@@ -124,24 +125,23 @@ import sun.tools.attach.HotSpotVirtualMachine;
             address = vm.getAgentProperties().getProperty(CONNECTOR_ADDRESS);
             if (address != null) return address;
 
-            throw failed("Unable to get connection address despite agent loaded successfully");
+            throw failedUnsupported("Unable to get connection address despite management-agent.jar loaded successfully", systemProperties);
         }
 
-        String message = String.format(
-                "Dumpling is talking to unsupported JVM. Report this as a bug together with following details: vendor: %s; version: %s; os: %s",
-                systemProperties.getProperty("java.vm.vendor"),
-                systemProperties.getProperty("java.vm.version"),
-                systemProperties.getProperty("os.version")
-        );
-
-        throw failed(message);
+        throw failedUnsupported("Unable to connect to JVM", systemProperties);
     }
 
     private static FailedToInitializeJmxConnection failed(String message, Exception ex) {
         return new JmxRuntimeFactory.FailedToInitializeJmxConnection(message + ": " + ex.getMessage(), ex);
     }
 
-    private static FailedToInitializeJmxConnection failed(String message) {
-        return new JmxRuntimeFactory.FailedToInitializeJmxConnection(message);
+    private static FailedToInitializeJmxConnection failedUnsupported(String message, Properties systemProperties) {
+        String unsupported = String.format(
+                "%nDumpling is talking to unsupported JVM. Report this as a bug together with following details: vendor: %s; version: %s; os: %s",
+                systemProperties.getProperty("java.vm.vendor"),
+                systemProperties.getProperty("java.vm.version"),
+                systemProperties.getProperty("os.version")
+        );
+        return new JmxRuntimeFactory.FailedToInitializeJmxConnection(message + unsupported);
     }
 }
