@@ -86,10 +86,12 @@ public class PidRuntimeFactory {
     }
 
     private String jstackBinary() {
-        File jstack = new File(javaHome + "/bin/jstack");
+        String suffix = ";".equals(File.pathSeparator) ? ".exe" : "";
+
+        File jstack = new File(javaHome + "/bin/jstack" + suffix);
         if (!jstack.exists()) {
             // This is the more common variant when java.home points to the jre/ (or other) subdirectory
-            jstack = new File(javaHome + "/../bin/jstack");
+            jstack = new File(javaHome + "/../bin/jstack" + suffix);
         }
 
         if (!jstack.exists()) {
