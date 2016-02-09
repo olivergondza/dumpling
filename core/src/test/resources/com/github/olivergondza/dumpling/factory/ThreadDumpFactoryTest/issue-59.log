@@ -1,0 +1,10 @@
+2016-02-08 09:41:08
+Full thread dump Java HotSpot(TM) 64-Bit Server VM (20.65-b04-462 mixed mode):
+
+"process reaper" daemon prio=5 tid=7ff3eaea7800 nid=0x135ec3000 runnable [135ec2000]
+   java.lang.Thread.State: RUNNABLE
+        at java.lang.UNIXProcess.waitForProcessExit(Native Method)
+        at java.lang.UNIXProcess.access$900(UNIXProcess.java:17)
+        at java.lang.UNIXProcess$2$1.run(UNIXProcess.java:86)
+
+JNI global references: 971
