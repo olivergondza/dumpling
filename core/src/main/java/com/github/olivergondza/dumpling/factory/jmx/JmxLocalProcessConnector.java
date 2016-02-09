@@ -26,7 +26,11 @@ package com.github.olivergondza.dumpling.factory.jmx;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import javax.management.MBeanServerConnection;
@@ -84,7 +88,8 @@ import sun.tools.attach.HotSpotVirtualMachine;
         String address = vm.getAgentProperties().getProperty(CONNECTOR_ADDRESS);
         if (address != null) return address;
 
-        Properties systemProperties = vm.getSystemProperties();
+        final Properties systemProperties = vm.getSystemProperties();
+        List<String> diag = new ArrayList<String>(3);
 
         // If the JVM is not able to listen to JMX connections, it is necessary to have the agent loaded.
         // There does not seem to be a portable way to do so. This mostly works for hotspot:
@@ -93,22 +98,7 @@ import sun.tools.attach.HotSpotVirtualMachine;
         // Java 9+, management-agent.jar is deleted
         // https://bugs.openjdk.java.net/browse/JDK-8043939
 
-        // jcmd approach first
-        if (vm instanceof HotSpotVirtualMachine) {
-            HotSpotVirtualMachine hsvm = (HotSpotVirtualMachine) vm;
-            try {
-                InputStream in = hsvm.executeJCmd("ManagementAgent.start_local");
-                in.close(); // Is there anything interesting?
-            } catch (IOException ex) {
-                throw failed("Unable to load agent", ex);
-            }
-
-            address = vm.getAgentProperties().getProperty(CONNECTOR_ADDRESS);
-            if (address != null) return address;
-
-            throw failedUnsupported("Unable to get connection address despite `jcmd ManagementAgent.start_local` succeeded", systemProperties);
-        }
-
+        // Try management-agent.jar
         String agentPath = systemProperties.getProperty("java.home")
                 + File.separator + "lib" + File.separator
                 + "management-agent.jar"
@@ -125,10 +115,45 @@ import sun.tools.attach.HotSpotVirtualMachine;
             address = vm.getAgentProperties().getProperty(CONNECTOR_ADDRESS);
             if (address != null) return address;
 
-            throw failedUnsupported("Unable to get connection address despite management-agent.jar loaded successfully", systemProperties);
+            diag.add("management-agent.jar loaded successfully");
+        } else {
+            diag.add("management-agent.jar not found");
         }
 
-        throw failedUnsupported("Unable to connect to JVM", systemProperties);
+        // Try jcmd
+        if (vm instanceof HotSpotVirtualMachine) {
+            // TODO avoid reflection to call HotSpotVirtualMachine.executeJCmd once we drop JDK 6 support
+            Method method = null;
+            try {
+                method = HotSpotVirtualMachine.class.getMethod("executeJCmd", String.class);
+            } catch (NoSuchMethodException e) {
+                // Fallthrough
+            }
+
+            if (method == null) {
+                diag.add("JDK 6 does not support jcmd");
+            }
+
+            try {
+                InputStream in = (InputStream) method.invoke(vm, "ManagementAgent.start_local");
+                in.close(); // Is there anything interesting?
+            } catch (IOException ex) {
+                throw failed("Unable to load agent", ex);
+            } catch (InvocationTargetException ex) {
+                throw new AssertionError(ex);
+            } catch (IllegalAccessException ex) {
+                throw new AssertionError(ex);
+            }
+
+            address = vm.getAgentProperties().getProperty(CONNECTOR_ADDRESS);
+            if (address != null) return address;
+
+            diag.add("jcmd ManagementAgent.start_local succeeded");
+        } else {
+            diag.add("not a HotSpot VM - jcmd likely unsupported");
+        }
+
+        throw failedUnsupported("Unable to connect to JVM: " + diag.toString(), systemProperties);
     }
 
     private static FailedToInitializeJmxConnection failed(String message, Exception ex) {
