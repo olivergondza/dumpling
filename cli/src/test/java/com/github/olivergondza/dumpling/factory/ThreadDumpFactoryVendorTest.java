@@ -277,6 +277,7 @@ public class ThreadDumpFactoryVendorTest {
                             runtime.toString(System.err, ModelObject.Mode.MACHINE);
                         }
                     } finally {
+                        if (pidFile != null && pidFile.exists()) pidFile.delete();
                         if (process != null) process.destroy();
                     }
                 }
@@ -285,7 +286,7 @@ public class ThreadDumpFactoryVendorTest {
 
         private Process run(String script) throws IOException {
             pidFile = File.createTempFile("dumpling", getClass().getName());
-            //pidFile.deleteOnExit();
+            pidFile.deleteOnExit();
             ProcessBuilder pb = new ProcessBuilder(
                     System.getProperty("java.home") + "/bin/java",
                     "-cp", System.getProperty("surefire.real.class.path"), // Inherit from surefire process
