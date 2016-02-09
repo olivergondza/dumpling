@@ -25,6 +25,7 @@ package com.github.olivergondza.dumpling.factory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.annotation.Nonnull;
 
@@ -91,6 +92,16 @@ public class PidRuntimeFactory {
             jstack = new File(javaHome + "/../bin/jstack");
         }
 
+        if (!jstack.exists()) {
+            throw new UnsupportedJdk(javaHome);
+        }
+
         return jstack.getAbsolutePath();
+    }
+
+    public static final class UnsupportedJdk extends RuntimeException {
+        private UnsupportedJdk(String jdk) {
+            super("Unable to capture runtime as the JDK is missing jstack utility: " + jdk);
+        }
     }
 }
