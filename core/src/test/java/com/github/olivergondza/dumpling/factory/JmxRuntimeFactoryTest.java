@@ -117,14 +117,9 @@ public class JmxRuntimeFactoryTest {
         }
     }
 
-    @Test
+    @Test(expected = JmxRuntimeFactory.FailedToInitializeJmxConnection.class)
     public void connectToNonexistingRemoteProcess() {
-        try {
-            new JmxRuntimeFactory().forRemoteProcess("localhost", 0);
-            fail();
-        } catch (JmxRuntimeFactory.FailedToInitializeJmxConnection ex) {
-            assertThat(ex.getMessage(), containsString("Connection refused to host: localhost"));
-        }
+        new JmxRuntimeFactory().forRemoteProcess("localhost", 0);
     }
 
     private void assertThreadState(ProcessRuntime<?, ?, ?> runtime) {

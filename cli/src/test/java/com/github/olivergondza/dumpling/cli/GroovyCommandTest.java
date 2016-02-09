@@ -40,7 +40,7 @@ public class GroovyCommandTest extends AbstractCliTest {
     public void runScriptThatDoesNotExist() {
         run("groovy", "--script", "no_such_file");
         assertThat(out.toString(), equalToString(""));
-        assertThat(err.toString(), equalToString("no_such_file (No such file or directory)%n"));
+        assertThat(err.toString(), equalToString("no_such_file")); // Error message platform dependant
         assertThat(exitValue, not(equalTo(0)));
     }
 
