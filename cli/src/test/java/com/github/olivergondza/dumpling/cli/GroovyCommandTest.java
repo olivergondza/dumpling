@@ -23,8 +23,8 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 
 import java.io.File;
@@ -39,8 +39,8 @@ public class GroovyCommandTest extends AbstractCliTest {
     @Test
     public void runScriptThatDoesNotExist() {
         run("groovy", "--script", "no_such_file");
-        assertThat(out.toString(), equalTo(""));
-        assertThat(err.toString(), equalTo("no_such_file (No such file or directory)\n"));
+        assertThat(out.toString(), equalToString(""));
+        assertThat(err.toString(), equalToString("no_such_file (No such file or directory)%n"));
         assertThat(exitValue, not(equalTo(0)));
     }
 
@@ -53,8 +53,8 @@ public class GroovyCommandTest extends AbstractCliTest {
             writer.close();
 
             run("groovy", "--script", file.getAbsolutePath());
-            assertThat(out.toString(), equalTo("groovy out\n42\n"));
-            assertThat(err.toString(), equalTo(""));
+            assertThat(out.toString(), equalToString("groovy out%n42%n"));
+            assertThat(err.toString(), equalToString(""));
             assertThat(exitValue, equalTo(42));
         } finally {
             file.delete();

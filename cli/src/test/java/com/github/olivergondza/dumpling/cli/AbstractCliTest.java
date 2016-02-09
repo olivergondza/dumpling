@@ -82,6 +82,17 @@ public abstract class AbstractCliTest {
         );
     }
 
+    /**
+     * SqualTo string with platform dependent newlines.
+     *
+     * Clients are supposed to use <tt>%n</tt> instead of newline char.
+     */
+    protected Matcher<String> equalToString(String str) {
+        return org.hamcrest.Matchers.equalTo(
+                String.format(str)
+        );
+    }
+
     protected Matcher<String> isEmptyString() {
         return org.hamcrest.text.IsEmptyString.isEmptyString();
     }
