@@ -92,4 +92,10 @@ public class GroovyCommandTest extends AbstractCliTest {
         assertThat(exitValue, equalTo(42));
         assertThat(out.toString(), containsString("42"));
     }
+
+    @Test
+    public void groovyNativeArgsVar() {
+        run("groovy", "-e", "assert args[0] == D.args[0] && args[1] != D.args[0]", "1", "2");
+        assertThat(exitValue, equalTo(0));
+    }
 }
