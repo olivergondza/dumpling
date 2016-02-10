@@ -90,6 +90,7 @@ public class InterpretterConfig extends GroovyInterpretterConfig {
     }
 
     /*package*/ static class CliApi {
+        private static final String NL = System.getProperty("line.separator");
 
         protected final @Nonnull String initIndent;
 
@@ -118,10 +119,10 @@ public class InterpretterConfig extends GroovyInterpretterConfig {
                 String header = groovyHeader(m);
 
                 if (doc != null) {
-                    sb.append(indent).append(header).append(": ").append(type(m.getReturnType())).append("\n");
+                    sb.append(indent).append(header).append(": ").append(type(m.getReturnType())).append(NL);
                     final char[] padding = new char[indent.length()];
                     Arrays.fill(padding, ' ');
-                    sb.append(padding).append(doc.text()).append("\n\n");
+                    sb.append(padding).append(doc.text()).append(NL).append(NL);
                 }
 
                 Class<?> ret = m.getReturnType();
