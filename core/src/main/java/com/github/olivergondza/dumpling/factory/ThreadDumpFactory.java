@@ -23,10 +23,12 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -80,7 +82,7 @@ public class ThreadDumpFactory {
      *
      * @throws IOException File could not be loaded.
      */
-    public @Nonnull ThreadDumpRuntime fromFile(File threadDump) throws IOException {
+    public @Nonnull ThreadDumpRuntime fromFile(@Nonnull File threadDump) throws IOException {
         FileInputStream fis = new FileInputStream(threadDump);
         try {
             return fromStream(fis);
@@ -89,7 +91,7 @@ public class ThreadDumpFactory {
         }
     }
 
-    public @Nonnull ThreadDumpRuntime fromStream(InputStream stream) {
+    public @Nonnull ThreadDumpRuntime fromStream(@Nonnull InputStream stream) {
         Set<ThreadDumpThread.Builder> threads = new LinkedHashSet<ThreadDumpThread.Builder>();
         List<String> header = new ArrayList<String>();
 
@@ -113,6 +115,21 @@ public class ThreadDumpFactory {
         }
 
         return new ThreadDumpRuntime(threads, header);
+    }
+
+    public @Nonnull ThreadDumpRuntime fromString(@Nonnull String runtime) {
+        try {
+            InputStream is = new ByteArrayInputStream(runtime.getBytes("UTF-8"));
+            try {
+                return fromStream(is);
+            } finally {
+                try {
+                    is.close();
+                } catch (IOException ex) {} // Ignore
+            }
+        } catch (UnsupportedEncodingException ex) {
+            throw new AssertionError(ex);
+        }
     }
 
     private ThreadDumpThread.Builder thread(String singleThread) {

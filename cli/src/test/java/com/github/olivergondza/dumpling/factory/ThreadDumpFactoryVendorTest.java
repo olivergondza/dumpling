@@ -34,6 +34,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import javax.annotation.Nonnull;
@@ -244,12 +245,20 @@ public class ThreadDumpFactoryVendorTest {
     }
 
     private static final class Runner implements MethodRule {
-        // This expects PidRuntimeFactory delegates to ThreadDumpFactory
-        private static final PidRuntimeFactory prf = new PidRuntimeFactory();
+        public static final ThreadDumpFactory THREAD_DUMP_FACTORY = new ThreadDumpFactory();
+        private final PidRuntimeFactory prf = new PidRuntimeFactory() {
+            @Override
+            protected ThreadDumpRuntime createRuntime(Process process) {
+                threaddump = Util.asString(process.getInputStream());
+                return THREAD_DUMP_FACTORY.fromString(threaddump);
+            }
+        };
 
         private Process process;
         private ThreadDumpRuntime runtime = null;
         private File pidFile = null;
+        private File scriptFile = null;
+        private String threaddump = null;
 
         @Override
         public Statement apply(final Statement base, FrameworkMethod method, Object target) {
@@ -273,12 +282,15 @@ public class ThreadDumpFactoryVendorTest {
                         base.evaluate();
                     } catch (Throwable ex) {
                         if (runtime != null) {
+                            System.err.println("Original runtime:");
+                            System.err.println(threaddump);
                             System.err.println("Parsed runtime:");
                             runtime.toString(System.err, ModelObject.Mode.MACHINE);
                         }
                         throw ex;
                     } finally {
                         if (pidFile != null && pidFile.exists()) pidFile.delete();
+                        if (scriptFile != null && scriptFile.exists()) scriptFile.delete();
                         if (process != null) process.destroy();
                     }
                 }
@@ -286,17 +298,25 @@ public class ThreadDumpFactoryVendorTest {
         }
 
         private Process run(String script) throws IOException {
-            pidFile = File.createTempFile("dumpling", getClass().getName());
+            pidFile = File.createTempFile("dumpling", getClass().getName() + ".pid");
             pidFile.deleteOnExit();
+            scriptFile = File.createTempFile("dumpling", getClass().getName() + ".script");
+            scriptFile.deleteOnExit();
+            PrintWriter writer = new PrintWriter(scriptFile);
+            try {
+                writer.print(script);
+            } finally {
+                writer.close();
+            }
+
             ProcessBuilder pb = new ProcessBuilder(
                     System.getProperty("java.home") + "/bin/java",
                     "-cp", System.getProperty("surefire.real.class.path"), // Inherit from surefire process
                     "com.github.olivergondza.dumpling.cli.Main",
                     "groovy",
-                    "--expression", script,
+                    "--script", scriptFile.getAbsolutePath(),
                     pidFile.getAbsolutePath()
             );
-            pb.toString();
             return pb.start();
         }
 
@@ -365,7 +385,7 @@ public class ThreadDumpFactoryVendorTest {
             if (pidFile == null) throw new IOException("pidfile not initialized");
             IOException ex = null;
             // Wait for pidfile to be written
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 5; i++) {
                 if (pidFile.exists()) {
                     try {
                         return Integer.parseInt(Util.fileContents(pidFile).trim());
@@ -374,13 +394,12 @@ public class ThreadDumpFactoryVendorTest {
                     }
                 }
 
-                pause(500);
+                pause(1000);
             }
 
-            throw ex == null
-                    ? new IOException("SUT process not running. pidfile: " + pidFile)
-                    : ex
-            ;
+            if (ex != null) throw ex;
+
+            throw new IOException("SUT process not running. pidfile: " + pidFile);
         }
     }
 }

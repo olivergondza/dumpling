@@ -65,12 +65,16 @@ public class PidRuntimeFactory {
         Process process = pb.start();
 
         // Start consuming the output without waiting for process completion not to block both processes.
-        ThreadDumpRuntime runtime = new ThreadDumpFactory().fromStream(process.getInputStream());
+        ThreadDumpRuntime runtime = createRuntime(process);
 
         int ret = process.waitFor();
         validateResult(process, ret);
 
         return runtime;
+    }
+
+    protected ThreadDumpRuntime createRuntime(Process process) {
+        return new ThreadDumpFactory().fromStream(process.getInputStream());
     }
 
     private void validateResult(Process process, int ret) throws IOException {
