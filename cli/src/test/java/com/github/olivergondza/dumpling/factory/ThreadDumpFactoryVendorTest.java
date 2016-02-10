@@ -358,7 +358,7 @@ public class ThreadDumpFactoryVendorTest {
                 runtime = prf.fromProcess(pid);
             }
 
-            throw new AssertionError("Process under test not initialized in time: " + runtime.getThreads());
+            throw new IOException("Process under test not initialized in time: " + runtime.getThreads());
         }
 
         private int getPid() throws IOException {
