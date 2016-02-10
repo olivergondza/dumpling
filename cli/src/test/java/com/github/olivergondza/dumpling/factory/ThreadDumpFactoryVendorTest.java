@@ -271,11 +271,12 @@ public class ThreadDumpFactoryVendorTest {
                 public void evaluate() throws Throwable {
                     try {
                         base.evaluate();
-                    } catch (AssertionError ex) {
+                    } catch (Throwable ex) {
                         if (runtime != null) {
                             System.err.println("Parsed runtime:");
                             runtime.toString(System.err, ModelObject.Mode.MACHINE);
                         }
+                        throw ex;
                     } finally {
                         if (pidFile != null && pidFile.exists()) pidFile.delete();
                         if (process != null) process.destroy();
