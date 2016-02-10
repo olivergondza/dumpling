@@ -35,11 +35,10 @@ public class GroovyshCommandTest extends AbstractCliTest {
     private final String logPath = Util.asFile(Util.resource("jstack/deadlock.log")).getAbsolutePath();
 
     @Test
-    public void test() {
-        stdin("load('" + logPath + "').threads.size();%n");
-        run("groovysh");
+    public void load() {
+        stdin("D.load.threaddump(D.args[0]).threads.size();%n");
+        run("groovysh", logPath);
 
-        assertThat(err.toString(), containsString("load(String) command is deprecated. Use 'D.load.threaddump(String)"));
         assertThat(out.toString(), containsString(" 18%n"));
         assertThat(this, succeeded());
     }
