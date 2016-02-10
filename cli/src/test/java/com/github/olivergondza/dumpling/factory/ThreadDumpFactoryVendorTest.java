@@ -226,7 +226,7 @@ public class ThreadDumpFactoryVendorTest {
 
     @Test
     public void threadNameWithLinebreak() {
-        String name = "thread" + System.getProperty("line.separator", "\n") + "name";
+        String name = "thread" + System.getProperty("line.separator") + "name";
         ThreadDumpThread t = sut.thread(name);
         assertThat(t.getName(), equalTo(name));
     }
