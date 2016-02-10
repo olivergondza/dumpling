@@ -107,14 +107,9 @@ public class JmxRuntimeFactoryTest {
         assertThreadState(runtime);
     }
 
-    @Test
+    @Test(expected = JmxRuntimeFactory.FailedToInitializeJmxConnection.class)
     public void connectToNonexistingLocalProcess() {
-        try {
-            new JmxRuntimeFactory().forLocalProcess(299);
-            fail();
-        } catch (JmxRuntimeFactory.FailedToInitializeJmxConnection ex) {
-            assertThat(ex.getMessage(), containsString("No such process"));
-        }
+        new JmxRuntimeFactory().forLocalProcess(299);
     }
 
     @Test(expected = JmxRuntimeFactory.FailedToInitializeJmxConnection.class)

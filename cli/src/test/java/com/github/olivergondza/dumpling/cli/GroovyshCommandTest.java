@@ -39,9 +39,9 @@ public class GroovyshCommandTest extends AbstractCliTest {
         stdin("load('" + logPath + "').threads.size();%n");
         run("groovysh");
 
+        assertThat(err.toString(), containsString("load(String) command is deprecated. Use 'D.load.threaddump(String)"));
         assertThat(out.toString(), containsString(" 18%n"));
         assertThat(this, succeeded());
-        assertThat(err.toString(), containsString("load(String) command is deprecated. Use 'D.load.threaddump(String)"));
     }
 
     @Test

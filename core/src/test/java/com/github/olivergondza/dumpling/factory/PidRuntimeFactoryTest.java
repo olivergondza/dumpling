@@ -70,7 +70,6 @@ public class PidRuntimeFactoryTest {
             fail("No exception thrown");
         } catch(IOException ex) {
             assertThat(ex.getMessage(), containsString("jstack failed with code "));
-            assertThat(ex.getMessage(), containsString("299: No such process"));
         }
     }
 
