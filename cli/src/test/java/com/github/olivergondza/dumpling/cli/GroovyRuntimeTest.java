@@ -65,8 +65,8 @@ public class GroovyRuntimeTest extends AbstractCliTest {
 
     @Theory
     public void filter(String command) throws Exception {
-        stdin("D.load.threaddump('" + Util.asFile(Util.resource("jstack/producer-consumer.log")) + "').threads.where(nameIs('owning_thread')).collect { it.name };%n");
-        run(command);
+        stdin("D.load.threaddump(D.args[0]).threads.where(nameIs('owning_thread')).collect { it.name };%n");
+        run(command, Util.asFile(Util.resource("jstack/producer-consumer.log")).getAbsolutePath());
 
         assertThat(err.toString(), equalTo(""));
         assertThat(out.toString().trim(), containsString("[owning_thread]"));
@@ -75,18 +75,18 @@ public class GroovyRuntimeTest extends AbstractCliTest {
 
     @Theory
     public void loadTreaddump(String command) throws Exception {
-        assertLoadThreaddump(command, "D.load.threaddump('%s').threads.where(nameIs('blocked_thread'));%n");
+        assertLoadThreaddump(command, "D.load.threaddump(D.args[0]).threads.where(nameIs('blocked_thread'));%n");
     }
 
     @Theory
     public void loadTreaddumpDolar(String command) throws Exception {
-        assertLoadThreaddump(command, "$load.threaddump('%s').threads.where(nameIs('blocked_thread'));%n");
+        assertLoadThreaddump(command, "$load.threaddump(D.args[0]).threads.where(nameIs('blocked_thread'));%n");
     }
 
     private void assertLoadThreaddump(String command, String script) throws Exception {
         File file = Util.asFile(Util.resource("jstack/producer-consumer.log"));
-        stdin(String.format(script, file.getAbsolutePath()));
-        run(command);
+        stdin(script);
+        run(command, file.getAbsolutePath());
 
         assertThat(err.toString(), isEmptyString());
         assertThat(out.toString(), containsString("\"blocked_thread\""));
@@ -135,18 +135,18 @@ public class GroovyRuntimeTest extends AbstractCliTest {
 
     @Theory
     public void loadJmx(String command) throws Exception {
-        assertLoadJmx(command, "println D.load.jmx('%s').threads.where(nameIs('remotely-observed-thread'));%n");
+        assertLoadJmx(command, "println D.load.jmx(D.args[0]).threads.where(nameIs('remotely-observed-thread'));%n");
     }
 
     @Theory
     public void loadJmxDolar(String command) throws Exception {
-        assertLoadJmx(command, "println $load.jmx('%s').threads.where(nameIs('remotely-observed-thread'));%n");
+        assertLoadJmx(command, "println $load.jmx(D.args[0]).threads.where(nameIs('remotely-observed-thread'));%n");
     }
 
     private void assertLoadJmx(String command, String script) throws Exception {
         disposer.register(TestThread.runJmxObservableProcess(false));
-        stdin(String.format(script, TestThread.JMX_CONNECTION));
-        run(command);
+        stdin(script);
+        run(command, TestThread.JMX_CONNECTION);
 
         assertThat(err.toString(), isEmptyString());
         assertThat(out.toString(), containsString("\"remotely-observed-thread\""));
