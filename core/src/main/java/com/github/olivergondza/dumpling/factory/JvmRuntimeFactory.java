@@ -43,7 +43,6 @@ import com.github.olivergondza.dumpling.model.ThreadLock;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 import com.github.olivergondza.dumpling.model.jvm.JvmRuntime;
 import com.github.olivergondza.dumpling.model.jvm.JvmThread;
-import com.github.olivergondza.dumpling.model.jvm.JvmThread.Builder;
 
 /**
  * Create {@link ProcessRuntime} from state of current JVM process.
@@ -60,6 +59,19 @@ public class JvmRuntimeFactory {
     );
 
     public @Nonnull JvmRuntime currentRuntime() {
+        IllegalRuntimeStateException error = null;
+        for (int retry = 0; retry < 5; retry++) {
+            try {
+                return _currentRuntime();
+            } catch (IllegalRuntimeStateException ex) {
+                error = ex;
+            }
+        }
+
+        throw error;
+    }
+
+    private JvmRuntime _currentRuntime() {
         Set<Thread> threads = Thread.getAllStackTraces().keySet();
         Map<Long, ThreadInfo> infos = infos();
 
@@ -70,7 +82,7 @@ public class JvmRuntimeFactory {
             // The thread was terminated between Thread.getAllStackTraces() and ThreadMXBean.getThreadInfo()
             if (info == null) continue;
 
-            Builder builder = new JvmThread.Builder(thread)
+            JvmThread.Builder builder = new JvmThread.Builder(thread)
                     .setDaemon(thread.isDaemon())
                     .setPriority(thread.getPriority())
             ;
