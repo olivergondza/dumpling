@@ -371,7 +371,7 @@ public class ThreadDumpFactoryVendorTest {
 
                 for (StackTraceElement elem: main.getStackTrace().getElements()) {
                     if ("dumpling-script".equals(elem.getClassName()) && "run".equals(elem.getMethodName())) {
-                        return prf.fromProcess(pid);
+                        return runtime;
                     }
                 }
 

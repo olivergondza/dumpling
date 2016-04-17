@@ -1,11 +1,9 @@
-import java.util.concurrent.locks.LockSupport;
-
 a = new Object();
 b = new Integer(42);
 c = new Double(3.14);
 
 def bar() {
-    LockSupport.park();
+    pauseHere();
 }
 
 def foo() {

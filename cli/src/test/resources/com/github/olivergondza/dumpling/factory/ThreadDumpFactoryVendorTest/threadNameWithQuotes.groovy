@@ -1,9 +1,7 @@
-import java.util.concurrent.locks.LockSupport;
-
 new Thread("a\"thread\"") {
     void run() {
-        LockSupport.park();
+        pauseHere()
     }
-}.start();
+}.start()
 
-LockSupport.park();
+pauseHere()
