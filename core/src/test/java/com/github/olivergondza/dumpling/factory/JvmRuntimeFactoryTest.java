@@ -257,27 +257,28 @@ public class JvmRuntimeFactoryTest {
         class Thrd extends Thread {
             private int countdown;
             public Thrd(int countdown) {
-                super("creatingAndTerminatingThreadsShouldBeHandledGracefully thread");
+                super("creatingAndTerminatingThreadsShouldBeHandledGracefully thread " + countdown);
                 this.countdown = countdown;
             }
 
             @Override
             public void run() {
-                pause(1);
-                new Thrd(countdown - 1).start();
+                synchronized (JvmRuntimeFactoryTest.class) {
+                    new Thrd(countdown - 1).start();
+                }
             }
         }
 
         int originalCount = runtime().getThreads().size();
 
-        new Thrd(10).start();
-        new Thrd(10).start();
-        new Thrd(10).start();
-        new Thrd(10).start();
-        new Thrd(10).start();
-        new Thrd(10).start();
-        new Thrd(10).start();
-        new Thrd(10).start();
+        new Thrd(100).start();
+        new Thrd(100).start();
+        new Thrd(100).start();
+        new Thrd(100).start();
+        new Thrd(100).start();
+        new Thrd(100).start();
+        new Thrd(100).start();
+        new Thrd(100).start();
 
 
         JvmRuntime runtime;
