@@ -15,9 +15,6 @@
             </reports>
             <configuration>
               <doclet>com.github.olivergondza.dumpling.DumplingDoclet</doclet>
-<!--
-              <docletPath>/home/ogondza/.m2/repository/com/github/olivergondza/indexed-doclet/0.1-SNAPSHOT/indexed-doclet-0.1-SNAPSHOT.jar</docletPath>
--->
               <docletArtifacts>
                 <docletArtifact>
                   <groupId>com.github.olivergondza</groupId>
@@ -26,17 +23,8 @@
                 </docletArtifact>
               </docletArtifacts>
               <useStandardDocletOptions>false</useStandardDocletOptions>
-
-              <additionnalDependencies>
-                <additionnalDependency>
-                  <groupId>com.github.olivergondza</groupId>
-                  <artifactId>dumpling</artifactId>
-                  <version>${project.version}</version>
-                </additionnalDependency>
-              </additionnalDependencies>
             </configuration>
           </reportSet>
-          
         </reportSets>
       </plugin>
     </plugins>
