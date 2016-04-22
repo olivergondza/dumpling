@@ -2,3 +2,5 @@
 !.gitignore
 _site
 target/
+
+Gemfile.lock
