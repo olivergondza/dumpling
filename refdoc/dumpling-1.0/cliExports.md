@@ -5,9 +5,6 @@ layout: default
 [Reference documentation for dumpling-1.0](.)
 # {{page.title}}
 ```
-D.args: java.util.List
-  CLI arguments passed to the script
-
 D.load.process(int): com.github.olivergondza.dumpling.model.ProcessRuntime
        Load runtime from process identified by PID.
 
@@ -22,6 +19,9 @@ D.load.jmx(int): com.github.olivergondza.dumpling.model.ProcessRuntime
 
 D.load.jvm: com.github.olivergondza.dumpling.model.ProcessRuntime
        Capture runtime of current JVM.
+
+D.args: java.util.List
+  CLI arguments passed to the script
 
 D.runtime: com.github.olivergondza.dumpling.model.ProcessRuntime
   Current runtime passed via `--in` option. null if not provided.

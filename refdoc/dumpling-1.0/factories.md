@@ -4,18 +4,9 @@ layout: default
 ---
 [Reference documentation for dumpling-1.0](.)
 # {{page.title}}
-### [JvmRuntimeFactory](./apidocs/com/github/olivergondza/dumpling/factory/JvmRuntimeFactory.html)
-Create ProcessRuntime from state of current JVM process.
-### [PidRuntimeFactory](./apidocs/com/github/olivergondza/dumpling/factory/PidRuntimeFactory.html)
-Create ProcessRuntime from running local process.
-
- Process ID is used as a locator.
-
- This implementations invokes jstack binary and delegates to ThreadDumpFactory so it shares its features
- and limitations.
-### [JmxRuntimeFactory](./apidocs/com/github/olivergondza/dumpling/factory/JmxRuntimeFactory.html)
-Create runtime from running process via JMX interface.
-
- A process can be identified by process ID or by host and port combination.
-### [ThreadDumpFactory](./apidocs/com/github/olivergondza/dumpling/factory/ThreadDumpFactory.html)
-Instantiate ProcessRuntime from threaddump produced by <tt>jstack</tt> or similar tool.
+### [process](./apidocs/com/github/olivergondza/dumpling/factory/PidRuntimeFactory.html)
+Create runtime from running process identified by PID.
+### [jmx](./apidocs/com/github/olivergondza/dumpling/factory/JmxRuntimeFactory.html)
+Create runtime from JMX process identified by PID or HOST:PORT combination. Credentials can be provided as USER:PASSWORD@HOST:PORT.
+### [threaddump](./apidocs/com/github/olivergondza/dumpling/factory/ThreadDumpFactory.html)
+Parse threaddrump from file, or standard input when '-' provided as a locator.
