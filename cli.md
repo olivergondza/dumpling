@@ -21,18 +21,26 @@ Then run `./dumpling.sh help [<command>]` to list available commands.
 
 ## Batch processing
 
-When using Dumpling CLI, `--in` option is conventionally used to choose a *factory implementation* and a *locator* (yes, an option with 2 values) in order to create runtime to inspect. Run one of Dumpling predefined queries against runtime obtained from different sources.
+When using Dumpling CLI, `--in` option is conventionally used to choose a *factory implementation* and a *locator* in order to create runtime to inspect. Run one of Dumpling predefined queries against runtime obtained from different sources.
 
 ```bash
-$ ./dumpling.sh deadlocks --in process 4242
+$ ./dumpling.sh deadlocks --in process:4242
 $ ./dumpling.sh blocking-tree --in jmx localhost:4242
 ```
 
 Run custom groovy query:
 
 ```bash
-$ ./dumpling.sh groovy --in threaddump jstack-crash.log <<< "D.runtime.threads.grep { it.status.waiting }"
+$ ./dumpling.sh groovy --in threaddump:jstack-crash.log <<< "D.runtime.threads.grep { it.status.waiting }"
 ```
+
+## `D` object
+
+All groovy scripts run from cli (using `groovy` or `groovysh` command) have
+[additional API](./refdoc/#cliExports) available through the `D` object. The
+`--in` option is optional here and the runtime(s) can be create from the script itself.
+
+Continue to [Dumpling DSL Tutorial](./tutorial.html) or [Dumpling reference documentation](./refdoc/).
 
 ## Interactive investigation
 
@@ -49,11 +57,3 @@ groovy:000> rt.query(new Deadlocks())
 
 groovy:000>
 ```
-
-## `D` object
-
-All groovy scripts run from cli (using `groovy` or `groovysh` command) have following exposed:
-
-Note that before Dumpling 0.7 `D.load` was exposed simply as `load` and `D.runtime` as `runtime`.
-
-Continue to [Dumpling DSL Tutorial](./tutorial.html) or [Dumpling reference documentation](./refdoc/).
