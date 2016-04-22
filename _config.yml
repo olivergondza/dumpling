@@ -7,7 +7,4 @@ github_repo: "dumpling"
 github_username: olivergondza
 
 # Build settings
-markdown: redcarpet
-
-gems:
-  - jekyll-feed
+markdown: kramdown
