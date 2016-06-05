@@ -8,3 +8,6 @@ github_username: olivergondza
 
 # Build settings
 markdown: kramdown
+
+gems:
+  - jekyll-seo-tag
