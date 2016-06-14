@@ -28,6 +28,7 @@ import java.io.IOException;
 
 import javax.annotation.Nonnull;
 
+import com.github.olivergondza.dumpling.factory.IllegalRuntimeStateException;
 import com.github.olivergondza.dumpling.factory.JmxRuntimeFactory;
 import com.github.olivergondza.dumpling.factory.JmxRuntimeFactory.FailedToInitializeJmxConnection;
 import com.github.olivergondza.dumpling.factory.PidRuntimeFactory;
@@ -63,6 +64,8 @@ final /*package*/ class Factories {
                 return factory.fromFile(new File(locator));
             } catch (IOException ex) {
                 throw new CommandFailedException(ex);
+            } catch (IllegalRuntimeStateException ex) {
+                throw new CommandFailedException(ex);
             }
         }
     }
@@ -85,6 +88,8 @@ final /*package*/ class Factories {
             try {
                 return factory.forConnectionString(locator);
             } catch (FailedToInitializeJmxConnection ex) {
+                throw new CommandFailedException(ex);
+            } catch (IllegalRuntimeStateException ex) {
                 throw new CommandFailedException(ex);
             }
         }
@@ -111,6 +116,8 @@ final /*package*/ class Factories {
                 throw new CommandFailedException("Unable to invoke jstack: " + ex.getMessage(), ex);
             } catch (InterruptedException ex) {
                 throw new CommandFailedException("jstack invocation interrupted: " + ex.getMessage(), ex);
+            } catch (IllegalRuntimeStateException ex) {
+                throw new CommandFailedException(ex);
             }
         }
 

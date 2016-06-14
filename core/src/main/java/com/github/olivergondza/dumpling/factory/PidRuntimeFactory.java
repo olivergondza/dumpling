@@ -65,10 +65,19 @@ public class PidRuntimeFactory {
         Process process = pb.start();
 
         // Start consuming the output without waiting for process completion not to block both processes.
-        ThreadDumpRuntime runtime = createRuntime(process);
+        ThreadDumpRuntime runtime = null;
+        RuntimeException runtimeEx = null;
+        try {
+            runtime = createRuntime(process);
+        } catch (IllegalRuntimeStateException ex) {
+            // Do not throw the exception right away so #validateResult can diagnose more severe problem first.
+            runtimeEx = ex;
+        }
 
         int ret = process.waitFor();
         validateResult(process, ret);
+
+        if (runtimeEx != null) throw runtimeEx;
 
         return runtime;
     }
