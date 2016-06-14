@@ -39,6 +39,7 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -59,6 +60,8 @@ import com.github.olivergondza.dumpling.model.dump.ThreadDumpThread.Builder;
  * @author ogondza
  */
 public class ThreadDumpFactory {
+
+    private static final Logger LOG_SKIPPED = Logger.getLogger(ThreadDumpFactory.class.getName());
 
     private static final StackTraceElement WAIT_TRACE_ELEMENT = StackTrace.nativeElement("java.lang.Object", "wait");
 
@@ -100,19 +103,32 @@ public class ThreadDumpFactory {
         try {
             while (scanner.hasNext()) {
                 String singleChunk = scanner.next();
+                if (singleChunk.startsWith("JNI global references")) {
+                    // Nothing interesting is expected after this point. Also, this is a convenient way to eliminate the
+                    // deadlock report that is spread over several chunks
+                    break;
+                }
+
                 ThreadDumpThread.Builder thread = thread(singleChunk);
                 if (thread != null) {
                     threads.add(thread);
                     continue;
                 }
 
-                if (threads.isEmpty()) { // Still reading header
+                if (header.isEmpty()) { // Still reading header
                     header.addAll(Arrays.asList(singleChunk.split(NL)));
+                    continue;
                 }
+
+                LOG_SKIPPED.warning("Skipping unrecognized chunk: " + singleChunk);
             }
         } finally {
             scanner.close();
         }
+
+        if (threads.isEmpty()) throw new IllegalRuntimeStateException(
+                "No threads found in threaddump"
+        );
 
         return new ThreadDumpRuntime(threads, header);
     }

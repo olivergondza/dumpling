@@ -33,6 +33,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -788,6 +789,16 @@ public class ThreadDumpFactoryTest {
 
         assertEquals(140685595015168L, (long) thread.getTid());
         assertEquals(5199638528L, (long) thread.getNid());
+    }
+
+    @Test
+    public void failToParseWhatIsNotAThreaddump() throws IOException, URISyntaxException {
+        try {
+            runtimeFrom("not-a-threaddump.log");
+            fail();
+        } catch (IllegalRuntimeStateException e) {
+            // Expected
+        }
     }
 
     private ThreadDumpRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {
