@@ -58,7 +58,7 @@ public class JvmRuntimeFactoryTest {
     @Test
     public synchronized void newThreadShouldNotBeAPartOfReportedRuntime() {
         thread = new Thread(getClass().getName() + " not run");
-        assertNull("Not started thread should not be a part fo runtime", forThread(runtime(), thread));
+        assertNull("Not started thread should not be a part fo runtime", forThread(thread));
     }
 
     @Test
@@ -104,7 +104,7 @@ public class JvmRuntimeFactoryTest {
         assertStatusIs(ThreadStatus.IN_OBJECT_WAIT, thread);
         assertStateIs(Thread.State.WAITING, thread);
         assertVerbIs("waiting on", thread);
-        JvmThread pt = forThread(runtime(), thread);
+        JvmThread pt = forThread(thread);
         assertThat(pt.getAcquiredLocks(), Matchers.<ThreadLock>empty());
         assertThat(pt.getWaitingOnLock().getClassName(), equalTo(getClass().getCanonicalName() + "$WaitingThreadStatus"));
         assertThat(pt.getWaitingToLock(), nullValue());
@@ -132,7 +132,7 @@ public class JvmRuntimeFactoryTest {
 
         assertStatusIs(ThreadStatus.IN_OBJECT_WAIT_TIMED, thread);
         assertStateIs(Thread.State.TIMED_WAITING, thread);
-        JvmThread pt = forThread(runtime(), thread);
+        JvmThread pt = forThread(thread);
         assertThat(pt.getAcquiredLocks(), Matchers.<ThreadLock>empty());
         assertThat(pt.getWaitingOnLock().getClassName(), equalTo(getClass().getCanonicalName() + "$TimedWaiting"));
         assertThat(pt.getWaitingToLock(), nullValue());
@@ -167,7 +167,7 @@ public class JvmRuntimeFactoryTest {
 
         assertStatusIs(ThreadStatus.PARKED, thread);
         assertStateIs(Thread.State.WAITING, thread);
-        JvmThread pt = forThread(runtime(), thread);
+        JvmThread pt = forThread(thread);
         assertThat(pt.getAcquiredLocks(), Matchers.<ThreadLock>empty());
         assertThat(pt.getWaitingOnLock(), nullValue());
         assertThat(pt.getWaitingToLock(), nullValue());
@@ -187,7 +187,7 @@ public class JvmRuntimeFactoryTest {
 
         assertStatusIs(ThreadStatus.PARKED_TIMED, thread);
         assertStateIs(Thread.State.TIMED_WAITING, thread);
-        JvmThread pt = forThread(runtime(), thread);
+        JvmThread pt = forThread(thread);
         assertThat(pt.getAcquiredLocks(), Matchers.<ThreadLock>empty());
         assertThat(pt.getWaitingOnLock(), nullValue());
         assertThat(pt.getWaitingToLock(), nullValue());
@@ -208,7 +208,7 @@ public class JvmRuntimeFactoryTest {
 
         assertStatusIs(ThreadStatus.PARKED, thread);
         assertStateIs(Thread.State.WAITING, thread);
-        JvmThread pt = forThread(runtime(), thread);
+        JvmThread pt = forThread(thread);
         assertThat(pt.getAcquiredLocks(), Matchers.<ThreadLock>empty());
         assertThat(pt.getWaitingOnLock(), equalTo(ThreadLock.fromInstance(blocker)));
         assertThat(pt.getWaitingToLock(), nullValue());
@@ -229,7 +229,7 @@ public class JvmRuntimeFactoryTest {
 
         assertStatusIs(ThreadStatus.PARKED_TIMED, thread);
         assertStateIs(Thread.State.TIMED_WAITING, thread);
-        JvmThread pt = forThread(runtime(), thread);
+        JvmThread pt = forThread(thread);
         assertThat(pt.getAcquiredLocks(), Matchers.<ThreadLock>empty());
         assertThat(pt.getWaitingOnLock(), equalTo(ThreadLock.fromInstance(blocker)));
         assertThat(pt.getWaitingToLock(), nullValue());
@@ -426,12 +426,12 @@ public class JvmRuntimeFactoryTest {
 
     private void assertVerbIs(String verb, Thread thread) {
         pause(100);
-        assertThat(forThread(runtime(), thread).toString(), containsString("- " + verb));
+        assertThat(forThread(thread).toString(), containsString("- " + verb));
     }
 
     private ThreadStatus statusOf(Thread thread) {
         pause(100);
-        final JvmThread processThread = forThread(runtime(), thread);
+        final JvmThread processThread = forThread(thread);
         if (processThread == null) throw new AssertionError(
                 "No process thread in runtime for " + thread.getName()
         );
@@ -442,11 +442,7 @@ public class JvmRuntimeFactoryTest {
         return new JvmRuntimeFactory().currentRuntime();
     }
 
-    private JvmThread forThread(JvmRuntime runtime, Thread candidate) {
-        for(JvmThread thread: runtime.getThreads()) {
-            if (thread.getId() == candidate.getId()) return thread;
-        }
-
-        return null;
+    private JvmThread forThread(Thread candidate) {
+        return runtime().getThreads().forThread(candidate);
     }
 }
