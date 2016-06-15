@@ -54,24 +54,27 @@ public class Util {
         return res;
     }
 
+    public static File asFile(InputStream is, File file) throws IOException {
+        FileWriter fw = new FileWriter(file);
+        try {
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = is.read(buffer)) != -1) {
+                fw.append(new String(buffer, 0, length));
+            }
+        } finally {
+            fw.close();
+        }
+
+        return file;
+    }
+
     public static File asFile(InputStream is) {
         File file = null;
         try {
             file = File.createTempFile("dumpling", "streamFile");
             file.deleteOnExit();
-
-            FileWriter fw = new FileWriter(file);
-            try {
-                byte[] buffer = new byte[1024];
-                int length;
-                while ((length = is.read(buffer)) != -1) {
-                    fw.append(new String(buffer, 0, length));
-                }
-            } finally {
-                fw.close();
-            }
-
-            return file;
+            return asFile(is, file);
         } catch (IOException ex) {
             if (file != null) {
                 file.delete();

@@ -262,21 +262,21 @@ public final class JmxRuntimeFactory {
                 map.put(JMXConnector.CREDENTIALS, new String[] {username, password});
             }
 
+            JMXServiceURL serviceUrl = getServiceUrl();
             try {
-                return JMXConnectorFactory.connect(getServiceUrl(), map).getMBeanServerConnection();
+                return JMXConnectorFactory.connect(serviceUrl, map).getMBeanServerConnection();
             } catch (SecurityException ex) {
-                throw new FailedToInitializeJmxConnection(ex);
+                throw new FailedToInitializeJmxConnection("Failed to initialize connection to " + serviceUrl + ": " + ex.getMessage(), ex);
             } catch (IOException ex) {
-                throw new FailedToInitializeJmxConnection(ex);
+                throw new FailedToInitializeJmxConnection("Failed to initialize connection to " + serviceUrl + ": " + ex.getMessage(), ex);
             }
         }
 
         private JMXServiceURL getServiceUrl() {
-            String serviceURL = "service:jmx:rmi:///jndi/rmi://" + host + ":" + port + "/jmxrmi";
             try {
-                return new JMXServiceURL(serviceURL);
+                return new JMXServiceURL("service:jmx:rmi:///jndi/rmi://" + host + ":" + port + "/jmxrmi");
             } catch (MalformedURLException ex) {
-                throw new FailedToInitializeJmxConnection("Failed to initialize connection to " + serviceURL, ex);
+                throw new FailedToInitializeJmxConnection(ex);
             }
         }
     }

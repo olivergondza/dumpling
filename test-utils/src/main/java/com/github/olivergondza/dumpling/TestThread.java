@@ -25,6 +25,13 @@ package com.github.olivergondza.dumpling;
 
 import static com.github.olivergondza.dumpling.Util.pause;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -45,10 +52,13 @@ public final class TestThread {
     public static final @Nonnull String JMX_PASSWD = "secret_passwd";
     public static final @Nonnull String JMX_CONNECTION = JMX_HOST + ":" + JMX_PORT;
     public static final @Nonnull String JMX_AUTH_CONNECTION = JMX_USER + ":" + JMX_PASSWD + "@" + JMX_CONNECTION;
+    public static final String MARKER = "DUMPLING-SUT-IS-READY";
 
     // Observable process entry point - not to be invoked directly
     public static synchronized void main(String... args) throws InterruptedException {
         runThread();
+
+        System.out.println(MARKER);
 
         // Block process forever
         TestThread.class.wait();
@@ -65,7 +75,7 @@ public final class TestThread {
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
-            };
+            }
         };
         thread.setDaemon(true);
         thread.setPriority(7);
@@ -105,6 +115,7 @@ public final class TestThread {
         args.add("java");
         args.add("-cp");
         args.add(cp);
+        args.add("-Djava.util.logging.config.file=" + Util.asFile(Util.resource(TestThread.class, "logging.properties")).getAbsolutePath());
         args.add("-Dcom.sun.management.jmxremote");
         args.add("-Dcom.sun.management.jmxremote.port=" + JMX_PORT);
         args.add("-Dcom.sun.management.jmxremote.local.only=false");
@@ -116,19 +127,33 @@ public final class TestThread {
             args.add("-Dcom.sun.management.jmxremote.access.file=" + getCredFile("jmxremote.access"));
         }
         args.add("com.github.olivergondza.dumpling.TestThread");
-        final Process process = new ProcessBuilder(args).start();
+        ProcessBuilder pb = new ProcessBuilder(args).redirectErrorStream(true);
+        final Process process = pb.start();
 
-        Util.pause(1000);
-
-        try {
-            int exit = process.exitValue();
-            String err = Util.currentProcessOut(process.getErrorStream());
-            throw new AssertionError(String.format(
-                    "Test process terminated prematurelly: %d%nSTDERR:%n%s", exit, err
-            ));
-        } catch (IllegalThreadStateException ex) {
-            return process;
+        BufferedInputStream bis = new BufferedInputStream(process.getInputStream());
+        bis.mark(1024 * 1024 * 1);
+        while (!isUp(bis)) {
+            try {
+                int exit = process.exitValue();
+                throw new AssertionError("Test process terminated prematurely: " + exit);
+            } catch (IllegalThreadStateException ex) {
+                // Still running
+            }
         }
+
+        return process;
+    }
+
+    private static boolean isUp(BufferedInputStream is) throws IOException {
+        is.reset();
+        byte[] buffer = new byte[1024];
+        int length;
+        while ((length = is.read(buffer)) != -1) {
+            String line = new String(buffer, 0, length);
+            if (line.contains(MARKER)) return true;
+        }
+
+        return false;
     }
 
     private static String getCredFile(String path) throws Exception {

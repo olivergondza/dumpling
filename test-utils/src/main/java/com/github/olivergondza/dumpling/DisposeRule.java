@@ -37,8 +37,8 @@ public class DisposeRule implements TestRule {
 
     private final List<Disposable> discard = new ArrayList<Disposable>();
 
-    public void register(final Thread thread) {
-        if (thread == null) return;
+    public <T extends Thread> T register(final T thread) {
+        if (thread == null) return thread;
 
         discard.add(new Disposable() {
             @Override @SuppressWarnings("deprecation")
@@ -46,10 +46,11 @@ public class DisposeRule implements TestRule {
                 thread.stop();
             }
         });
+        return thread;
     }
 
-    public void register(final Process process) {
-        if (process == null) return;
+    public <T extends Process> T register(final T process) {
+        if (process == null) return process;
 
         discard.add(new Disposable() {
             @Override
@@ -58,6 +59,7 @@ public class DisposeRule implements TestRule {
                 process.waitFor();
             }
         });
+        return process;
     }
 
     @Override
@@ -80,7 +82,7 @@ public class DisposeRule implements TestRule {
         };
     }
 
-    private static interface Disposable {
+    private interface Disposable {
         void dispose() throws Exception;
     }
 }
