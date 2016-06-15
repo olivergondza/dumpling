@@ -65,9 +65,6 @@ public class InterpretterConfig extends GroovyInterpretterConfig {
 
         binding.setProperty("D", new CliApiEntryPoint(ProcessStream.system(), args, runtime, "D"));
 
-        binding.setProperty("load", new Load(stream)); // Compatibility
-        binding.setProperty("$load", new LoadCommand(stream, "$load")); // Compatibility
-
         return binding;
     }
 

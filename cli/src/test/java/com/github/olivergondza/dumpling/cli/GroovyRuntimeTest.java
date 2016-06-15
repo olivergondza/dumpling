@@ -78,11 +78,6 @@ public class GroovyRuntimeTest extends AbstractCliTest {
         assertLoadThreaddump(command, "D.load.threaddump(D.args[0]).threads.where(nameIs('blocked_thread'));%n");
     }
 
-    @Theory
-    public void loadTreaddumpDolar(String command) throws Exception {
-        assertLoadThreaddump(command, "$load.threaddump(D.args[0]).threads.where(nameIs('blocked_thread'));%n");
-    }
-
     private void assertLoadThreaddump(String command, String script) throws Exception {
         File file = Util.asFile(Util.resource("jstack/producer-consumer.log"));
         stdin(script);
@@ -96,11 +91,6 @@ public class GroovyRuntimeTest extends AbstractCliTest {
     @Theory
     public void loadPid(String command) {
         assertLoadPid(command, "D.load.process(%d).threads.where(nameIs('remotely-observed-thread'));%n");
-    }
-
-    @Theory
-    public void loadPidDolar(String command) {
-        assertLoadPid(command, "$load.process(%d).threads.where(nameIs('remotely-observed-thread'));%n");
     }
 
     private void assertLoadPid(String command, String script) {
@@ -118,11 +108,6 @@ public class GroovyRuntimeTest extends AbstractCliTest {
         assertLoadPidOverJmx(command, "D.load.jmx(%d).threads.where(nameIs('remotely-observed-thread'));%n");
     }
 
-    @Theory
-    public void loadPidOverJmxDolar(String command) {
-        assertLoadPidOverJmx(command, "$load.jmx(%d).threads.where(nameIs('remotely-observed-thread'));%n");
-    }
-
     private void assertLoadPidOverJmx(String command, String script) {
         disposer.register(TestThread.runThread());
         stdin(String.format(script, Util.currentPid()));
@@ -136,11 +121,6 @@ public class GroovyRuntimeTest extends AbstractCliTest {
     @Theory
     public void loadJmx(String command) throws Exception {
         assertLoadJmx(command, "println D.load.jmx(D.args[0]).threads.where(nameIs('remotely-observed-thread'));%n");
-    }
-
-    @Theory
-    public void loadJmxDolar(String command) throws Exception {
-        assertLoadJmx(command, "println $load.jmx(D.args[0]).threads.where(nameIs('remotely-observed-thread'));%n");
     }
 
     private void assertLoadJmx(String command, String script) throws Exception {
