@@ -272,10 +272,11 @@ public final class JmxRuntimeFactory {
         }
 
         private JMXServiceURL getServiceUrl() {
+            String serviceURL = "service:jmx:rmi:///jndi/rmi://" + host + ":" + port + "/jmxrmi";
             try {
-                return new JMXServiceURL("service:jmx:rmi:///jndi/rmi://" + host + ":" + port + "/jmxrmi");
+                return new JMXServiceURL(serviceURL);
             } catch (MalformedURLException ex) {
-                throw new FailedToInitializeJmxConnection(ex);
+                throw new FailedToInitializeJmxConnection("Failed to initialize connection to " + serviceURL, ex);
             }
         }
     }

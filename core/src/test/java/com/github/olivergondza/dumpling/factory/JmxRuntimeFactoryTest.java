@@ -23,6 +23,7 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
+import static com.github.olivergondza.dumpling.TestThread.JMX_AUTH_CONNECTION;
 import static com.github.olivergondza.dumpling.TestThread.JMX_HOST;
 import static com.github.olivergondza.dumpling.TestThread.JMX_PASSWD;
 import static com.github.olivergondza.dumpling.TestThread.JMX_PORT;
@@ -74,8 +75,8 @@ public class JmxRuntimeFactoryTest {
     @Test
     public void jmxRemoteConnectWithPasswd() throws Exception {
         runRemoteSut(true);
-        JmxRuntime runtime = new JmxRuntimeFactory().forRemoteProcess(JMX_HOST, JMX_PORT, JMX_USER, JMX_PASSWD);
-        assertThreadState(runtime);
+        assertThreadState(new JmxRuntimeFactory().forRemoteProcess(JMX_HOST, JMX_PORT, JMX_USER, JMX_PASSWD));
+        assertThreadState(new JmxRuntimeFactory().forConnectionString(JMX_AUTH_CONNECTION));
     }
 
     @Test
@@ -103,8 +104,8 @@ public class JmxRuntimeFactoryTest {
     @Test
     public void jmxLocalConnect() {
         runLocalSut();
-        JmxRuntime runtime = new JmxRuntimeFactory().forLocalProcess(Util.currentPid());
-        assertThreadState(runtime);
+        assertThreadState(new JmxRuntimeFactory().forLocalProcess(Util.currentPid()));
+        assertThreadState(new JmxRuntimeFactory().forConnectionString(String.valueOf(Util.currentPid())));
     }
 
     @Test(expected = JmxRuntimeFactory.FailedToInitializeJmxConnection.class)
