@@ -159,7 +159,12 @@ public final class TestThread {
     private static String getCredFile(String path) throws Exception {
         String file = Util.asFile(Util.resource(TestThread.class, path)).getAbsolutePath();
         // Workaround http://jira.codehaus.org/browse/MRESOURCES-132
-        new ProcessBuilder("chmod", "600", file).start().waitFor();
+        Process process = new ProcessBuilder("chmod", "600", file).start();
+        if (process.waitFor() != 0) {
+            throw new RuntimeException(
+                    "Failed to adjust permissions: " + Util.asString(process.getErrorStream())
+            );
+        }
         return file;
     }
 }
