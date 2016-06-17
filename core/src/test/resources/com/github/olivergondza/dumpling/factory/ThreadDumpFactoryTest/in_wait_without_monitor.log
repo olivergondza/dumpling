@@ -1,4 +1,4 @@
-"blocked_without_log" prio=10 tid=0x00002ae761a1c800 nid=0x1576 in Object.wait() [0x00002ae67cdd8000]
+"blocked_without_lock" prio=10 tid=0x00002ae761a1c800 nid=0x1576 in Object.wait() [0x00002ae67cdd8000]
    java.lang.Thread.State: BLOCKED (on object monitor)
 	at java.lang.Object.wait(Native Method)
 	at hudson.util.OneShotEvent.block(OneShotEvent.java:86)
@@ -12,7 +12,7 @@
    Locked ownable synchronizers:
 	- None
 
-"timed_waiting_without_log" daemon prio=10 tid=0x00000000598a3000 nid=0x77f5 in Object.wait() [0x00002ae69728d000]
+"timed_waiting_without_lock" daemon prio=10 tid=0x00000000598a3000 nid=0x77f5 in Object.wait() [0x00002ae69728d000]
    java.lang.Thread.State: TIMED_WAITING (on object monitor)
 	at java.lang.Object.wait(Native Method)
 	at hudson.remoting.Request$1.get(Request.java:272)
@@ -25,7 +25,7 @@
    Locked ownable synchronizers:
 	- None
 
-"waiting_without_log" daemon prio=10 tid=0x00002ae70b889800 nid=0x1ef7 in Object.wait() [0x00002ae6a3554000]
+"waiting_without_lock" daemon prio=10 tid=0x00002ae70b889800 nid=0x1ef7 in Object.wait() [0x00002ae6a3554000]
    java.lang.Thread.State: WAITING (on object monitor)
 	at java.lang.Object.wait(Native Method)
 	at java.lang.Object.wait(Object.java:485)

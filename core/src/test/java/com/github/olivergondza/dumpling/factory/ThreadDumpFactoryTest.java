@@ -683,9 +683,9 @@ public class ThreadDumpFactoryTest {
     @Test
     public void parseThreadInObjectWaitThatDoesNotDeclareDesiredMonitor() throws Exception {
         ThreadDumpThreadSet threads = runtimeFrom("in_wait_without_monitor.log").getThreads();
-        ThreadDumpThread blocked = threads.where(nameIs("blocked_without_log")).onlyThread();
-        ThreadDumpThread waiting = threads.where(nameIs("waiting_without_log")).onlyThread();
-        ThreadDumpThread timedWaiting = threads.where(nameIs("timed_waiting_without_log")).onlyThread();
+        ThreadDumpThread blocked = threads.where(nameIs("blocked_without_lock")).onlyThread();
+        ThreadDumpThread waiting = threads.where(nameIs("waiting_without_lock")).onlyThread();
+        ThreadDumpThread timedWaiting = threads.where(nameIs("timed_waiting_without_lock")).onlyThread();
 
         assertThat(blocked.getWaitingToLock(), equalTo(new ThreadLock("hudson.model.Queue", 17233414264L)));
         assertThat(waiting.getWaitingToLock(), equalTo(null));
