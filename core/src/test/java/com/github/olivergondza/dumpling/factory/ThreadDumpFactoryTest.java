@@ -698,6 +698,14 @@ public class ThreadDumpFactoryTest {
 
     // Presumably this is a bug in certain java 6 versions from Oracle
     @Test
+    public void parseBlockedThreadWithoutMonitor() throws Exception {
+        ThreadDumpThread blocked = runtimeFrom("blocked-without-monitor.log").getThreads().onlyThread();
+        assertThat(blocked.getAcquiredMonitors(), Matchers.<ThreadLock>empty());
+        assertThat(blocked.getStatus(), equalTo(ThreadStatus.RUNNABLE));
+    }
+
+    // Presumably this is a bug in certain java 6 versions from Oracle
+    @Test
     public void runnableThreadInUnsafePark() throws Exception {
         ThreadDumpThreadSet threads = runtimeFrom("runnable_in_unsafe_park.log").getThreads();
         ThreadDumpThread runnable = threads.where(nameIs("runnable")).onlyThread();
@@ -777,8 +785,10 @@ public class ThreadDumpFactoryTest {
         ThreadDumpRuntime runtime = runtimeFrom("issue-46.log");
         ThreadDumpThread thread = runtime.getThreads().where(nameIs("Jenkins-cron-thread-8")).onlyThread();
 
-        assertTrue(thread.getStatus().isRunnable());
-        assertEquals(1, thread.getAcquiredMonitors().size());
+        assertTrue(thread.getStatus().isBlocked());
+        assertEquals(null, thread.getWaitingOnLock());
+        assertEquals("hudson.model.Queue", thread.getWaitingToLock().getClassName());
+        assertEquals(0, thread.getAcquiredMonitors().size());
         assertEquals(1, thread.getAcquiredSynchronizers().size());
     }
 

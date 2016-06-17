@@ -61,7 +61,7 @@ import com.github.olivergondza.dumpling.model.dump.ThreadDumpThread.Builder;
  */
 public class ThreadDumpFactory {
 
-    private static final Logger LOG_SKIPPED = Logger.getLogger(ThreadDumpFactory.class.getName());
+    private static final Logger LOG = Logger.getLogger(ThreadDumpFactory.class.getName());
 
     private static final StackTraceElement WAIT_TRACE_ELEMENT = StackTrace.nativeElement("java.lang.Object", "wait");
 
@@ -120,7 +120,7 @@ public class ThreadDumpFactory {
                     continue;
                 }
 
-                LOG_SKIPPED.warning("Skipping unrecognized chunk: " + singleChunk);
+                LOG.warning("Skipping unrecognized chunk: " + singleChunk);
             }
         } finally {
             scanner.close();
@@ -239,16 +239,19 @@ public class ThreadDumpFactory {
             }
             if (acquiredLocks.size() == 1) {
                 waitingOnLock = acquiredLocks.iterator().next();
+                LOG.fine("FIXUP: Adjust lock state from 'locked' to 'waiting on' when thread entering Object.wait()");
+                LOG.fine(wholeThread);
             }
         }
 
         if (waitingOnLock != null) {
-            // Eliminate self lock that is presented in threaddumps when in Object.wait().
+            // Eliminate self lock that is presented in threaddumps when in Object.wait(). It is a matter or convenience - not really a FIXUP
             filterMonitors(monitors, waitingOnLock);
 
             // 'waiting on' is reported even when blocked re-entering the monitor. Convert it from waitingOn to waitingTo
             if (builder.getThreadStatus().isBlocked()) {
-
+                LOG.fine("FIXUP: Adjust lock state from 'waiting on' to 'waiting to' when thread re-acquiring the monitor after Object.wait()");
+                LOG.fine(wholeThread);
                 waitingToLock = waitingOnLock;
                 waitingOnLock = null;
             }
@@ -259,14 +262,25 @@ public class ThreadDumpFactory {
             // Presumably when entering or leaving the parked state.
             // Remove the lock instead of fixing the thread status as there is
             // no general way to tell PARKED and PARKED_TIMED apart.
+            LOG.fine("FIXUP: Remove 'waiting to' lock declared on RUNNABLE thread");
+            LOG.fine(wholeThread);
             waitingOnLock = null;
         }
 
         // https://github.com/olivergondza/dumpling/issues/46
+        // The lock state is changed ahead of the thread state while there can be other threads still holding the monitor
         if (status.isBlocked() && waitingToLock == null) {
-            // It appears the lock is changed from "waiting to" to "locked" while status still claims the thread is BLOCKED
-            // Adjust status to RUNNABLE
-            builder.setThreadStatus(status = ThreadStatus.RUNNABLE);
+            Monitor monitor = getMonitorJustAcquired(monitors);
+            if (monitor != null) {
+                LOG.fine("FIXUP: Adjust lock state from 'locked' to 'waiting to' on BLOCKED thread");
+                LOG.fine(wholeThread);
+                waitingToLock = monitor.getLock();
+                monitors.remove(0);
+            } else {
+                LOG.fine("FIXUP: Adjust thread state from 'BLOCKED' to 'RUNNABLE' when monitor is missing");
+                LOG.fine(wholeThread);
+                builder.setThreadStatus(status = ThreadStatus.RUNNABLE);
+            }
         }
 
         if (waitingToLock != null && !status.isBlocked()) throw new IllegalRuntimeStateException(
@@ -282,6 +296,21 @@ public class ThreadDumpFactory {
         builder.setWaitingOnLock(waitingOnLock);
 
         return builder;
+    }
+
+    // get monitor acquired on current stackframe, null when it was acquired earlier or not monitor is held
+    private Monitor getMonitorJustAcquired(List<ThreadLock.Monitor> monitors) {
+        if (monitors.isEmpty()) return null;
+        Monitor monitor = monitors.get(0);
+        if (monitor.getDepth() != 0) return null;
+
+        for (Monitor duplicateCandidate: monitors) {
+            if (monitor.equals(duplicateCandidate)) continue; // skip first - equality includes monitor depth
+
+            if (monitor.getLock().equals(duplicateCandidate.getLock())) return null; // Acquired earlier
+        }
+
+        return monitor;
     }
 
     private static final WeakHashMap<String, StackTraceElement> traceElementCache = new WeakHashMap<String, StackTraceElement>();
