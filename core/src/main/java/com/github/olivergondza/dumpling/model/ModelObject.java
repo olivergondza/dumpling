@@ -53,7 +53,7 @@ public abstract class ModelObject {
      *
      * @author ogondza
      */
-    public static enum Mode {
+    public enum Mode {
         /**
          * Well-defined output format to be consumed by other programs.
          */

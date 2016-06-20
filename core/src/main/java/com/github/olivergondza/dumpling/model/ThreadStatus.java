@@ -37,74 +37,67 @@ import javax.annotation.Nonnull;
  * More detailed version of {@link java.lang.Thread.State}.
  *
  * @author ogondza
- * @see <a href="http://hg.openjdk.java.net/jdk7/jdk7/hotspot/file/167b70ff3abc/src/share/vm/classfile/javaClasses.cpp#l922">javaClasses.cpp</a>
  */
 public enum ThreadStatus {
-    NEW                 ("NEW",                                 0,      State.NEW),
-    RUNNABLE            ("RUNNABLE",                            5,      State.RUNNABLE),
-    SLEEPING            ("TIMED_WAITING (sleeping)",            225,    State.TIMED_WAITING),
+    NEW                 ("NEW",                                 State.NEW),
+    RUNNABLE            ("RUNNABLE",                            State.RUNNABLE),
+    SLEEPING            ("TIMED_WAITING (sleeping)",            State.TIMED_WAITING),
 
     /**
      * Thread in {@link Object#wait()}.
      *
      * @see java.lang.Thread.State#WAITING
      */
-    IN_OBJECT_WAIT      ("WAITING (on object monitor)",         401,    State.WAITING),
+    IN_OBJECT_WAIT      ("WAITING (on object monitor)",         State.WAITING),
 
     /**
      * Thread in {@link Object#wait(long)}.
      *
      * @see java.lang.Thread.State#TIMED_WAITING
      */
-    IN_OBJECT_WAIT_TIMED("TIMED_WAITING (on object monitor)",   417,    State.TIMED_WAITING),
+    IN_OBJECT_WAIT_TIMED("TIMED_WAITING (on object monitor)",   State.TIMED_WAITING),
 
     /**
      * Thread in {@link LockSupport#park()}.
      *
      * @see java.lang.Thread.State#WAITING
      */
-    PARKED              ("WAITING (parking)",                   657,    State.WAITING),
+    PARKED              ("WAITING (parking)",                   State.WAITING),
 
     /**
      * Thread in {@link LockSupport#parkNanos}.
      *
      * @see java.lang.Thread.State#TIMED_WAITING
      */
-    PARKED_TIMED        ("TIMED_WAITING (parking)",             673,    State.TIMED_WAITING),
+    PARKED_TIMED        ("TIMED_WAITING (parking)",             State.TIMED_WAITING),
 
-    BLOCKED             ("BLOCKED (on object monitor)",         1025,   State.BLOCKED),
-    TERMINATED          ("TERMINATED",                          2,      State.TERMINATED),
+    BLOCKED             ("BLOCKED (on object monitor)",         State.BLOCKED),
+    TERMINATED          ("TERMINATED",                          State.TERMINATED),
 
     /**
      * Runtime factory was not able to determine thread state.
      *
      * This can happen for service threads in threaddump.
      */
-    UNKNOWN             ("UNKNOWN",                             -1,     null);
+    UNKNOWN             ("UNKNOWN",                             null);
 
     /**
      * Description used in thread dump.
      */
     private final @Nonnull String name;
-    @Deprecated private final int code;
 
     /**
      * Matching java.lang.Thread.State.
      */
     private final State state;
 
-    private ThreadStatus(@Nonnull String name, int code, State state) {
+    ThreadStatus(@Nonnull String name, State state) {
         this.name = name;
-        this.code = code;
         this.state = state;
     }
 
     public @Nonnull String getName() {
         return name;
-    }
-
-    public int getCode() {
-        return code;
     }
 
     public @CheckForNull State getState() {
@@ -176,15 +169,6 @@ public enum ThreadStatus {
         return this == TERMINATED;
     }
 
-
-    @Deprecated public static @Nonnull ThreadStatus valueOf(int code) {
-        for (ThreadStatus status: values()) {
-            if (status.code == code) return status;
-        }
-
-        return UNKNOWN;
-    }
-
     public static @Nonnull ThreadStatus fromString(String title) {
         try {
 
@@ -199,14 +183,6 @@ public enum ThreadStatus {
 
             throw ex;
         }
-    }
-
-    @Deprecated public static @Nonnull ThreadStatus fromState(Thread.State state) {
-        for (ThreadStatus value: values()) {
-            if (value.state.equals(state)) return value;
-        }
-
-        throw new AssertionError("No matching ThreadState");
     }
 
     public static @Nonnull ThreadStatus fromState(@Nonnull Thread.State state, @CheckForNull StackTraceElement head) {

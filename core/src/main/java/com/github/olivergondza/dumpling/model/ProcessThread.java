@@ -107,14 +107,6 @@ public class ProcessThread<
         return state.tid;
     }
 
-    /**
-     * @deprecated Kept for backward compatibility, use {@link #getStatus()} instead.
-     */
-    @Deprecated
-    public @Nonnull ThreadStatus getThreadStatus() {
-        return getStatus();
-    }
-
     public @Nonnull ThreadStatus getStatus() {
         return state.status;
     }
@@ -327,9 +319,9 @@ public class ProcessThread<
             return (BuilderType) this;
         }
 
-        public @Nonnull Builder setStacktrace(@Nonnull StackTrace stackTrace) {
+        public @Nonnull BuilderType setStacktrace(@Nonnull StackTrace stackTrace) {
             this.stackTrace = stackTrace;
-            return this;
+            return (BuilderType) this;
         }
 
         public @Nonnull StackTrace getStacktrace() {
@@ -467,7 +459,7 @@ public class ProcessThread<
      * @author ogondza
      * @see ThreadSet#where(ProcessThread.Predicate)
      */
-    public static interface Predicate {
+    public interface Predicate {
         boolean isValid(@Nonnull ProcessThread<?, ?, ?> thread);
     }
 

@@ -135,7 +135,7 @@ public class GroovyRuntimeTest extends AbstractCliTest {
 
     @Theory
     public void loadSymbolsFromOtherDumplingPackages(String command) {
-        stdin("new Deadlocks(); ThreadStatus.valueOf(0); new JvmRuntimeFactory(); new CommandFailedException('');%n");
+        stdin("new Deadlocks(); ModelObject.Mode.HUMAN; new JvmRuntimeFactory(); new CommandFailedException('');%n");
         run(command);
 
         assertThat(err.toString(), equalTo(""));

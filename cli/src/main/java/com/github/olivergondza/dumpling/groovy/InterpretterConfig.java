@@ -68,24 +68,6 @@ public class InterpretterConfig extends GroovyInterpretterConfig {
         return binding;
     }
 
-    /**
-     * @deprecated Use <tt>D.load.threaddump(String)</tt> instead.
-     */
-    @Deprecated
-    @SuppressWarnings("unused")
-    private static final class Load {
-        private ProcessStream stream;
-
-        public Load(ProcessStream stream) {
-            this.stream = stream;
-        }
-
-        public ProcessRuntime<?, ?, ?> call(String filename) throws Exception {
-            stream.err().println("load(String) command is deprecated. Use 'D.load.threaddump(String)' instead.");
-            return new ThreadDumpFactory().fromFile(new File(filename));
-        }
-    }
-
     /*package*/ static class CliApi {
         private static final String NL = System.getProperty("line.separator");
 
@@ -236,7 +218,7 @@ public class InterpretterConfig extends GroovyInterpretterConfig {
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
-    private static @interface ApiDoc {
+    private @interface ApiDoc {
         String text();
     }
 }

@@ -114,14 +114,6 @@ public class StackTrace extends ModelObject {
         return Arrays.asList(elements);
     }
 
-    /**
-     * @deprecated because of the typo.
-     */
-    @Deprecated
-    public @Nonnull List<StackTraceElement> getElemens() {
-        return Arrays.asList(elements);
-    }
-
     @Override
     public void toString(PrintStream stream, Mode mode) {
         for (StackTraceElement e: elements) {

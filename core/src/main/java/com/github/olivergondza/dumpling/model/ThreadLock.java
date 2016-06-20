@@ -80,43 +80,6 @@ public class ThreadLock extends ModelObject {
     }
 
     /**
-     * @deprecated Kept for backward compatibility. Use {@link ThreadLock} instead.
-     */
-    @Deprecated
-    public static final class WithHashCode extends ThreadLock {
-
-        public WithHashCode(@Nonnull Object instance) {
-            super(
-                    instance.getClass().getCanonicalName(),
-                    System.identityHashCode(instance)
-            );
-        }
-
-        public WithHashCode(@Nonnull String className, int identityHashCode) {
-            super(className, identityHashCode);
-        }
-
-        public long getIdentityHashCode() {
-            return getId();
-        }
-    }
-
-    /**
-     * @deprecated Kept for backward compatibility. Use {@link ThreadLock} instead.
-     */
-    @Deprecated
-    public static final class WithAddress extends ThreadLock {
-
-        public WithAddress(@Nonnull String className, long address) {
-            super(className, address);
-        }
-
-        public long getAddress() {
-            return getId();
-        }
-    }
-
-    /**
      * Monitor with stack trace position.
      *
      * @author ogondza
