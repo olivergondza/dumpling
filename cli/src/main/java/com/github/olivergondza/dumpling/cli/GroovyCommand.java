@@ -30,6 +30,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -110,7 +111,7 @@ public class GroovyCommand implements CliCommand {
     }
 
     private InputStreamReader getScript(ProcessStream process) {
-        InputStream scriptStream = process.in();
+        InputStream scriptStream;
 
         if (expression != null && !expression.isEmpty()) {
             scriptStream = new ByteArrayInputStream(expression.getBytes());
@@ -119,6 +120,14 @@ public class GroovyCommand implements CliCommand {
                 scriptStream = new FileInputStream(script);
             } catch (FileNotFoundException ex) {
                 throw new CommandFailedException(ex.getMessage(), ex);
+            }
+        } else {
+            scriptStream = process.in();
+            try {
+                if (process.in().available() == 0) {
+                    process.err().println("Reading script from standard input...");
+                }
+            } catch (IOException e) {
             }
         }
 
