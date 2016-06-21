@@ -65,12 +65,6 @@ public class JvmRuntimeFactory {
                 return _currentRuntime();
             } catch (IllegalRuntimeStateException ex) {
                 error = ex;
-                try {
-                    Thread.sleep(20);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
             }
         }
 
