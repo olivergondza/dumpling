@@ -1,0 +1,7 @@
+"blockedReacquiringLocked" prio=10 tid=0x00002b0a66949000 nid=0xa5d in Object.wai
+   java.lang.Thread.State: BLOCKED (on object monitor)
+	at java.lang.Object.wait(Native Method)
+	- locked <0x00000007d757b550> (a java.lang.Object)
+	at java.lang.Object.wait(Object.java:503)
+	at com.github.olivergondza.dumpling.factory.ThreadDumpFactoryTest$1.run(ThreadDumpFactoryTest.java:689)
+	- locked <0x00000007d757b550> (a java.lang.Object)

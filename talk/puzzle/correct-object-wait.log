@@ -1,0 +1,12 @@
+"Executor #0 for jenkins_node_03" daemon prio=10 tid=0x00007fb79d8b3800 nid=0xf2b in Object.wait() [0x00007fb774103000]
+   java.lang.Thread.State: WAITING (on object monitor)
+	at java.lang.Object.wait(Native Method)
+	- waiting on <0x0000000701075cf8> (a hudson.model.Queue)
+	at java.lang.Object.wait(Object.java:503)
+	at hudson.util.OneShotEvent.block(OneShotEvent.java:72)
+	- locked <0x0000000701075cf8> (a hudson.model.Queue)
+	at hudson.model.Queue.pop(Queue.java:949)
+	- locked <0x0000000701075cf8> (a hudson.model.Queue)
+	at hudson.model.Executor.grabJob(Executor.java:297)
+	at hudson.model.Executor.run(Executor.java:211)
+	- locked <0x0000000701075cf8> (a hudson.model.Queue)

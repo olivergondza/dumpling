@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Threaddump analysis with Dumpling</title>
+
+		<meta name="description" content="">
+		<meta name="author" content="Oliver Gondža, Red Hat">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<link rel="stylesheet" href="css/reveal.min.css">
+
+
+		<!-- dstanley/dblack - Set the theme to night - black background -->
+		<link rel="stylesheet" href="css/theme/night-rh.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+		<script>
+			if( window.location.search.match( /print-pdf/gi ) ) {
+				var link = document.createElement( 'link' );
+				link.rel = 'stylesheet';
+				link.type = 'text/css';
+				link.href = 'css/print/pdf.css';
+				document.getElementsByTagName( 'head' )[0].appendChild( link );
+			}
+		</script>
+
+		<!-- Begin added by SCE -->
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+		<script src="http://code.highcharts.com/highcharts.js"></script>
+		<script src="http://code.highcharts.com/modules/exporting.js"></script>
+
+
+		<style type="text/css">
+			.rh-header { position: relative; width: 100%; height: 50px; text-align: center; }
+			.ribbon {
+			   position: absolute;
+			   top: 10px;
+			   right: 10px;
+			}
+			.slide-spacer { position: absolute; top: 50px; width: 100%; height: 100%; }
+			p { text-align: left; }
+
+			.reveal table th,
+			.reveal table td {
+			  text-align: left;
+			  padding: 0.2em 0.5em 0.2em 0.5em;
+			  border-bottom: 1px solid; }
+			.reveal table tr:last-child td { border-bottom: none; }
+		</style>
+
+		<!-- end content added by SCE -->
+
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<div class="rh-header" style="font-size: 50%;">
+				<img src="images/redhat.png" class="ribbon"/>
+                                Devoxx Poland - 2016
+			</div>
+
+			<!-- dblack - slide spacer added to compensate for above header when aligning slide text -->
+			<div class="slide-spacer">
+				<!-- Any section element inside of this container is displayed as a slide -->
+				<div class="slides">
+					<section data-markdown>
+            <script type="text/template">
+              <section data-background="images/rh_bg1.jpg" data-background-size="contain" data-background-position="center" data-transition="slide">
+
+<h1 align=left>Threaddump analysis with Dumpling</h1>
+
+<br/>
+
+<h3 align=left>
+Oliver Gondža<br/>
+Red Hat<br/>
+
+            </script>
+          </section>
+
+          <section data-markdown>
+<!-- jstack_2014-08-13  -->
+            <script type="text/template">
+## The beast
+
+* 1700+ threads, 360 monitors
+* 18000+ lines of threaddump
+* 300 threads blocked
+
+* **1 thread to blame**
+
+            </script>
+          </section>
+
+          <section data-markdown>
+            <script type="text/template">
+## Is there no tool for that?
+
+* UI Based
+* Hard to use from automation
+  * No batch execution
+* Limited feature set
+  * Limited/no flexibility
+
+            </script>
+          </section>
+
+          <section data-markdown>
+            <script type="text/template">
+## Why Dumpling?
+
+- Console based
+- No installation required
+- User and automation friendly
+- Fully scriptable (in groovy)
+- Combines power with convenience
+
+            </script>
+          </section>
+
+          <section data-markdown>
+            <script type="text/template">
+## CLI Usage
+
+<pre><code class="bash">$ wget bit.ly/dumpling-sh -O dumpling.sh</code></pre>
+<pre><code class="bash">$ chmod +x dumpling.sh</code></pre>
+<pre><code class="bash">$ ./dumpling.sh help</code></pre>
+...
+<pre><code class="bash">$ ./dumpling.sh blocking-tree --in threaddump:my.log</code></pre>
+<pre><code class="bash">$ ./dumpling.sh threaddump --in process:4242</code></pre>
+            </script>
+          </section>
+
+          <section data-markdown>
+            <script type="text/template">
+## Factory (--in|-i)
+
+- Source of the data
+  - Threaddump parser
+    <pre><code class="bash">... -i threaddump:&lt;path></code></pre>
+  - JMX connection inspector
+    <pre><code class="bash">... -i jxm:&lt;connection string> ...</code></pre>
+  - Wrapped jstack invocation
+    <pre><code class="bash">... -i process:&lt;process id> ...</code></pre>
+
+            </script>
+          </section>
+
+          <section data-markdown>
+            <script type="text/template">
+## Query
+
+- Problem focused report
+  - deadlocks
+    - No tool is complete without it
+  - threaddump
+    - Parse and print (--porcelain)
+  - blocking-tree
+    - Identify threads blocking other threads
+            </script>
+          </section>
+
+          <section data-markdown>
+            <script type="text/template">
+              <section data-background="images/threaddump.png" data-background-size="contain" data-background-position="center" data-transition="slide">
+
+              <h2>Blocking tree</h2>
+
+<pre><code class="ini">
+$ ./dumpling.sh blocking-tree --in process:4242
+"a" prio=10 tid=139918763327488 nid=31954
+    "aa" prio=10 tid=139918763409408 nid=31955
+        "aaa" prio=10 tid=139918763419648 nid=31957
+    "ab" prio=10 tid=139918763413504 nid=31956
+
+"b" prio=10 tid=139918763425792 nid=31958
+  "ba" prio=10 tid=139918763431936 nid=31959
+
+All threads: 6; Roots: 2
+</code></pre>
+            </script>
+          </section>
+
+          <section data-markdown id="deadlock">
+            <script type="text/template">
+
+## Deadlock detection
+
+<pre><code class="ini">
+$ ./dumpling.sh deadlocks --in threaddump:deadlock-jstack.log
+Deadlock #1:
+"Handling POST /hudson/job/XXX/doRename" daemon prio=10 tid=1481750528 nid=27336
+  Waiting to <0x40dce6960> (a hudson.model.ListView)
+  Acquired   <0x40dce0d68> (a hudson.plugins.nested_view.NestedView)
+  Acquired   <0x49c5f7990> (a hudson.model.FreeStyleProject)
+  Acquired * <0x404325338> (a hudson.model.Hudson)
+"Handling POST /hudson/view/YYY/view/ZZZ/configSubmit" daemon prio=10 tid=47091108077568 nid=17982
+  Waiting to <0x404325338> (a hudson.model.Hudson)
+  Acquired * <0x40dce6960> (a hudson.model.ListView)
+
+Deadlocks: 1
+</code></pre>
+
+            </script>
+          </section>
+
+          <section data-markdown id="script">
+            <script type="text/template">
+## When queries are not enough
+
+- Filter threads
+  <pre><code class="bash">$ ./dumpling.sh grep &lt;predicate> --in &lt;src></code></pre>
+    <pre><code class="groovy">thread.status.blocked || thread.status.waiting</code></pre>
+- Run arbitrary script
+  <pre><code class="bash">$ ./dumpling.sh groovy -e &lt;script> --in &lt;src></code></pre>
+    <pre><code class="groovy">D.runtime.threads.grep { it.nid == 42 }.blockedThreads</code></pre>
+
+            </script>
+          </section>
+
+          <section data-markdown id="script">
+            <script type="text/template">
+
+## The D object
+
+- CLI facing DSL
+
+<pre><code class="bash">$ ./dumpling.sh groovy -e "println D"</code></pre>
+<pre><code class="bash">D.args: java.util.List
+  CLI arguments passed to the script
+
+D.load.process(int): com.github.olivergondza.dumpling.model.ProcessRuntime
+       Load runtime from process identified by PID.
+
+D.load.threaddump(String): com.github.olivergondza.dumpling.model.ProcessRuntime
+       Load runtime from threaddump.
+
+D.load.jmx(String): com.github.olivergondza.dumpling.model.ProcessRuntime
+       Load runtime via JMX using JMX connection string.
+
+D.load.jmx(int): com.github.olivergondza.dumpling.model.ProcessRuntime
+       Load runtime via JMX from process identified by PID.
+
+D.load.jvm: com.github.olivergondza.dumpling.model.ProcessRuntime
+       Capture runtime of current JVM.
+
+D.runtime: com.github.olivergondza.dumpling.model.ProcessRuntime
+  Current runtime passed via `--in` option. null if not provided.
+</code></pre>
+
+            </script>
+          </section>
+
+          <section data-markdown id="abstractions">
+            <script type="text/template">
+# Digging deeper
+
+<div style="margin: 0 auto; width: 50%;">
+  <figure style="float: left;">
+    <img src="images/abstractions.png" style="background: none; border: none;">
+    <figcaption>Abstraction</figcaption>
+  </figure>
+  <figure style="float: right;">
+    <img src="images/modules.png" style="background: none; border: none;">
+    <figcaption>Modules</figcaption>
+  </figure>
+</div>
+            </script>
+          </section>
+
+          <section data-markdown id="end">
+            <script type="text/template">
+# That's Dumpling
+
+<div align="center">https://olivergondza.github.io/dumpling/</div>
+            </script>
+          </section>
+				</div>
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.min.js"></script>
+
+
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: false,
+				center: true,
+				// The "normal" size of the presentation, aspect ratio will be preserved
+    				// when the presentation is scaled to fit different resolutions. Can be
+    				// specified using percentage units.
+				width: 1280,
+				height: 1024,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+				// parallaxBackgroundSize: '2100px 900px',
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+        				// Cross-browser shim that fully implements classList - https://github.com/eligrey/classList.js/
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+
+				        // Interpret Markdown in <section> elements
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+
+        				// Syntax highlight for <code> elements
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+
+        				// Zoom in and out with Alt+click
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+
+        				// Speaker notes
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
+
+        				// Remote control your reveal.js presentation using a touch device
+					// Visit remot.io to configure
+        				//{ src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+			Reveal.addEventListener( 'slidechanged', function( event ) {
+			    redrawChart();
+			} );
+
+		</script>
+
+	</body>
+</html>
