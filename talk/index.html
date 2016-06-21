@@ -303,6 +303,20 @@ D.runtime: com.github.olivergondza.dumpling.model.ProcessRuntime
             </script>
           </section>
 
+          <section data-markdown id="dsl">
+            <script type="text/template">
+# Dumpling DSL
+
+- Smart thread set
+  <pre><code class="java">rt.getThreads().where(nameIs("main"))</code></pre>
+  <pre><code class="java">rt.getThreads().where(it ->
+      "main".equals(it.getName())
+  )</code></pre>
+  <pre><code class="groovy">rt.threads.grep { it.name == "main" }</code></pre>
+- Javadoc/Sources/tutorial
+            </script>
+          </section>
+
           <section data-markdown id="abstractions">
             <script type="text/template">
 # Digging deeper
@@ -320,17 +334,16 @@ D.runtime: com.github.olivergondza.dumpling.model.ProcessRuntime
             </script>
           </section>
 
-          <section data-markdown id="dsl">
+          <section data-markdown>
             <script type="text/template">
-# Dumpling DSL
+# Why bundling it?
 
-- Smart thread set
-  <pre><code class="java">rt.getThreads().where(nameIs("main"))</code></pre>
-  <pre><code class="java">rt.getThreads().where(it ->
-      "main".equals(it.getName())
-  )</code></pre>
-  <pre><code class="groovy">rt.threads.grep { it.name == "main" }</code></pre>
-- Javadoc/Sources/tutorial
+<pre><code class="ini">
+$ jstack -l 4242
+4242: Unable to open socket file: target process not responding or HotSpot VM not loaded
+The -F option can be used when the target process is not responding
+</code></pre>
+
             </script>
           </section>
 
