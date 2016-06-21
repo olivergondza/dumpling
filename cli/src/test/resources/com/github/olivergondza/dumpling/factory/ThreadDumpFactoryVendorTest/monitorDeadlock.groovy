@@ -1,11 +1,15 @@
+import java.util.concurrent.CountDownLatch
+
+def cdl = new CountDownLatch(1);
+
 def monitorA = new Object();
 def monitorB = new Object();
 
 def other = new Thread("other") {
     def void run() {
         synchronized(monitorA) {
+            cdl.countDown();
             synchronized(monitorB) {
-                
             }
         }
     }    
@@ -13,7 +17,7 @@ def other = new Thread("other") {
 
 synchronized(monitorB) {
     other.start();
-    Thread.sleep(10);
+    cdl.await();
     synchronized (monitorA) {
         
     }
