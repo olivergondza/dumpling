@@ -369,6 +369,10 @@ public class ProcessThread<
             return setAcquiredMonitors(data);
         }
 
+        public @Nonnull List<Monitor> getAcquiredMonitors() {
+            return new ArrayList<Monitor>(acquiredMonitors);
+        }
+
         private String getHeader() {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             printHeader(new PrintStream(baos), Mode.HUMAN);

@@ -30,9 +30,11 @@ import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -95,6 +97,16 @@ public class JvmRuntimeFactory {
                     builder.setWaitingToLock(lock);
                 } else if (status.isWaiting() || status.isParked()) {
                     builder.setWaitingOnLock(lock);
+
+                    // Remove monitor we are waiting on (https://github.com/olivergondza/dumpling/issues/68)
+                    List<ThreadLock.Monitor> reportedMonitors = builder.getAcquiredMonitors();
+                    List<ThreadLock.Monitor> filteredMonitors = new ArrayList<ThreadLock.Monitor>(reportedMonitors.size());
+                    for (ThreadLock.Monitor monitor : reportedMonitors) {
+                        if (monitor.getLock().equals(lock)) continue;
+
+                        filteredMonitors.add(monitor);
+                    }
+                    builder.setAcquiredMonitors(filteredMonitors);
                 } else {
                     throw new IllegalRuntimeStateException(
                             "Thread declares lock while %s: %n%s%n", status, info
