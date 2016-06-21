@@ -56,6 +56,14 @@
 			  padding: 0.2em 0.5em 0.2em 0.5em;
 			  border-bottom: 1px solid; }
 			.reveal table tr:last-child td { border-bottom: none; }
+
+      .reveal pre {
+        font-size: .75em; width: 100%
+      }
+
+      .reveal pre code {
+        max-height: 600px;
+      }
 		</style>
 
 		<!-- end content added by SCE -->
@@ -90,6 +98,34 @@
 <h3 align=left>
 Oliver Gondža<br/>
 Red Hat<br/>
+
+            </script>
+          </section>
+
+          <section data-markdown>
+            <script type="text/template">
+
+<pre>
+<font color="gray">
+<font color="blue">"JMX server connection timeout 12154"</font> <font color="yellow">daemon prio=10 tid=0x... nid=0x86a</font> waiting for monitor entry [0x...]
+   java.lang.Thread.State: <font color="red">BLOCKED (on object monitor)</font>
+        <font color="white">at sun.rmi.transport.Target.unexport(Target.java:342)
+        <font color="green">- waiting to lock &lt;0x00000004fc01d750> (a sun.rmi.transport.Target)</font>
+        at sun.rmi.transport.ObjectTable.unexportObject(ObjectTable.java:138)
+        <font color="green">- locked &lt;0x0000000401351fc8> (a java.lang.Object)</font>
+        at java.rmi.server.UnicastRemoteObject.unexportObject(UnicastRemoteObject.java:280)
+        at sun.management.jmxremote.ConnectorBootstrap$PermanentExporter.unexportObject(ConnectorBootstrap.java:178)
+        at javax.management.remote.rmi.RMIJRMPServerImpl.unexport(RMIJRMPServerImpl.java:94)
+        at javax.management.remote.rmi.RMIJRMPServerImpl.closeClient(RMIJRMPServerImpl.java:145)
+        at javax.management.remote.rmi.RMIServerImpl.clientClosed(RMIServerImpl.java:334)
+        at javax.management.remote.rmi.RMIConnectionImpl.close(RMIConnectionImpl.java:214)
+        at javax.management.remote.rmi.RMIConnectionImpl$RMIServerCommunicatorAdmin.doStop(RMIConnectionImpl.java:1312)
+        at com.sun.jmx.remote.internal.ServerCommunicatorAdmin$Timeout.run(ServerCommunicatorAdmin.java:186)
+        at java.lang.Thread.run(Thread.java:662)</font>
+
+        Locked ownable synchronizers:
+          <font color="green">- &lt;0x4004a4be0> (a java.util.concurrent.locks.ReentrantLock$NonfairSync)</font>
+</pre>
 
             </script>
           </section>
@@ -210,7 +246,7 @@ Deadlock #1:
   Acquired   <0x40dce0d68> (a hudson.plugins.nested_view.NestedView)
   Acquired   <0x49c5f7990> (a hudson.model.FreeStyleProject)
   Acquired * <0x404325338> (a hudson.model.Hudson)
-"Handling POST /hudson/view/YYY/view/ZZZ/configSubmit" daemon prio=10 tid=47091108077568 nid=17982
+"Handling POST /hudson/view/ZZZ/configSubmit" daemon prio=10 tid=47091108077568 nid=17982
   Waiting to <0x404325338> (a hudson.model.Hudson)
   Acquired * <0x40dce6960> (a hudson.model.ListView)
 
@@ -229,7 +265,7 @@ Deadlocks: 1
     <pre><code class="groovy">thread.status.blocked || thread.status.waiting</code></pre>
 - Run arbitrary script
   <pre><code class="bash">$ ./dumpling.sh groovy -e &lt;script> --in &lt;src></code></pre>
-    <pre><code class="groovy">D.runtime.threads.grep { it.nid == 42 }.blockedThreads</code></pre>
+    <pre><code class="groovy">D.runtime.threads.grep { it.nid == 42 }</code></pre>
 
             </script>
           </section>
@@ -274,7 +310,7 @@ D.runtime: com.github.olivergondza.dumpling.model.ProcessRuntime
 <div style="margin: 0 auto; width: 50%;">
   <figure style="float: left;">
     <img src="images/abstractions.png" style="background: none; border: none;">
-    <figcaption>Abstraction</figcaption>
+    <figcaption>Abstractions</figcaption>
   </figure>
   <figure style="float: right;">
     <img src="images/modules.png" style="background: none; border: none;">
@@ -290,7 +326,9 @@ D.runtime: com.github.olivergondza.dumpling.model.ProcessRuntime
 
 - Smart thread set
   <pre><code class="java">rt.getThreads().where(nameIs("main"))</code></pre>
-  <pre><code class="java">rt.getThreads().where(it -> "main".equals(it.getName()))</code></pre>
+  <pre><code class="java">rt.getThreads().where(it ->
+      "main".equals(it.getName())
+  )</code></pre>
   <pre><code class="groovy">rt.threads.grep { it.name == "main" }</code></pre>
 - Javadoc/Sources/tutorial
             </script>
@@ -341,6 +379,8 @@ D.runtime: com.github.olivergondza.dumpling.model.ProcessRuntime
 
 				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
 				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+        zoomKey: 'ctrl',
 
 				// Parallax scrolling
 				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
