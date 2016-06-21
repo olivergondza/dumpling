@@ -132,28 +132,34 @@ public final class TestThread {
 
         BufferedInputStream bis = new BufferedInputStream(process.getInputStream());
         bis.mark(1024 * 1024 * 1);
-        while (!isUp(bis)) {
+        String out = "never_tried";
+        for (int i = 0; i < 10; i++) {
+            out = isUp(bis);
+            if (out != null) return process;
+
             try {
                 int exit = process.exitValue();
                 throw new AssertionError("Test process terminated prematurely: " + exit);
             } catch (IllegalThreadStateException ex) {
                 // Still running
             }
+
+            Thread.sleep(500);
         }
 
-        return process;
+        throw new AssertionError("Unable to bring to SUT up in time: " + out);
     }
 
-    private static boolean isUp(BufferedInputStream is) throws IOException {
+    private static String isUp(BufferedInputStream is) throws IOException {
         is.reset();
         byte[] buffer = new byte[1024];
         int length;
         while ((length = is.read(buffer)) != -1) {
             String line = new String(buffer, 0, length);
-            if (line.contains(MARKER)) return true;
+            if (line.contains(MARKER)) return line;
         }
 
-        return false;
+        return null;
     }
 
     private static String getCredFile(String path) throws Exception {
