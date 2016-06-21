@@ -155,7 +155,7 @@ Red Hat<br/>
   - Threaddump parser
     <pre><code class="bash">... -i threaddump:&lt;path></code></pre>
   - JMX connection inspector
-    <pre><code class="bash">... -i jxm:&lt;connection string> ...</code></pre>
+    <pre><code class="bash">... -i jmx:&lt;connection string> ...</code></pre>
   - Wrapped jstack invocation
     <pre><code class="bash">... -i process:&lt;process id> ...</code></pre>
 
@@ -281,6 +281,29 @@ D.runtime: com.github.olivergondza.dumpling.model.ProcessRuntime
     <figcaption>Modules</figcaption>
   </figure>
 </div>
+            </script>
+          </section>
+
+          <section data-markdown id="dsl">
+            <script type="text/template">
+# Dumpling DSL
+
+- Smart thread set
+  <pre><code class="java">rt.getThreads().where(nameIs("main"))</code></pre>
+  <pre><code class="java">rt.getThreads().where(it -> "main".equals(it.getName()))</code></pre>
+  <pre><code class="groovy">rt.threads.grep { it.name == "main" }</code></pre>
+- Javadoc/Sources/tutorial
+            </script>
+          </section>
+
+          <section data-markdown>
+            <script type="text/template">
+# What's next
+
+- Native packages
+- Support for more VM vendors
+- Java 9
+- ???
             </script>
           </section>
 
