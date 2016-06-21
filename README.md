@@ -1,5 +1,7 @@
 # Dumpling
 
+[![Build Status](https://travis-ci.org/olivergondza/dumpling.svg?branch=master)](https://travis-ci.org/olivergondza/dumpling)
+
 Dumpling is an object model and domain specific language to represent and query the state of
 process threads and their lock based dependencies.
 
