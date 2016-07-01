@@ -3,7 +3,7 @@ layout: default
 title: Dumpling as CLI tool
 category: toplevel
 prio: 20
-dumpling-sh-url: https://raw.githubusercontent.com/olivergondza/dumpling/master/dumpling.sh
+dumpling-sh-url: http://bit.ly/dumpling-sh
 ---
 
 # {{page.title}}
