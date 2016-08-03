@@ -98,4 +98,10 @@ public class GroovyCommandTest extends AbstractCliTest {
         run("groovy", "-e", "assert args[0] == D.args[0] && args[1] != D.args[0]", "1", "2");
         assertThat(exitValue, equalTo(0));
     }
+
+    @Test
+    public void  hasHelp() {
+        run("help", "groovy");
+        assertThat(out.toString(), containsString("All Dumpling DSL classes and methods are imported"));
+    }
 }

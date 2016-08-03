@@ -52,4 +52,10 @@ public class GroovyshCommandTest extends AbstractCliTest {
         assertThat(out.toString(), containsString(" 18%n"));
         assertThat(this, succeeded());
     }
+
+    @Test
+    public void  hasHelp() {
+        run("help", "groovysh");
+        assertThat(out.toString(), containsString("All Dumpling DSL classes and methods are imported"));
+    }
 }

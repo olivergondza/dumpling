@@ -62,4 +62,10 @@ public class ThreaddumpCommandTest extends AbstractCliTest {
         assertThat(out.toString(), containsString("\"blocked_thread\" prio=10 tid=0x00002ad39c16b800 nid=0x7e29"));
         assertThat(out.toString(), containsString("- waiting to lock <0x00000004063a9378> (a hudson.model.Queue)"));
     }
+
+    @Test
+    public void  hasHelp() {
+        run("help", "threaddump");
+        assertThat(out.toString(), containsString("Allows to capture threaddump from factory such as jmx or process for later analysis"));
+    }
 }
