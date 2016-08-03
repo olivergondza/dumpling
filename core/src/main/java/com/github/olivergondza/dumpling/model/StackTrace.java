@@ -103,6 +103,10 @@ public class StackTrace extends ModelObject {
     /**
      * Get innermost stack frame or null when there is no trace attached.
      */
+    public @CheckForNull StackTraceElement getHead() {
+        return getElement(0);
+    }
+
     public @CheckForNull StackTraceElement head() {
         return getElement(0);
     }

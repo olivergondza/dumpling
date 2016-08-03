@@ -128,12 +128,16 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result<?,
             int i = 1;
             for(SetType deadlock: deadlocks) {
                 HashSet<ThreadLock> involvedLocks = new HashSet<ThreadLock>(deadlock.size());
+                boolean allMonitors = true;
                 for(ThreadType thread: deadlock) {
                     involvedLocks.add(thread.getWaitingToLock());
                     involvedLocks.add(thread.getWaitingOnLock());
+                    if (thread.getWaitingToLock() == null) {
+                        allMonitors = false;
+                    }
                 }
 
-                out.printf("%nDeadlock #%d:%n", i++);
+                out.printf("%n%sDeadlock #%d:%n", allMonitors ? "Monitor ": "", i++);
                 for(ThreadType thread: deadlock) {
                     out.println(thread.getHeader());
                     if (thread.getWaitingToLock() != null) {

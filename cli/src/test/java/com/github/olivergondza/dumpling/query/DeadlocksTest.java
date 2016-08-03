@@ -25,6 +25,7 @@ package com.github.olivergondza.dumpling.query;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.startsWith;
 
 import org.junit.Test;
 
@@ -34,7 +35,7 @@ import com.github.olivergondza.dumpling.factory.ThreadDumpFactory;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
 
 public class DeadlocksTest extends AbstractCliTest {
-;
+
     private final String logPath = Util.asFile(Util.resource("jstack/deadlock.log")).getAbsolutePath();
 
     @Test
@@ -53,8 +54,8 @@ public class DeadlocksTest extends AbstractCliTest {
     }
 
     private void assertListing(String out) {
-        assertThat(out, containsString(Util.multiline(
-                "Deadlock #1:",
+        assertThat(out, startsWith(Util.multiline("",
+                "Monitor Deadlock #1:",
                 "\"Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24\" daemon prio=10 tid=1481750528 nid=27336",
                 "\tWaiting to <0x40dce6960> (a hudson.model.ListView)",
                 "\tAcquired   <0x40dce0d68> (a hudson.plugins.nested_view.NestedView)",
@@ -83,8 +84,8 @@ public class DeadlocksTest extends AbstractCliTest {
     }
 
     private void assertLongListing(String out) {
-        assertThat(out, containsString(Util.multiline(
-                "Deadlock #1:",
+        assertThat(out, startsWith(Util.multiline("",
+                "Monitor Deadlock #1:",
                 "\"Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24\" daemon prio=10 tid=1481750528 nid=27336",
                 "\tWaiting to <0x40dce6960> (a hudson.model.ListView)",
                 "\tAcquired   <0x40dce0d68> (a hudson.plugins.nested_view.NestedView)",
