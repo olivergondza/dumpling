@@ -71,7 +71,7 @@ if [ $(ls $cli/target/dumpling-*-shaded.jar 2> /dev/null | wc -l) != 1 ]; then
   grep -q com.github.olivergondza.dumpling.cli.Main $cli/pom.xml 2> /dev/null
   if [ $? == 0 ]; then
     echo "No dumpling.jar found, building it now..." >&2
-    mvn clean package -DskipTests > /dev/null
+    mvn -q clean package -DskipTests
     jar=$(ls $cli/target/dumpling-*-shaded.jar | head -n 1)
   else
     jar="$dir/dumpling.jar"
