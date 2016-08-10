@@ -50,7 +50,7 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
 public class Main {
 
     // TODO metaVar is not extracted from handler in: Argument "COMMAND" is required
-    @Argument(required = true, index = 0, metaVar = "COMMAND")
+    @Argument(required = true, metaVar = "COMMAND")
     private CliCommand handler;
 
     public static void main(@Nonnull String[] args) {
@@ -169,12 +169,12 @@ public class Main {
                 return type.newInstance();
             } catch (InstantiationException ex) {
 
-                AssertionError e = new AssertionError("Cli handler " + type.getName() + " does not declare default contructor");
+                AssertionError e = new AssertionError("Cli handler " + type.getName() + " does not declare default constructor");
                 e.initCause(ex);
                 throw e;
             } catch (IllegalAccessException ex) {
 
-                AssertionError e = new AssertionError("Cli handler " + type.getName() + " does not declare default contructor");
+                AssertionError e = new AssertionError("Cli handler " + type.getName() + " does not declare default constructor");
                 e.initCause(ex);
                 throw e;
             }

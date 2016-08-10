@@ -38,7 +38,7 @@ import org.kohsuke.args4j.CmdLineParser;
 
 public class HelpCommand implements CliCommand {
 
-    @Argument(required = false, usage = "Print detailed usage", metaVar = "COMMAND")
+    @Argument(usage = "Print detailed usage", metaVar = "COMMAND")
     private String commandName;
 
     @Override
