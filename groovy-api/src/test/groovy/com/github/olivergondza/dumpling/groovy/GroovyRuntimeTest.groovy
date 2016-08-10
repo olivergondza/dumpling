@@ -49,7 +49,14 @@ class GroovyRuntimeTest {
     }
 
     @Test
-    def void size() {
+    void size() {
         runScript("assert rt.threads.size() > 1");
+    }
+
+    @Test
+    void queries() {
+        runScript("rt.threads.query(blockingTree()) instanceof BlockingTree.Result")
+        runScript("rt.threads.query(deadlocks()) instanceof Deadlocks.Result")
+        runScript("rt.threads.query(topContenders()) instanceof TopContenders.Result")
     }
 }

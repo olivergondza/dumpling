@@ -40,8 +40,11 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
  */
 public class GroovyInterpretterConfig {
 
-    private static final List<String> STATIC_IMPORTS = Arrays.asList("com.github.olivergondza.dumpling.model.ProcessThread");
-    private static final List<String> IMPORTS = Arrays.asList(
+    private static final List<String> STATIC_IMPORTS = Arrays.asList(
+            "com.github.olivergondza.dumpling.model.ProcessThread",
+            "com.github.olivergondza.dumpling.groovy.Factories"
+    );
+    private static final List<String> STAR_IMPORTS = Arrays.asList(
             "com.github.olivergondza.dumpling.cli",
             "com.github.olivergondza.dumpling.factory",
             "com.github.olivergondza.dumpling.model",
@@ -51,7 +54,7 @@ public class GroovyInterpretterConfig {
      * All class imports.
      */
     public Collection<String> getStarImports() {
-        return IMPORTS;
+        return STAR_IMPORTS;
     }
 
     /**
@@ -67,7 +70,7 @@ public class GroovyInterpretterConfig {
     public CompilerConfiguration getCompilerConfiguration() {
         CompilerConfiguration cc = new CompilerConfiguration();
         ImportCustomizer imports = new ImportCustomizer();
-        for (String starImport: IMPORTS) {
+        for (String starImport: STAR_IMPORTS) {
             imports.addStarImports(starImport);
         }
         for (String staticStar: STATIC_IMPORTS) {
@@ -88,7 +91,7 @@ public class GroovyInterpretterConfig {
      * Decorate Dumpling API with groovy extensions.
      */
     public void setupDecorateMethods(ClassLoader cl) {
-        synchronized (IMPORTS) {
+        synchronized (STAR_IMPORTS) {
             if (DECORATED) return;
 
             GroovyShell shell = new GroovyShell(cl, new Binding(), getCompilerConfiguration());
