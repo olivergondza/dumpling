@@ -75,11 +75,7 @@ public class Main {
         } catch (CmdLineException ex) {
 
             system.err().println(ex.getMessage());
-            if (handler == null) {
-                HelpCommand.printUsage(system.err());
-            } else {
-                HelpCommand.printUsage(handler, system.err());
-            }
+            HelpCommand.printUsage(handler, system.err(), ex);
         } catch (CommandFailedException ex) {
 
             system.err().println(ex.getMessage());
@@ -118,7 +114,7 @@ public class Main {
             }
 
             CliRuntimeFactory<?> factory = getFactory(scheme);
-            if (factory == null) throw new CmdLineException(owner, "Unknown runtime source kind: " + scheme);
+            if (factory == null) throw new UnknownRuntimeKind(owner, "Unknown runtime source kind: " + scheme);
 
             ProcessRuntime<?, ?, ?> runtime = factory.createRuntime(locator, streams);
             if (runtime == null) throw new AssertionError(factory.getClass() + " failed to create runtime");
@@ -177,6 +173,13 @@ public class Main {
                 AssertionError e = new AssertionError("Cli handler " + type.getName() + " does not declare default constructor");
                 e.initCause(ex);
                 throw e;
+            }
+        }
+
+        /*package*/ static final class UnknownRuntimeKind extends CmdLineException {
+
+            public UnknownRuntimeKind(CmdLineParser owner, String message) {
+                super(owner, message);
             }
         }
     }

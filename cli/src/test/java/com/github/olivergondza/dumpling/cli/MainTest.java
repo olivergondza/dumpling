@@ -87,4 +87,13 @@ public class MainTest extends AbstractCliTest {
         assertThat(exitValue, not(equalTo(0)));
         assertThat(err.toString(), containsString("takes an operand LOCATOR"));
     }
+
+    @Test
+    public void runtimeKindHelp() throws Exception {
+        run("deadlocks", "--in", "dead:beef");
+        assertThat(out.toString(), equalTo(""));
+        assertThat(exitValue, not(equalTo(0)));
+        assertThat(err.toString(), containsString("Unknown runtime source kind: dead"));
+        assertThat(err.toString(), containsString("Available runtime source KINDs:"));
+    }
 }

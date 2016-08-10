@@ -65,6 +65,16 @@ public class HelpCommand implements CliCommand {
         return 0;
     }
 
+    /*package*/ static void printUsage(CliCommand handler, PrintStream out, CmdLineException ex) {
+        if (handler == null) {
+            printUsage(out);
+        } else if (ex instanceof Main.ProcessRuntimeOptionHandler.UnknownRuntimeKind) {
+            printAvailableRuntimeSources(out);
+        } else {
+            printUsage(handler, out);
+        }
+    }
+
     /*package*/ static void printUsage(PrintStream out) {
         out.printf(usage("<COMMAND> [...]%n%n"));
 
@@ -76,6 +86,10 @@ public class HelpCommand implements CliCommand {
             out.printf("%n\t%s%n", handler.getDescription());
         }
 
+        printAvailableRuntimeSources(out);
+    }
+
+    private static void printAvailableRuntimeSources(PrintStream out) {
         out.printf("%nAvailable runtime source KINDs:%n%n");
         for (CliRuntimeFactory<?> factory: Main.ProcessRuntimeOptionHandler.getFactories()) {
             out.println(factory.getKind());
