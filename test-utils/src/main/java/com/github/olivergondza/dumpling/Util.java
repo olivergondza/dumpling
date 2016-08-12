@@ -163,4 +163,14 @@ public class Util {
             if (scanner != null) scanner.close();
         }
     }
+
+    public static Error processTerminatedPrematurely(Process process, int exit, Exception cause) {
+        AssertionError error = new AssertionError(
+                "Process under test probably terminated prematurely. Exit code: "
+                        + exit + "\nSTDOUT: " + currentProcessOut(process.getInputStream())
+                        + "\nSTDERR: " + currentProcessOut(process.getErrorStream())
+        );
+        error.initCause(cause);
+        return error;
+    }
 }

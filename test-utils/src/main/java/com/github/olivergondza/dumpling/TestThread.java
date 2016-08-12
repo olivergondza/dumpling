@@ -24,6 +24,7 @@
 package com.github.olivergondza.dumpling;
 
 import static com.github.olivergondza.dumpling.Util.pause;
+import static com.github.olivergondza.dumpling.Util.processTerminatedPrematurely;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -139,7 +140,7 @@ public final class TestThread {
 
             try {
                 int exit = process.exitValue();
-                throw new AssertionError("Test process terminated prematurely: " + exit);
+                throw processTerminatedPrematurely(process, exit, null);
             } catch (IllegalThreadStateException ex) {
                 // Still running
             }

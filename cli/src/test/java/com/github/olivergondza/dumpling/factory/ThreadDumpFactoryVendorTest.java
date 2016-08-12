@@ -25,7 +25,7 @@ package com.github.olivergondza.dumpling.factory;
 
 import static com.github.olivergondza.dumpling.Util.only;
 import static com.github.olivergondza.dumpling.Util.pause;
-import static com.github.olivergondza.dumpling.Util.currentProcessOut;
+import static com.github.olivergondza.dumpling.Util.processTerminatedPrematurely;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -329,16 +329,16 @@ public class ThreadDumpFactoryVendorTest {
 
             try {
                 int exit = process.exitValue();
-                throw reportProblem(exit, null);
+                throw processTerminatedPrematurely(process, exit, null);
             } catch (IllegalThreadStateException ex) {
                 // Still running as expected
                 try {
 
                     return runtime = waitForInitialized();
                 } catch (IOException e) {
-                    throw reportProblem(getExitIfDone(), e);
+                    throw processTerminatedPrematurely(process, getExitIfDone(), e);
                 } catch (InterruptedException e) {
-                    throw reportProblem(getExitIfDone(), e);
+                    throw processTerminatedPrematurely(process, getExitIfDone(), e);
                 }
             }
         }
@@ -349,16 +349,6 @@ public class ThreadDumpFactoryVendorTest {
             } catch (IllegalThreadStateException _) {
                 return -1;
             }
-        }
-
-        private Error reportProblem(int exit, Exception cause) {
-            AssertionError error = new AssertionError(
-                    "Process under test probably terminated prematurely. Exit code: "
-                    + exit + "\nSTDOUT: " + currentProcessOut(process.getInputStream())
-                    + "\nSTDERR: " + currentProcessOut(process.getErrorStream())
-            );
-            error.initCause(cause);
-            return error;
         }
 
         private ThreadDumpRuntime waitForInitialized() throws IOException, InterruptedException {
