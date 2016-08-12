@@ -59,7 +59,7 @@ public class GroovyApiEntryPoint extends GroovyApi {
         return new LoadCommand(initIndent + "load.");
     }
 
-    @ApiDoc(text = "CLI arguments passed to the script")
+    @ApiDoc(text = "CLI arguments passed to the script.")
     public @Nonnull List<String> getArgs() {
         return args;
     }
