@@ -1,0 +1,8 @@
+com.github.olivergondza.dumpling.factory
+com.github.olivergondza.dumpling.factory.jmx
+com.github.olivergondza.dumpling.model
+com.github.olivergondza.dumpling.model.dump
+com.github.olivergondza.dumpling.model.jmx
+com.github.olivergondza.dumpling.model.jvm
+com.github.olivergondza.dumpling.model.mxbean
+com.github.olivergondza.dumpling.query
