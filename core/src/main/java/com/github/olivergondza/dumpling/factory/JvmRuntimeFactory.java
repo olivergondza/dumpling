@@ -62,7 +62,7 @@ public class JvmRuntimeFactory {
 
     public @Nonnull JvmRuntime currentRuntime() {
         IllegalRuntimeStateException error = null;
-        for (int retry = 0; retry < 5; retry++) {
+        for (int retry = 0; retry < 10; retry++) {
             try {
                 return _currentRuntime();
             } catch (IllegalRuntimeStateException ex) {
