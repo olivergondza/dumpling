@@ -68,7 +68,7 @@ public class GroovyCommandTest extends AbstractCliTest {
         stdin("D.runtime.threads%n");
         run("groovy", "--in", "threaddump", log);
         assertThat(this, succeeded());
-        assertThat(out.toString(), containsString("\"blocked_thread\" prio=10 tid=47088345200640 nid=32297"));
+        assertThat(out.toString(), containsString("\"blocked_thread\" prio=10 tid=0x2ad39c16b800 nid=32297"));
         assertThat(out.toString(), containsString("- waiting to lock <0x4063a9378> (a hudson.model.Queue)"));
 
         stdin("D.runtime.threads%n");

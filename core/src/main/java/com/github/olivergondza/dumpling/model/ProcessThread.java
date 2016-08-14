@@ -447,7 +447,7 @@ public class ProcessThread<
             if (priority != null) stream.append(" prio=").append(priority.toString());
 
             if (tid != null) {
-                String format = mode.isHuman() ? "%d" : "0x%016x";
+                String format = !mode.isHuman() ? "0x%016x": "0x%x";
                 stream.append(" tid=").format(format, tid);
             }
             if (nid != null) {

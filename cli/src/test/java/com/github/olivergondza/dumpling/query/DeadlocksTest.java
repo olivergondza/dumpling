@@ -56,12 +56,12 @@ public class DeadlocksTest extends AbstractCliTest {
     private void assertListing(String out) {
         assertThat(out, startsWith(Util.multiline("",
                 "Monitor Deadlock #1:",
-                "\"Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24\" daemon prio=10 tid=1481750528 nid=27336",
+                "\"Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24\" daemon prio=10 tid=0x5851b800 nid=27336",
                 "\tWaiting to <0x40dce6960> (a hudson.model.ListView)",
                 "\tAcquired   <0x40dce0d68> (a hudson.plugins.nested_view.NestedView)",
                 "\tAcquired   <0x49c5f7990> (a hudson.model.FreeStyleProject)",
                 "\tAcquired * <0x404325338> (a hudson.model.Hudson)",
-                "\"Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107\" daemon prio=10 tid=47091108077568 nid=17982",
+                "\"Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107\" daemon prio=10 tid=0x2ad440c4e000 nid=17982",
                 "\tWaiting to <0x404325338> (a hudson.model.Hudson)",
                 "\tAcquired * <0x40dce6960> (a hudson.model.ListView)"
         )));
@@ -86,12 +86,12 @@ public class DeadlocksTest extends AbstractCliTest {
     private void assertLongListing(String out) {
         assertThat(out, startsWith(Util.multiline("",
                 "Monitor Deadlock #1:",
-                "\"Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24\" daemon prio=10 tid=1481750528 nid=27336",
+                "\"Handling POST /hudson/job/some_other_job/doRename : ajp-127.0.0.1-8009-24\" daemon prio=10 tid=0x5851b800 nid=27336",
                 "\tWaiting to <0x40dce6960> (a hudson.model.ListView)",
                 "\tAcquired   <0x40dce0d68> (a hudson.plugins.nested_view.NestedView)",
                 "\tAcquired   <0x49c5f7990> (a hudson.model.FreeStyleProject)",
                 "\tAcquired * <0x404325338> (a hudson.model.Hudson)",
-                "\"Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107\" daemon prio=10 tid=47091108077568 nid=17982",
+                "\"Handling POST /hudson/view/some_view/configSubmit : ajp-127.0.0.1-8009-107\" daemon prio=10 tid=0x2ad440c4e000 nid=17982",
                 "\tWaiting to <0x404325338> (a hudson.model.Hudson)",
                 "\tAcquired * <0x40dce6960> (a hudson.model.ListView)"
         )));

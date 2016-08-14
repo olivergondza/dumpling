@@ -45,7 +45,7 @@ public class ThreaddumpCommandTest extends AbstractCliTest {
         String reparsed = out.toString();
 
         assertThat(parsed, equalTo(reparsed));
-        assertThat(parsed, containsString("\"Handling GET /hudson/job/some_job/ : ajp-127.0.0.1-8009-133\" daemon prio=10 tid=47091150252032 nid=18245"));
+        assertThat(parsed, containsString("\"Handling GET /hudson/job/some_job/ : ajp-127.0.0.1-8009-133\" daemon prio=10 tid=0x2ad443486800 nid=18245"));
     }
 
     @Test
@@ -54,7 +54,7 @@ public class ThreaddumpCommandTest extends AbstractCliTest {
 
         run("threaddump", "--in", "threaddump", log);
         assertThat(this, succeeded());
-        assertThat(out.toString(), containsString("\"blocked_thread\" prio=10 tid=47088345200640 nid=32297"));
+        assertThat(out.toString(), containsString("\"blocked_thread\" prio=10 tid=0x2ad39c16b800 nid=32297"));
         assertThat(out.toString(), containsString("- waiting to lock <0x4063a9378> (a hudson.model.Queue)"));
 
         run("threaddump", "--in", "threaddump", log, "--porcelain");

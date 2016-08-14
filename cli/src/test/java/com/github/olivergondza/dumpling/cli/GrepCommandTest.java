@@ -60,7 +60,7 @@ public class GrepCommandTest extends AbstractCliTest {
         final String log = Util.asFile(Util.resource("jstack/producer-consumer.log")).getAbsolutePath();
 
         run("grep", "thread.status.blocked", "--in", "threaddump", log);
-        assertThat(out.toString(), containsString("\"blocked_thread\" prio=10 tid=47088345200640 nid=32297"));
+        assertThat(out.toString(), containsString("\"blocked_thread\" prio=10 tid=0x2ad39c16b800 nid=32297"));
         assertThat(out.toString(), containsString("- waiting to lock <0x4063a9378> (a hudson.model.Queue)"));
 
         run("grep", "thread.status.blocked", "--in", "threaddump", log, "--porcelain");

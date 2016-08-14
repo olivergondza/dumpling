@@ -56,16 +56,16 @@ public class TopContendersTest extends AbstractCliTest {
         assertThat(out, containsString("%nBlocking threads: 1; Blocked threads: 3%n"));
 
         // Header
-        assertThat(out, containsString("* \"producer\" prio=10 tid=140692931092480 nid=4567%n"));
-        assertThat(out, containsString("%n  (1) \"consumerC\" prio=10 tid=140692931145728 nid=4570%n"));
-        assertThat(out, containsString("%n  (2) \"consumerB\" prio=10 tid=140692931141632 nid=4569%n"));
-        assertThat(out, containsString("%n  (3) \"consumerA\" prio=10 tid=140692931094528 nid=4568%n"));
+        assertThat(out, containsString("* \"producer\" prio=10 tid=0x7ff5a02e2000 nid=4567%n"));
+        assertThat(out, containsString("%n  (1) \"consumerC\" prio=10 tid=0x7ff5a02ef000 nid=4570%n"));
+        assertThat(out, containsString("%n  (2) \"consumerB\" prio=10 tid=0x7ff5a02ee000 nid=4569%n"));
+        assertThat(out, containsString("%n  (3) \"consumerA\" prio=10 tid=0x7ff5a02e2800 nid=4568%n"));
 
         // No tread listing
-        assertThat(out, not(containsString("%n\"producer\" prio=10 tid=140692931092480 nid=4567%n")));
-        assertThat(out, not(containsString("%n\"consumerA\" prio=10 tid=140692931094528 nid=4568%n")));
-        assertThat(out, not(containsString("%n\"consumerB\" prio=10 tid=140692931141632 nid=4569%n")));
-        assertThat(out, not(containsString("%n\"consumerC\" prio=10 tid=140692931145728 nid=4570%n")));
+        assertThat(out, not(containsString("%n\"producer\" prio=10 tid=0x7ff5a02e2000 nid=4567%n")));
+        assertThat(out, not(containsString("%n\"consumerA\" prio=10 tid=0x7ff5a02e2800 nid=4568%n")));
+        assertThat(out, not(containsString("%n\"consumerB\" prio=10 tid=0x7ff5a02ee000 nid=4569%n")));
+        assertThat(out, not(containsString("%n\"consumerC\" prio=10 tid=0x7ff5a02ef000 nid=4570%n")));
     }
 
     @Test
@@ -86,15 +86,15 @@ public class TopContendersTest extends AbstractCliTest {
         assertThat(out, containsString("%nBlocking threads: 1; Blocked threads: 3%n"));
 
         // Header
-        assertThat(out, containsString("* \"producer\" prio=10 tid=140692931092480 nid=4567%n"));
-        assertThat(out, containsString("%n  (1) \"consumerC\" prio=10 tid=140692931145728 nid=4570%n"));
-        assertThat(out, containsString("%n  (2) \"consumerB\" prio=10 tid=140692931141632 nid=4569%n"));
-        assertThat(out, containsString("%n  (3) \"consumerA\" prio=10 tid=140692931094528 nid=4568%n"));
+        assertThat(out, containsString("* \"producer\" prio=10 tid=0x7ff5a02e2000 nid=4567%n"));
+        assertThat(out, containsString("%n  (1) \"consumerC\" prio=10 tid=0x7ff5a02ef000 nid=4570%n"));
+        assertThat(out, containsString("%n  (2) \"consumerB\" prio=10 tid=0x7ff5a02ee000 nid=4569%n"));
+        assertThat(out, containsString("%n  (3) \"consumerA\" prio=10 tid=0x7ff5a02e2800 nid=4568%n"));
 
         // Thread listing
-        assertThat(out, containsString("%n\"producer\" prio=10 tid=140692931092480 nid=4567%n"));
-        assertThat(out, containsString("%n\"consumerA\" prio=10 tid=140692931094528 nid=4568%n"));
-        assertThat(out, containsString("%n\"consumerB\" prio=10 tid=140692931141632 nid=4569%n"));
-        assertThat(out, containsString("%n\"consumerC\" prio=10 tid=140692931145728 nid=4570%n"));
+        assertThat(out, containsString("%n\"producer\" prio=10 tid=0x7ff5a02e2000 nid=4567%n"));
+        assertThat(out, containsString("%n\"consumerA\" prio=10 tid=0x7ff5a02e2800 nid=4568%n"));
+        assertThat(out, containsString("%n\"consumerB\" prio=10 tid=0x7ff5a02ee000 nid=4569%n"));
+        assertThat(out, containsString("%n\"consumerC\" prio=10 tid=0x7ff5a02ef000 nid=4570%n"));
     }
 }

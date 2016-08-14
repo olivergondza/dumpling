@@ -135,10 +135,10 @@ public class DeadlocksTest {
 
         assertThat(result.toString(), startsWith(Util.multiline("",
                 "Monitor Deadlock #1:",
-                "\"Handling POST /view/OuterNestedView/view/NestedView/view/ListView/configSubmit : ajp-127.0.0.1-8009-50\" daemon prio=10 tid=47168539664384 nid=5776",
+                "\"Handling POST /view/OuterNestedView/view/NestedView/view/ListView/configSubmit : ajp-127.0.0.1-8009-50\" daemon prio=10 tid=0x2ae6480d2000 nid=5776",
                 "\tWaiting to <0x4033105e0> (a hudson.model.Hudson)",
                 "\tAcquired * <0x40e73a1c8> (a hudson.model.ListView)",
-                "\"Handling POST /view/OuterNestedView/view/NestedView/view/ListView/job/a_job/doRename : ajp-127.0.0.1-8009-103\" daemon prio=10 tid=47167246166016 nid=16734",
+                "\"Handling POST /view/OuterNestedView/view/NestedView/view/ListView/job/a_job/doRename : ajp-127.0.0.1-8009-103\" daemon prio=10 tid=0x2ae5faf3e800 nid=16734",
                 "\tWaiting to <0x40e73a1c8> (a hudson.model.ListView)",
                 "\tAcquired   <0x40e739e30> (a hudson.plugins.nested_view.NestedView)",
                 "\tAcquired   <0x40e739d18> (a hudson.plugins.nested_view.NestedView)",
@@ -153,10 +153,10 @@ public class DeadlocksTest {
         String report = new Deadlocks().query(runtime.getThreads()).toString();
         assertThat(report, startsWith(Util.multiline("",
                 "Deadlock #1:",
-                "\"Executing labels(hudson.slaves.NodeProvisionerTest)\" prio=10 tid=139758839826432 nid=27543",
+                "\"Executing labels(hudson.slaves.NodeProvisionerTest)\" prio=10 tid=0x7f1c24008800 nid=27543",
                 "\tWaiting on <0xf1cf3470> (a java.util.concurrent.locks.ReentrantLock$NonfairSync)",
                 "\tAcquired * <0xf253d388> (a java.util.concurrent.locks.ReentrantReadWriteLock$NonfairSync)",
-                "\"AtmostOneTaskExecutor[hudson.model.Queue$1@2f485891] [#15]\" daemon prio=10 tid=139757837897728 nid=28180",
+                "\"AtmostOneTaskExecutor[hudson.model.Queue$1@2f485891] [#15]\" daemon prio=10 tid=0x7f1be8485000 nid=28180",
                 "\tWaiting on <0xf253d388> (a java.util.concurrent.locks.ReentrantReadWriteLock$NonfairSync)",
                 "\tAcquired * <0xf1cf3470> (a java.util.concurrent.locks.ReentrantLock$NonfairSync)"
         )));
