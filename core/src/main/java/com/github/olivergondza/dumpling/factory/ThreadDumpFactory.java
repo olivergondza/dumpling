@@ -29,6 +29,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -44,6 +45,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
+import javax.xml.bind.DatatypeConverter;
 
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.StackTrace;
@@ -352,7 +354,7 @@ public class ThreadDumpFactory {
     }
 
     private @Nonnull ThreadLock createLock(Matcher matcher) {
-        return new ThreadLock(matcher.group(2), Long.parseLong(matcher.group(1), 16));
+        return new ThreadLock(matcher.group(2), parseLong(matcher.group(1)));
     }
 
     private void initHeader(ThreadDumpThread.Builder builder, String attrs) {
@@ -362,19 +364,26 @@ public class ThreadDumpFactory {
             if ("daemon".equals(token)) builder.setDaemon(true);
             else if (token.startsWith("prio=")) builder.setPriority(Integer.parseInt(token.substring(5)));
             else if (token.startsWith("tid=")) builder.setTid(parseLong(token.substring(4)));
-            else if (token.startsWith("nid=")) builder.setNid(parseLong(token.substring(4)));
+            else if (token.startsWith("nid=")) builder.setNid(parseNid(token.substring(4)));
             else if (token.matches("#\\d+")) builder.setId(Integer.parseInt(token.substring(1)));
         }
     }
 
-    private long parseLong(String value) {
-        if (value.startsWith("0x")) return Long.parseLong(value.substring(2), 16);
+    private long parseNid(String value) {
+        return value.startsWith("0x")
+                ? parseLong(value.substring(2))
+                : Long.parseLong(value) // Dumpling human readable output
+        ;
+    }
 
-        // Dumpling output
-        if (!value.matches(".*[abcdef].*")) return Long.parseLong(value, 10);
+    /*package*/ static long parseLong(String value) {
+        if (value.startsWith("0x")) {
+            // Oracle JDK on OS X do not use prefix for tid - so we need to be able to read both
+            // https://github.com/olivergondza/dumpling/issues/59
+            value = value.substring(2);
+        }
 
-        // Oracle JDK on OS X do not use prefix for tid
-        // https://github.com/olivergondza/dumpling/issues/59
-        return Long.parseLong(value, 16);
+        // Long.parseLong is faster but unsuitable in some cases: https://github.com/olivergondza/dumpling/issues/71
+        return new BigInteger(value, 16).longValue();
     }
 }

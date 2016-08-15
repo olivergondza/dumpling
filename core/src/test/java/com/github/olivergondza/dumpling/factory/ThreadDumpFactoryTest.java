@@ -34,6 +34,7 @@ import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.spy;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -41,7 +42,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -51,11 +51,16 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
+import com.github.olivergondza.dumpling.DisposeRule;
+import com.github.olivergondza.dumpling.model.jvm.JvmRuntime;
+import com.github.olivergondza.dumpling.model.jvm.JvmThread;
+import com.github.olivergondza.dumpling.query.BlockingTree;
 import org.hamcrest.Description;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.collection.IsEmptyCollection;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -70,6 +75,10 @@ import com.github.olivergondza.dumpling.model.dump.ThreadDumpThread;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpThreadSet;
 
 public class ThreadDumpFactoryTest {
+
+    public static final ThreadDumpFactory FACTORY = new ThreadDumpFactory();
+
+    public @Rule DisposeRule cleaner = new DisposeRule();
 
     @Test
     public void openJdk7_60() throws Exception {
@@ -559,7 +568,7 @@ public class ThreadDumpFactoryTest {
     @Test
     public void preserveThreadOrder() throws Exception {
 
-        ThreadDumpThreadSet threads = new ThreadDumpFactory().fromStream(Util.resource(getClass(), "self-lock.log")).getThreads();
+        ThreadDumpThreadSet threads = FACTORY.fromStream(Util.resource(getClass(), "self-lock.log")).getThreads();
 
         List<String> expectedNames = Arrays.asList(
                 "Service Thread",
@@ -634,7 +643,8 @@ public class ThreadDumpFactoryTest {
     public void ownableSynchronizers() throws Exception {
         ThreadDumpRuntime threads = runtimeFrom("ownable-synchronizers.log");
         checkOwnableSynchronizers(threads);
-        checkOwnableSynchronizers(reparse(threads));
+        checkOwnableSynchronizers(reparse(threads, Mode.MACHINE));
+        checkOwnableSynchronizers(reparse(threads, Mode.HUMAN));
     }
 
     private void checkOwnableSynchronizers(ThreadDumpRuntime runtime) {
@@ -661,18 +671,25 @@ public class ThreadDumpFactoryTest {
 
     @Test
     public void parseOutputProducedByJvmRuntimeFactory() {
-        new Thread("parseOutputProducedByJvmRuntimeFactory") {
+        cleaner.register(new Thread("parseOutputProducedByJvmRuntimeFactory") {
             @Override
             public void run() {
                 synchronized (ThreadDumpFactoryTest.this) {
                     pause(1000);
                 }
             }
-        }.start();
+        }).start();
 
         pause(100);
 
-        ThreadDumpThread t = reparse(new JvmRuntimeFactory().currentRuntime()).getThreads().where(
+        JvmRuntime current = new JvmRuntimeFactory().currentRuntime();
+
+        ThreadDumpThread t = reparse(current, Mode.MACHINE).getThreads().where(
+                nameIs("parseOutputProducedByJvmRuntimeFactory")
+        ).onlyThread();
+        assertThat(only(t.getAcquiredLocks()), equalTo(ThreadLock.fromInstance(this)));
+
+        t = reparse(current, Mode.HUMAN).getThreads().where(
                 nameIs("parseOutputProducedByJvmRuntimeFactory")
         ).onlyThread();
 
@@ -773,9 +790,9 @@ public class ThreadDumpFactoryTest {
     @Test
     public void isStreamClosed() throws Exception {
         InputStream stream = Util.resource(getClass(), "in-object-wait.log");
-        InputStream mock = Mockito.spy(stream);
+        InputStream mock = spy(stream);
 
-        new ThreadDumpFactory().fromStream(mock);
+        FACTORY.fromStream(mock);
 
         Mockito.verify(mock).close();
     }
@@ -811,8 +828,51 @@ public class ThreadDumpFactoryTest {
         }
     }
 
+    @Test
+    public void numberInUpperLongRange() throws Exception {
+        ThreadDumpRuntime runtime = runtimeFrom("issue-71.log");
+        ThreadDumpThread sut = runtime.getThreads().where(nameIs("SUT")).onlyThread();
+        assertEquals(-494445558, (long) sut.getTid());
+        assertEquals(-494445557, sut.getWaitingToLock().getId());
+        assertEquals(-494445556, only(sut.getAcquiredSynchronizers()).getId());
+        assertEquals(-494445555, (long) sut.getNid());
+
+        // Decadic NID
+        String human = new JvmThread.Builder(Thread.currentThread()).setName("Fake").setId(42).setTid(42).setNid(Short.MIN_VALUE).toString();
+        assertThat(human, containsString("nid=-32768"));
+        sut = FACTORY.fromString(human).getThreads().where(nameIs("Fake")).onlyThread();
+        assertEquals(Short.MIN_VALUE, (long) sut.getNid());
+    }
+
+    @Test
+    public void parseLong() throws Exception {
+        String top = "0xffffffffffffffff";
+        assertEquals(Long.toHexString(ThreadDumpFactory.parseLong(top)), -1, ThreadDumpFactory.parseLong(top));
+
+        top = "0xfffffffffffffffe";
+        assertEquals(Long.toHexString(ThreadDumpFactory.parseLong(top)), -2, ThreadDumpFactory.parseLong(top));
+
+        top = "0x00000000000000f";
+        assertEquals(Long.toHexString(ThreadDumpFactory.parseLong(top)), 15, ThreadDumpFactory.parseLong(top));
+
+        top = "0xf0000000000000";
+        assertEquals(Long.toHexString(ThreadDumpFactory.parseLong(top)), 67553994410557440L, ThreadDumpFactory.parseLong(top));
+
+        top = "0xe0000000000000";
+        assertEquals(Long.toHexString(ThreadDumpFactory.parseLong(top)), 63050394783186944L, ThreadDumpFactory.parseLong(top));
+
+        top = "0x7fffffffffffffff";
+        assertEquals(Long.toHexString(ThreadDumpFactory.parseLong(top)), 9223372036854775807L, ThreadDumpFactory.parseLong(top));
+
+        top = "0x8000000000000000";
+        assertEquals(Long.toHexString(ThreadDumpFactory.parseLong(top)), -9223372036854775808L, ThreadDumpFactory.parseLong(top));
+
+        top = "ffffffffe2875c0a";
+        assertEquals(Long.toHexString(ThreadDumpFactory.parseLong(top)), -494445558, ThreadDumpFactory.parseLong(top));
+    }
+
     private ThreadDumpRuntime runtimeFrom(String resource) throws IOException, URISyntaxException {
-        return new ThreadDumpFactory().fromStream(Util.resource(getClass(), resource));
+        return FACTORY.fromStream(Util.resource(getClass(), resource));
     }
 
     private ThreadDumpRuntime runtime(ThreadDumpThread.Builder... builders) {
@@ -843,6 +903,10 @@ public class ThreadDumpFactoryTest {
 
     private TypeSafeMatcher<ThreadDumpRuntime> stacktraceEquals(final StackTrace expected, final @Nonnull String threadName) {
         return new TypeSafeMatcher<ThreadDumpRuntime>() {
+
+            // The first StackTrace variant that failed
+            private StackTrace failed;
+
             @Override
             public void describeTo(Description description) {
                 description.appendText("Runtime with same threads");
@@ -850,21 +914,16 @@ public class ThreadDumpFactoryTest {
 
             @Override
             protected boolean matchesSafely(ThreadDumpRuntime actual) {
-                if (!doesMatch(expected, trace(actual, threadName))) return false;
+                if (!doesMatch(expected, failed = trace(actual, threadName))) return false;
+                if (!doesMatch(expected, failed = trace(reparse(actual, Mode.MACHINE), threadName))) return false;
+                if (!doesMatch(expected, failed = trace(reparse(actual, Mode.HUMAN), threadName))) return false;
 
-                return doesMatch(expected, trace(reparse(actual), threadName));
+                return true;
             }
 
             @Override
             protected void describeMismatchSafely(ThreadDumpRuntime actual, Description mismatch) {
-                final StackTrace originalTrace = trace(actual, threadName);
-
-                // report only the first failure
-                if (!doesMatch(expected, originalTrace)) {
-                    doDescribe(expected, originalTrace, mismatch);
-                } else {
-                    doDescribe(expected, trace(reparse(actual), threadName), mismatch);
-                }
+                doDescribe(expected, failed, mismatch);
             }
 
             private boolean doesMatch(StackTrace expected, StackTrace actual) {
@@ -897,6 +956,9 @@ public class ThreadDumpFactoryTest {
     private TypeSafeMatcher<ThreadDumpRuntime> sameThreadsAs(final ThreadDumpRuntime expectedRuntime) {
         return new TypeSafeMatcher<ThreadDumpRuntime>() {
 
+            // The first threaddump variant that failed
+            private ThreadDumpRuntime failed;
+
             @Override
             public void describeTo(Description description) {
                 description.appendText("Runtime with same threads");
@@ -904,9 +966,12 @@ public class ThreadDumpFactoryTest {
 
             @Override
             protected boolean matchesSafely(ThreadDumpRuntime actual) {
-                if (!doesMatch(expectedRuntime, actual)) return false;
+                if (!doesMatch(expectedRuntime, failed = actual)) return false;
+                if (!doesMatch(expectedRuntime, failed = reparse(actual, Mode.MACHINE))) return false;
+                if (!doesMatch(expectedRuntime, failed = reparse(actual, Mode.HUMAN))) return false;
 
-                return doesMatch(expectedRuntime, reparse(actual));
+                failed = null;
+                return true;
             }
 
             private boolean doesMatch(ThreadDumpRuntime expectedRuntime, ThreadDumpRuntime actual) {
@@ -926,12 +991,7 @@ public class ThreadDumpFactoryTest {
 
             @Override
             protected void describeMismatchSafely(ThreadDumpRuntime actualRuntime, Description mismatch) {
-                // report only first problem
-                if (!doesMatch(expectedRuntime, actualRuntime)) {
-                    doDescribe(expectedRuntime, actualRuntime, mismatch);
-                } else {
-                    doDescribe(expectedRuntime, reparse(actualRuntime), mismatch);
-                }
+                doDescribe(expectedRuntime, failed, mismatch);
             }
 
             private void doDescribe(
@@ -969,9 +1029,14 @@ public class ThreadDumpFactoryTest {
     }
 
     private ThreadDumpRuntime reparse(ProcessRuntime<?, ?, ?> actual) {
-        String output = actual.getThreads().toString();
-        ByteArrayInputStream stream = new ByteArrayInputStream(output.getBytes(Charset.forName("UTF8")));
-        ThreadDumpRuntime reparsed = new ThreadDumpFactory().fromStream(stream);
+        return reparse(actual, Mode.MACHINE);
+    }
+
+    private ThreadDumpRuntime reparse(ProcessRuntime<?, ?, ?> actual, Mode mode) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        actual.getThreads().toString(new PrintStream(baos), mode);
+        ByteArrayInputStream stream = new ByteArrayInputStream(baos.toByteArray());
+        ThreadDumpRuntime reparsed = FACTORY.fromStream(stream);
         return reparsed;
     }
 
