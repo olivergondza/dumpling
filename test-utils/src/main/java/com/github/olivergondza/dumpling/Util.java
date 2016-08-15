@@ -130,7 +130,7 @@ public class Util {
         Iterator<T> it = set.iterator();
         T elem = it.next();
         if (elem == null || it.hasNext()) throw new AssertionError(
-                "One set element exected: " + set
+                "One set element expected: " + set
         );
 
         return elem;
