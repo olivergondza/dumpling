@@ -40,8 +40,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.github.olivergondza.dumpling.DisposeRule;
 import org.hamcrest.Matchers;
 import org.hamcrest.collection.IsEmptyCollection;
+import org.junit.Rule;
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
@@ -53,25 +55,26 @@ import com.github.olivergondza.dumpling.model.jvm.JvmThreadSet;
 
 public class JvmRuntimeFactoryTest {
 
-    private Thread thread;
+    public @Rule DisposeRule clean = new DisposeRule();
 
     @Test
     public synchronized void newThreadShouldNotBeAPartOfReportedRuntime() {
-        thread = new Thread(getClass().getName() + " not run");
+        Thread thread = clean.register(new Thread(getClass().getName() + " not run"));
         assertNull("Not started thread should not be a part fo runtime", forThread(thread));
     }
 
     @Test
     public synchronized void runnableThreadStatus() {
-        thread = new Thread(getClass().getName() + " running") {
+        Thread thread = clean.register(new Thread(getClass().getName() + " running") {
             long a;
+
             @Override
             public void run() {
-                while(true) {
+                while (true) {
                     a = a + hashCode();
                 }
             }
-        };
+        });
         thread.start();
 
         assertStatusIs(ThreadStatus.RUNNABLE, thread);
@@ -80,7 +83,7 @@ public class JvmRuntimeFactoryTest {
 
     @Test
     public void sleepingThreadStatus() {
-        thread = new Thread(getClass().getName() + " sleeping") {
+        Thread thread = clean.register(new Thread(getClass().getName() + " sleeping") {
             @Override
             public void run() {
                 try {
@@ -89,7 +92,7 @@ public class JvmRuntimeFactoryTest {
                     // Ignore
                 }
             }
-        };
+        });
         thread.start();
 
         assertStatusIs(ThreadStatus.SLEEPING, thread);
@@ -98,8 +101,9 @@ public class JvmRuntimeFactoryTest {
 
     @Test
     public void waitingThreadStatus() {
-        thread = new WaitingThreadStatus();
+        WaitingThreadStatus thread = new WaitingThreadStatus();
         thread.start();
+        clean.register(thread);
 
         assertStatusIs(ThreadStatus.IN_OBJECT_WAIT, thread);
         assertStateIs(Thread.State.WAITING, thread);
@@ -127,8 +131,9 @@ public class JvmRuntimeFactoryTest {
 
     @Test
     public void timedWaitingThreadStatus() {
-        thread = new TimedWaiting();
+        TimedWaiting thread = new TimedWaiting();
         thread.start();
+        clean.register(thread);
 
         assertStatusIs(ThreadStatus.IN_OBJECT_WAIT_TIMED, thread);
         assertStateIs(Thread.State.TIMED_WAITING, thread);
@@ -155,15 +160,16 @@ public class JvmRuntimeFactoryTest {
 
     @Test
     public void parkedThreadStatus() {
-        thread = new Thread(getClass().getName() + " parked") {
+        Thread thread = new Thread(getClass().getName() + " parked") {
             @Override
             public void run() {
-                for (;;) {
+                for (; ; ) {
                     LockSupport.park();
                 }
             }
         };
         thread.start();
+        clean.register(thread);
 
         assertStatusIs(ThreadStatus.PARKED, thread);
         assertStateIs(Thread.State.WAITING, thread);
@@ -175,15 +181,16 @@ public class JvmRuntimeFactoryTest {
 
     @Test
     public void parkedTimedThreadStatus() {
-        thread = new Thread(getClass().getName() + " parked timed") {
+        Thread thread = new Thread(getClass().getName() + " parked timed") {
             @Override
             public void run() {
-                for (;;) {
+                for (; ; ) {
                     LockSupport.parkNanos(1000000000L);
                 }
             }
         };
         thread.start();
+        clean.register(thread);
 
         assertStatusIs(ThreadStatus.PARKED_TIMED, thread);
         assertStateIs(Thread.State.TIMED_WAITING, thread);
@@ -196,15 +203,16 @@ public class JvmRuntimeFactoryTest {
     @Test
     public void parkedThreadWithBlockerStatus() {
         final Object blocker = new Object();
-        thread = new Thread(getClass().getName() + " parked") {
+        Thread thread = new Thread(getClass().getName() + " parked") {
             @Override
             public void run() {
-                for (;;) {
+                for (; ; ) {
                     LockSupport.park(blocker);
                 }
             }
         };
         thread.start();
+        clean.register(thread);
 
         assertStatusIs(ThreadStatus.PARKED, thread);
         assertStateIs(Thread.State.WAITING, thread);
@@ -217,15 +225,16 @@ public class JvmRuntimeFactoryTest {
     @Test
     public void parkedTimedThreadWithBlockerStatus() {
         final Object blocker = new Object();
-        thread = new Thread(getClass().getName() + " parked timed") {
+        Thread thread = new Thread(getClass().getName() + " parked timed") {
             @Override
             public void run() {
-                for (;;) {
+                for (; ; ) {
                     LockSupport.parkNanos(blocker, 1000000000L);
                 }
             }
         };
         thread.start();
+        clean.register(thread);
 
         assertStatusIs(ThreadStatus.PARKED_TIMED, thread);
         assertStateIs(Thread.State.TIMED_WAITING, thread);
@@ -237,7 +246,7 @@ public class JvmRuntimeFactoryTest {
 
     @Test
     public synchronized void blockedOnMonitorThreadStatus() {
-        thread = new Thread(getClass().getName() + " waiting on monitor") {
+        Thread thread = new Thread(getClass().getName() + " waiting on monitor") {
             @Override
             public void run() {
                 synchronized (JvmRuntimeFactoryTest.this) {
@@ -246,6 +255,7 @@ public class JvmRuntimeFactoryTest {
             }
         };
         thread.start();
+        clean.register(thread);
 
         assertStatusIs(ThreadStatus.BLOCKED, thread);
         assertStateIs(Thread.State.BLOCKED, thread);
@@ -254,10 +264,11 @@ public class JvmRuntimeFactoryTest {
 
     @Test
     public void creatingAndTerminatingThreadsShouldBeHandledGracefully() {
+        final ThreadGroup group = new ThreadGroup("creatingAndTerminatingThreadsShouldBeHandledGracefully");
         class Thrd extends Thread {
             private int countdown;
             public Thrd(int countdown) {
-                super("creatingAndTerminatingThreadsShouldBeHandledGracefully thread " + countdown);
+                super(group, "creatingAndTerminatingThreadsShouldBeHandledGracefully thread " + countdown);
                 this.countdown = countdown;
             }
 
@@ -286,6 +297,8 @@ public class JvmRuntimeFactoryTest {
             runtime = runtime();
 
         } while (runtime.getThreads().size() > originalCount);
+
+        group.interrupt();
     }
 
     @Test
@@ -304,7 +317,7 @@ public class JvmRuntimeFactoryTest {
     public void monitorOwnerInObjectWait() throws Exception {
         final Object lock = new Object();
 
-        thread = new Thread("monitorOwnerOnObjectWait") {
+        Thread thread = new Thread("monitorOwnerOnObjectWait") {
             @Override
             public void run() {
                 try {
@@ -316,6 +329,7 @@ public class JvmRuntimeFactoryTest {
             }
         };
         thread.start();
+        clean.register(thread);
 
         Thread.sleep(100); // Wait until sleeping
 
@@ -340,6 +354,7 @@ public class JvmRuntimeFactoryTest {
     public void ownableSynchronizers() throws Exception {
         final Lock lock = new ReentrantLock();
         lock.lockInterruptibly();
+        Thread thread = null;
         try {
 
             thread = new Thread("ownableSynchronizers") {
@@ -352,6 +367,7 @@ public class JvmRuntimeFactoryTest {
                 }
             };
             thread.start();
+            clean.register(thread);
             Thread.sleep(100); // Wait until blocked
 
             JvmRuntime runtime = runtime();
