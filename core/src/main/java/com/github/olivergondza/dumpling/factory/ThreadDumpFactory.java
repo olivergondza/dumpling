@@ -222,8 +222,11 @@ public class ThreadDumpFactory {
 
                     if (line.contains("- None")) break;
                     Matcher matcher = OWNABLE_SYNCHRONIZER_LINE.matcher(line);
-                    matcher.find();
-                    synchronizers.add(createLock(matcher));
+                    if (matcher.find()) {
+                        synchronizers.add(createLock(matcher));
+                    } else {
+                        LOG.warning("Unable to parse ownable synchronizer: " + line);
+                    }
                 }
             }
         }
