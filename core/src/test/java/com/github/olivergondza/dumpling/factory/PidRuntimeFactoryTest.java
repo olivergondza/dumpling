@@ -33,6 +33,8 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
+import com.github.olivergondza.dumpling.model.ThreadLock;
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -56,7 +58,7 @@ public class PidRuntimeFactoryTest {
         ThreadDumpThread thread = pidRuntime.getThreads().where(nameIs("sleepingThreadWithLock")).onlyThread();
         assertThat(thread.getStatus(), equalTo(ThreadStatus.SLEEPING));
 
-        assertFalse(thread.toString(), thread.getAcquiredLocks().isEmpty());
+        assertThat(thread.getAcquiredLocks(), Matchers.<ThreadLock>emptyIterable());
         assertThat(
                 only(thread.getAcquiredLocks()).getClassName(),
                 equalTo("java.util.concurrent.locks.ReentrantLock$NonfairSync")

@@ -128,7 +128,7 @@ public final class TestThread {
             args.add("-Dcom.sun.management.jmxremote.access.file=" + getCredFile("jmxremote.access"));
         }
         args.add("com.github.olivergondza.dumpling.TestThread");
-        ProcessBuilder pb = new ProcessBuilder(args).redirectErrorStream(true);
+        ProcessBuilder pb = new ProcessBuilder(args);
         final Process process = pb.start();
 
         BufferedInputStream bis = new BufferedInputStream(process.getInputStream());

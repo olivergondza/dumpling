@@ -282,7 +282,7 @@ public class ThreadDumpFactoryVendorTest {
                         base.evaluate();
                     } catch (Throwable ex) {
                         if (runtime != null) {
-                            System.err.println(method.getName() + " has failed with" + ex.getMessage());
+                            System.err.printf("%s has failed with %s: %s%n", method.getName(), ex.getClass(), ex.getMessage());
                             System.err.println("Original runtime:");
                             System.err.println(threaddump);
                             System.err.println("Parsed runtime:");
