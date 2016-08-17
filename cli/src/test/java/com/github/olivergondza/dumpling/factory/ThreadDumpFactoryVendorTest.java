@@ -261,7 +261,7 @@ public class ThreadDumpFactoryVendorTest {
         private String threaddump = null;
 
         @Override
-        public Statement apply(final Statement base, FrameworkMethod method, Object target) {
+        public Statement apply(final Statement base, final FrameworkMethod method, Object target) {
             try {
                 String init = Util.asString(Util.resource(
                         ThreadDumpFactoryVendorTest.class, "_init.groovy"
@@ -282,6 +282,7 @@ public class ThreadDumpFactoryVendorTest {
                         base.evaluate();
                     } catch (Throwable ex) {
                         if (runtime != null) {
+                            System.err.println(method.getName() + " has failed with" + ex.getMessage());
                             System.err.println("Original runtime:");
                             System.err.println(threaddump);
                             System.err.println("Parsed runtime:");
