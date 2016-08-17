@@ -265,6 +265,70 @@ public class ThreadDumpFactoryTest {
     }
 
     @Test
+    public void oracleJdk9() throws Exception {
+
+        ThreadDumpRuntime expected = runtime(
+                daemon("Attach Listener").setTid(140299334586368L).setNid(401).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                thread("GC task thread#0 (ParallelGC)").setTid(0x7f9a4401e800L).setNid(32717).setPriority(10),
+                thread("GC task thread#1 (ParallelGC)").setTid(0x7f9a44020000L).setNid(32718).setPriority(10),
+                thread("GC task thread#2 (ParallelGC)").setTid(0x7f9a44022000L).setNid(32719).setPriority(10),
+                thread("GC task thread#3 (ParallelGC)").setTid(0x7f9a44024000L).setNid(32720).setPriority(10),
+                thread("GC task thread#4 (ParallelGC)").setTid(0x7f9a44026000L).setNid(32721).setPriority(10),
+                thread("GC task thread#5 (ParallelGC)").setTid(0x7f9a44027800L).setNid(32722).setPriority(10),
+                thread("GC task thread#6 (ParallelGC)").setTid(0x7f9a44029800L).setNid(32723).setPriority(10),
+                thread("GC task thread#7 (ParallelGC)").setTid(0x7f9a4402b800L).setNid(32724).setPriority(10),
+                thread("VM Periodic Task Thread").setTid(0x7f9a440b4000L).setNid(32732).setPriority(10),
+                daemon("Signal Dispatcher").setTid(0x7f9a440a1800L).setNid(32728).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("C2 CompilerThread0").setTid(0x7f9a440a3800L).setNid(32729).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("C2 CompilerThread1").setTid(0x7f9a440a6800L).setNid(32730).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                thread("VM Thread").setTid(0x7f9a44071000L).setNid(32725).setPriority(10),
+                daemon("Service Thread").setTid(0x7f9a440a9000L).setNid(32731).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
+                daemon("Finalizer").setTid(0x7f9a44077800L).setNid(32727).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
+                        .setWaitingOnLock(lock("java.lang.ref.ReferenceQueue$Lock", 0x7ae484858L))
+                ,
+                daemon("Reference Handler").setTid(0x7f9a44075800L).setNid(32726).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
+                        .setWaitingOnLock(lock("java.lang.ref.Reference$Lock", 0x7ae484470L))
+                ,
+                thread("main").setTid(0x7f9a44008800L).setNid(32716).setThreadStatus(ThreadStatus.SLEEPING).setPriority(10)
+        );
+
+        ThreadDumpRuntime actual = runtimeFrom("oraclejdk-1.9.log");
+        assertThat(actual, sameThreadsAs(expected));
+
+        StackTrace expectedStackTrace = new StackTrace(
+                StackTrace.nativeElement("java.lang.Thread", "sleep"),
+                StackTrace.nativeElement("sun.reflect.NativeMethodAccessorImpl", "invoke0"),
+                StackTrace.element("sun.reflect.NativeMethodAccessorImpl", "invoke", "NativeMethodAccessorImpl.java", 57),
+                StackTrace.element("sun.reflect.DelegatingMethodAccessorImpl", "invoke", "DelegatingMethodAccessorImpl.java", 43),
+                StackTrace.element("java.lang.reflect.Method", "invoke", "Method.java", 606),
+                StackTrace.element("org.codehaus.groovy.reflection.CachedMethod", "invoke", "CachedMethod.java", 93),
+                StackTrace.element("groovy.lang.MetaMethod", "doMethodInvoke", "MetaMethod.java", 325),
+                StackTrace.element("org.codehaus.groovy.runtime.callsite.StaticMetaMethodSite$StaticMetaMethodSiteNoUnwrap", "invoke", "StaticMetaMethodSite.java", 133),
+                StackTrace.element("org.codehaus.groovy.runtime.callsite.StaticMetaMethodSite", "call", "StaticMetaMethodSite.java", 91),
+                StackTrace.element("org.codehaus.groovy.runtime.callsite.CallSiteArray", "defaultCall", "CallSiteArray.java", 48),
+                StackTrace.element("org.codehaus.groovy.runtime.callsite.AbstractCallSite", "call", "AbstractCallSite.java", 113),
+                StackTrace.element("org.codehaus.groovy.runtime.callsite.AbstractCallSite", "call", "AbstractCallSite.java", 125),
+                StackTrace.element("script_from_command_line", "run", "script_from_command_line", 1),
+                StackTrace.element("groovy.lang.GroovyShell", "runScriptOrMainOrTestOrRunnable", "GroovyShell.java", 263),
+                StackTrace.element("groovy.lang.GroovyShell", "run", "GroovyShell.java", 518),
+                StackTrace.element("groovy.lang.GroovyShell", "run", "GroovyShell.java", 507),
+                StackTrace.element("groovy.ui.GroovyMain", "processOnce", "GroovyMain.java", 653),
+                StackTrace.element("groovy.ui.GroovyMain", "run", "GroovyMain.java", 384),
+                StackTrace.element("groovy.ui.GroovyMain", "process", "GroovyMain.java", 370),
+                StackTrace.element("groovy.ui.GroovyMain", "processArgs", "GroovyMain.java", 129),
+                StackTrace.element("groovy.ui.GroovyMain", "main", "GroovyMain.java", 109),
+                StackTrace.nativeElement("sun.reflect.NativeMethodAccessorImpl", "invoke0"),
+                StackTrace.element("sun.reflect.NativeMethodAccessorImpl", "invoke", "NativeMethodAccessorImpl.java", 57),
+                StackTrace.element("sun.reflect.DelegatingMethodAccessorImpl", "invoke", "DelegatingMethodAccessorImpl.java", 43),
+                StackTrace.element("java.lang.reflect.Method", "invoke", "Method.java", 606),
+                StackTrace.element("org.codehaus.groovy.tools.GroovyStarter", "rootLoader", "GroovyStarter.java", 109),
+                StackTrace.element("org.codehaus.groovy.tools.GroovyStarter", "main", "GroovyStarter.java", 131)
+        );
+
+        assertThat(actual, stacktraceEquals(expectedStackTrace, "main"));
+    }
+
+    @Test
     public void openjdk6() throws Exception {
 
         ThreadDumpRuntime expected = runtime(
