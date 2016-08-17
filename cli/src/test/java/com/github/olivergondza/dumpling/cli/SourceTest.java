@@ -54,6 +54,7 @@ public class SourceTest extends AbstractCliTest {
         assertThat(exitValue, equalTo(-1));
         assertThat(out.toString(), equalTo(""));
         // Error message is platform specific
+        assertThat(err.toString(), not(equalTo("")));
     }
 
     @Test
@@ -62,6 +63,7 @@ public class SourceTest extends AbstractCliTest {
         stdin("runtime.threads.where(nameIs('remotely-observed-thread'))");
         run("groovy", "--in", "jmx", JMX_CONNECTION);
 
+        assertThat(err.toString(), equalTo(""));
         // Reuse verification logic re-parsing the output as thread dump
         ThreadDumpRuntime reparsed = new ThreadDumpFactory().fromStream(new ByteArrayInputStream(out.toByteArray()));
         assertThreadState(reparsed);
@@ -73,6 +75,7 @@ public class SourceTest extends AbstractCliTest {
         stdin("runtime.threads.where(nameIs('remotely-observed-thread'))");
         run("groovy", "--in", "jmx", Integer.toString(Util.currentPid()));
 
+        assertThat(err.toString(), equalTo(""));
         // Reuse verification logic re-parsing the output as thread dump
         ThreadDumpRuntime reparsed = new ThreadDumpFactory().fromStream(new ByteArrayInputStream(out.toByteArray()));
         assertThreadState(reparsed);
