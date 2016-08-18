@@ -173,4 +173,15 @@ public class Util {
         error.initCause(cause);
         return error;
     }
+
+    @SuppressWarnings("Since15")
+    public static ProcessBuilder processBuilder() {
+        ProcessBuilder pb = new ProcessBuilder();
+        try{
+            pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+        } catch (NoSuchMethodError ex) {
+            // Java 6 - less helpful messages
+        }
+        return pb;
+    }
 }

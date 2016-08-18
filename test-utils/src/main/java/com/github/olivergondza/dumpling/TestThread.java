@@ -24,6 +24,7 @@
 package com.github.olivergondza.dumpling;
 
 import static com.github.olivergondza.dumpling.Util.pause;
+import static com.github.olivergondza.dumpling.Util.processBuilder;
 import static com.github.olivergondza.dumpling.Util.processTerminatedPrematurely;
 
 import java.io.BufferedInputStream;
@@ -128,7 +129,7 @@ public final class TestThread {
             args.add("-Dcom.sun.management.jmxremote.access.file=" + getCredFile("jmxremote.access"));
         }
         args.add("com.github.olivergondza.dumpling.TestThread");
-        ProcessBuilder pb = new ProcessBuilder(args);
+        ProcessBuilder pb = processBuilder().command(args);
         final Process process = pb.start();
 
         BufferedInputStream bis = new BufferedInputStream(process.getInputStream());

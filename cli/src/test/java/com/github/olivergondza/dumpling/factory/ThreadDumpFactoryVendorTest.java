@@ -310,7 +310,7 @@ public class ThreadDumpFactoryVendorTest {
                 writer.close();
             }
 
-            ProcessBuilder pb = new ProcessBuilder(
+            ProcessBuilder pb = Util.processBuilder().command(
                     System.getProperty("java.home") + "/bin/java",
                     "-cp", System.getProperty("surefire.real.class.path"), // Inherit from surefire process
                     "com.github.olivergondza.dumpling.cli.Main",
