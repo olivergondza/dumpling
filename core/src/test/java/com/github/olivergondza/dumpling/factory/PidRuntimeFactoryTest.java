@@ -28,6 +28,7 @@ import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
@@ -58,7 +59,7 @@ public class PidRuntimeFactoryTest {
         ThreadDumpThread thread = pidRuntime.getThreads().where(nameIs("sleepingThreadWithLock")).onlyThread();
         assertThat(thread.getStatus(), equalTo(ThreadStatus.SLEEPING));
 
-        assertThat(thread.getAcquiredLocks(), Matchers.<ThreadLock>emptyIterable());
+        assertThat(thread.getAcquiredLocks(), not(Matchers.<ThreadLock>emptyIterable()));
         assertThat(
                 only(thread.getAcquiredLocks()).getClassName(),
                 equalTo("java.util.concurrent.locks.ReentrantLock$NonfairSync")
