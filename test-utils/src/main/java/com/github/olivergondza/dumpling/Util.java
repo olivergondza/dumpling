@@ -29,6 +29,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
@@ -174,12 +176,20 @@ public class Util {
         return error;
     }
 
-    @SuppressWarnings("Since15")
     public static ProcessBuilder processBuilder() {
         ProcessBuilder pb = new ProcessBuilder();
-        try{
-            pb.redirectError(ProcessBuilder.Redirect.INHERIT);
-        } catch (NoSuchMethodError ex) {
+        try { // Inherit error on JAVA 7 and above
+            Class<?> redirect = Class.forName("java.lang.ProcessBuilder.Redirect");
+            ProcessBuilder.class.getMethod("redirectError", redirect).invoke(redirect.getField("INHERIT"));
+        } catch (ClassNotFoundException e) {
+            // Java 6 - less helpful messages
+        } catch (NoSuchFieldException e) {
+            // Java 6 - less helpful messages
+        } catch (IllegalAccessException e) {
+            // Java 6 - less helpful messages
+        } catch (NoSuchMethodException e) {
+            // Java 6 - less helpful messages
+        } catch (InvocationTargetException e) {
             // Java 6 - less helpful messages
         }
         return pb;
