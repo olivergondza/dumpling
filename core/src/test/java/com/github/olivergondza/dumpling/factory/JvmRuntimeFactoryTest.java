@@ -275,7 +275,9 @@ public class JvmRuntimeFactoryTest {
             @Override
             public void run() {
                 synchronized (JvmRuntimeFactoryTest.class) {
-                    new Thrd(countdown - 1).start();
+                    if (countdown >= 0) {
+                        new Thrd(countdown - 1).start();
+                    }
                 }
             }
         }
