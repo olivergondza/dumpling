@@ -347,7 +347,7 @@ public class ThreadDumpFactoryVendorTest {
         private int getExitIfDone() {
             try {
                 return process.exitValue();
-            } catch (IllegalThreadStateException _) {
+            } catch (IllegalThreadStateException ex) {
                 return -1;
             }
         }
