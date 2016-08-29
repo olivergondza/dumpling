@@ -1,66 +1,72 @@
-2016-08-17 16:47:56
-Full thread dump Java HotSpot(TM) 64-Bit Server VM (24.79-b02 mixed mode):
+2016-08-29 06:56:15
+Full thread dump Java HotSpot(TM) 64-Bit Server VM (9-ea+132 mixed mode):
 
-"Attach Listener" daemon prio=10 tid=0x00007f99fc001000 nid=0x191 waiting on condition [0x0000000000000000]
+"Attach Listener" #14 daemon prio=9 os_prio=0 tid=0x00007fb8f8001000 nid=0x30ed waiting on condition [0x0000000000000000]
    java.lang.Thread.State: RUNNABLE
 
-   Locked ownable synchronizers:
-	- None
-
-"Service Thread" daemon prio=10 tid=0x00007f9a440a9000 nid=0x7fdb runnable [0x0000000000000000]
+"Service Thread" #12 daemon prio=9 os_prio=0 tid=0x00007fb9802cf000 nid=0x308b runnable [0x0000000000000000]
    java.lang.Thread.State: RUNNABLE
 
-   Locked ownable synchronizers:
-	- None
+"Common-Cleaner" #11 daemon prio=8 os_prio=0 tid=0x00007fb98022c800 nid=0x308a in Object.wait() [0x00007fb90819a000]
+   java.lang.Thread.State: TIMED_WAITING (on object monitor)
+	at java.lang.Object.wait(java.base@9-ea/Native Method)
+	- waiting on <0x00000006d8b47ea0> (a java.lang.ref.ReferenceQueue$Lock)
+	at java.lang.ref.ReferenceQueue.remove(java.base@9-ea/ReferenceQueue.java:151)
+	- waiting to re-lock in wait() <0x00000006d8b47ea0> (a java.lang.ref.ReferenceQueue$Lock)
+	at jdk.internal.ref.CleanerImpl.run(java.base@9-ea/CleanerImpl.java:148)
+	at java.lang.Thread.run(java.base@9-ea/Thread.java:843)
+	at jdk.internal.misc.InnocuousThread.run(java.base@9-ea/InnocuousThread.java:122)
 
-"C2 CompilerThread1" daemon prio=10 tid=0x00007f9a440a6800 nid=0x7fda waiting on condition [0x0000000000000000]
+"Sweeper thread" #10 daemon prio=9 os_prio=0 tid=0x00007fb980211000 nid=0x3089 runnable [0x0000000000000000]
    java.lang.Thread.State: RUNNABLE
 
-   Locked ownable synchronizers:
-	- None
+"C1 CompilerThread3" #9 daemon prio=9 os_prio=0 tid=0x00007fb980207800 nid=0x3088 waiting on condition [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+   No compile task
 
-"C2 CompilerThread0" daemon prio=10 tid=0x00007f9a440a3800 nid=0x7fd9 waiting on condition [0x0000000000000000]
+"C2 CompilerThread2" #8 daemon prio=9 os_prio=0 tid=0x00007fb980205800 nid=0x3087 waiting on condition [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+   No compile task
+
+"C2 CompilerThread1" #7 daemon prio=9 os_prio=0 tid=0x00007fb980203800 nid=0x3086 waiting on condition [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+   No compile task
+
+"C2 CompilerThread0" #6 daemon prio=9 os_prio=0 tid=0x00007fb980201800 nid=0x3085 waiting on condition [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+   No compile task
+
+"Signal Dispatcher" #5 daemon prio=9 os_prio=0 tid=0x00007fb9801ff000 nid=0x3084 runnable [0x0000000000000000]
    java.lang.Thread.State: RUNNABLE
 
-   Locked ownable synchronizers:
-	- None
-
-"Signal Dispatcher" daemon prio=10 tid=0x00007f9a440a1800 nid=0x7fd8 runnable [0x0000000000000000]
+"Reference Pending List Locker" #4 daemon prio=9 os_prio=0 tid=0x00007fb9801fd800 nid=0x3083 waiting on condition [0x0000000000000000]
    java.lang.Thread.State: RUNNABLE
 
-   Locked ownable synchronizers:
-	- None
-
-"Finalizer" daemon prio=10 tid=0x00007f9a44077800 nid=0x7fd7 in Object.wait() [0x00007f9a3b5f4000]
+"Finalizer" #3 daemon prio=8 os_prio=0 tid=0x00007fb9801d7000 nid=0x3082 in Object.wait() [0x00007fb908f80000]
    java.lang.Thread.State: WAITING (on object monitor)
-	at java.lang.Object.wait(Native Method)
-	- waiting on <0x00000007ae484858> (a java.lang.ref.ReferenceQueue$Lock)
-	at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:135)
-	- locked <0x00000007ae484858> (a java.lang.ref.ReferenceQueue$Lock)
-	at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:151)
-	at java.lang.ref.Finalizer$FinalizerThread.run(Finalizer.java:209)
+	at java.lang.Object.wait(java.base@9-ea/Native Method)
+	- waiting on <0x00000006d8b47e90> (a java.lang.ref.ReferenceQueue$Lock)
+	at java.lang.ref.ReferenceQueue.remove(java.base@9-ea/ReferenceQueue.java:151)
+	- waiting to re-lock in wait() <0x00000006d8b47e90> (a java.lang.ref.ReferenceQueue$Lock)
+	at java.lang.ref.ReferenceQueue.remove(java.base@9-ea/ReferenceQueue.java:172)
+	at java.lang.ref.Finalizer$FinalizerThread.run(java.base@9-ea/Finalizer.java:216)
 
-   Locked ownable synchronizers:
-	- None
-
-"Reference Handler" daemon prio=10 tid=0x00007f9a44075800 nid=0x7fd6 in Object.wait() [0x00007f9a3b6f5000]
+"Reference Handler" #2 daemon prio=10 os_prio=0 tid=0x00007fb9801d3000 nid=0x3081 in Object.wait() [0x00007fb909081000]
    java.lang.Thread.State: WAITING (on object monitor)
-	at java.lang.Object.wait(Native Method)
-	- waiting on <0x00000007ae484470> (a java.lang.ref.Reference$Lock)
-	at java.lang.Object.wait(Object.java:503)
-	at java.lang.ref.Reference$ReferenceHandler.run(Reference.java:133)
-	- locked <0x00000007ae484470> (a java.lang.ref.Reference$Lock)
+	at java.lang.Object.wait(java.base@9-ea/Native Method)
+	- waiting on <0x00000006d8b47e80> (a java.lang.ref.Reference$Lock)
+	at java.lang.Object.wait(java.base@9-ea/Object.java:516)
+	at java.lang.ref.Reference.tryHandlePending(java.base@9-ea/Reference.java:193)
+	- waiting to re-lock in wait() <0x00000006d8b47e80> (a java.lang.ref.Reference$Lock)
+	at java.lang.ref.Reference$ReferenceHandler.run(java.base@9-ea/Reference.java:155)
 
-   Locked ownable synchronizers:
-	- None
-
-"main" prio=10 tid=0x00007f9a44008800 nid=0x7fcc waiting on condition [0x00007f9a4cc63000]
+"main" #1 prio=5 os_prio=0 tid=0x00007fb980010800 nid=0x306b waiting on condition [0x00007fb987086000]
    java.lang.Thread.State: TIMED_WAITING (sleeping)
-	at java.lang.Thread.sleep(Native Method)
-	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
-	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.lang.reflect.Method.invoke(Method.java:606)
+	at java.lang.Thread.sleep(java.base@9-ea/Native Method)
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(java.base@9-ea/Native Method)
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(java.base@9-ea/NativeMethodAccessorImpl.java:62)
+	at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(java.base@9-ea/DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(java.base@9-ea/Method.java:535)
 	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:93)
 	at groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:325)
 	at org.codehaus.groovy.runtime.callsite.StaticMetaMethodSite$StaticMetaMethodSiteNoUnwrap.invoke(StaticMetaMethodSite.java:133)
@@ -77,35 +83,55 @@ Full thread dump Java HotSpot(TM) 64-Bit Server VM (24.79-b02 mixed mode):
 	at groovy.ui.GroovyMain.process(GroovyMain.java:370)
 	at groovy.ui.GroovyMain.processArgs(GroovyMain.java:129)
 	at groovy.ui.GroovyMain.main(GroovyMain.java:109)
-	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
-	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.lang.reflect.Method.invoke(Method.java:606)
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(java.base@9-ea/Native Method)
+	at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(java.base@9-ea/NativeMethodAccessorImpl.java:62)
+	at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(java.base@9-ea/DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(java.base@9-ea/Method.java:535)
 	at org.codehaus.groovy.tools.GroovyStarter.rootLoader(GroovyStarter.java:109)
 	at org.codehaus.groovy.tools.GroovyStarter.main(GroovyStarter.java:131)
 
-   Locked ownable synchronizers:
-	- None
+"VM Thread" os_prio=0 tid=0x00007fb9801c7000 nid=0x3080 runnable 
 
-"VM Thread" prio=10 tid=0x00007f9a44071000 nid=0x7fd5 runnable 
+"GC Thread#0" os_prio=0 tid=0x00007fb980028000 nid=0x306c runnable 
 
-"GC task thread#0 (ParallelGC)" prio=10 tid=0x00007f9a4401e800 nid=0x7fcd runnable 
+"GC Thread#1" os_prio=0 tid=0x00007fb980029800 nid=0x306d runnable 
 
-"GC task thread#1 (ParallelGC)" prio=10 tid=0x00007f9a44020000 nid=0x7fce runnable 
+"GC Thread#2" os_prio=0 tid=0x00007fb98002b000 nid=0x306e runnable 
 
-"GC task thread#2 (ParallelGC)" prio=10 tid=0x00007f9a44022000 nid=0x7fcf runnable 
+"GC Thread#3" os_prio=0 tid=0x00007fb98002c800 nid=0x306f runnable 
 
-"GC task thread#3 (ParallelGC)" prio=10 tid=0x00007f9a44024000 nid=0x7fd0 runnable 
+"GC Thread#4" os_prio=0 tid=0x00007fb98002e800 nid=0x3070 runnable 
 
-"GC task thread#4 (ParallelGC)" prio=10 tid=0x00007f9a44026000 nid=0x7fd1 runnable 
+"GC Thread#5" os_prio=0 tid=0x00007fb980030000 nid=0x3071 runnable 
 
-"GC task thread#5 (ParallelGC)" prio=10 tid=0x00007f9a44027800 nid=0x7fd2 runnable 
+"GC Thread#6" os_prio=0 tid=0x00007fb980032000 nid=0x3072 runnable 
 
-"GC task thread#6 (ParallelGC)" prio=10 tid=0x00007f9a44029800 nid=0x7fd3 runnable 
+"GC Thread#7" os_prio=0 tid=0x00007fb980033800 nid=0x3073 runnable 
 
-"GC task thread#7 (ParallelGC)" prio=10 tid=0x00007f9a4402b800 nid=0x7fd4 runnable 
+"G1 Main Marker" os_prio=0 tid=0x00007fb980089000 nid=0x307d runnable 
 
-"VM Periodic Task Thread" prio=10 tid=0x00007f9a440b4000 nid=0x7fdc waiting on condition 
+"G1 Marker#0" os_prio=0 tid=0x00007fb98008b000 nid=0x307e runnable 
 
-JNI global references: 236
+"G1 Marker#1" os_prio=0 tid=0x00007fb98008c800 nid=0x307f runnable 
 
+"G1 Refine#0" os_prio=0 tid=0x00007fb980042000 nid=0x307b runnable 
+
+"G1 Refine#1" os_prio=0 tid=0x00007fb980040800 nid=0x307a runnable 
+
+"G1 Refine#2" os_prio=0 tid=0x00007fb98003e800 nid=0x3079 runnable 
+
+"G1 Refine#3" os_prio=0 tid=0x00007fb98003d000 nid=0x3078 runnable 
+
+"G1 Refine#4" os_prio=0 tid=0x00007fb98003b000 nid=0x3077 runnable 
+
+"G1 Refine#5" os_prio=0 tid=0x00007fb980039800 nid=0x3076 runnable 
+
+"G1 Refine#6" os_prio=0 tid=0x00007fb980037800 nid=0x3075 runnable 
+
+"G1 Refine#7" os_prio=0 tid=0x00007fb980036000 nid=0x3074 runnable 
+
+"G1 Young RemSet Sampling" os_prio=0 tid=0x00007fb980044000 nid=0x307c runnable 
+
+"VM Periodic Task Thread" os_prio=0 tid=0x00007fb9802d2000 nid=0x308c waiting on condition 
+
+JNI global references: 446

@@ -70,7 +70,8 @@ public class ThreadDumpFactory {
     private static final String LOCK_SUBPATTERN = "<0x(\\w+)> \\(a ([^\\)]+)\\)";
 
     private static final Pattern THREAD_DELIMITER = Pattern.compile(NL + "(?:" + NL + "(?!\\s)|(?=\"))");
-    private static final Pattern STACK_TRACE_ELEMENT_LINE = Pattern.compile(" *at (\\S+)\\.(\\S+)\\(([^:]+?)(\\:\\d+)?\\)");
+    // TODO the regex is ignoring module name and version at the time: java.lang.Thread.sleep(java.base@9-ea/Native Method)
+    private static final Pattern STACK_TRACE_ELEMENT_LINE = Pattern.compile(" *at (\\S+)\\.(\\S+)\\((?:.+/)?([^:]+?)(\\:\\d+)?\\)");
     private static final Pattern ACQUIRED_LINE = Pattern.compile("- locked " + LOCK_SUBPATTERN);
     // Oracle/OpenJdk puts unnecessary space after 'parking to wait for'
     private static final Pattern WAITING_ON_LINE = Pattern.compile("- (?:waiting on|parking to wait for ?) " + LOCK_SUBPATTERN);

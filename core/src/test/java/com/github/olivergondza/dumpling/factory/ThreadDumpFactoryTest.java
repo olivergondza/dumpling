@@ -268,28 +268,48 @@ public class ThreadDumpFactoryTest {
     public void oracleJdk9() throws Exception {
 
         ThreadDumpRuntime expected = runtime(
-                daemon("Attach Listener").setTid(140299334586368L).setNid(401).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
-                thread("GC task thread#0 (ParallelGC)").setTid(0x7f9a4401e800L).setNid(32717).setPriority(10),
-                thread("GC task thread#1 (ParallelGC)").setTid(0x7f9a44020000L).setNid(32718).setPriority(10),
-                thread("GC task thread#2 (ParallelGC)").setTid(0x7f9a44022000L).setNid(32719).setPriority(10),
-                thread("GC task thread#3 (ParallelGC)").setTid(0x7f9a44024000L).setNid(32720).setPriority(10),
-                thread("GC task thread#4 (ParallelGC)").setTid(0x7f9a44026000L).setNid(32721).setPriority(10),
-                thread("GC task thread#5 (ParallelGC)").setTid(0x7f9a44027800L).setNid(32722).setPriority(10),
-                thread("GC task thread#6 (ParallelGC)").setTid(0x7f9a44029800L).setNid(32723).setPriority(10),
-                thread("GC task thread#7 (ParallelGC)").setTid(0x7f9a4402b800L).setNid(32724).setPriority(10),
-                thread("VM Periodic Task Thread").setTid(0x7f9a440b4000L).setNid(32732).setPriority(10),
-                daemon("Signal Dispatcher").setTid(0x7f9a440a1800L).setNid(32728).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
-                daemon("C2 CompilerThread0").setTid(0x7f9a440a3800L).setNid(32729).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
-                daemon("C2 CompilerThread1").setTid(0x7f9a440a6800L).setNid(32730).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
-                thread("VM Thread").setTid(0x7f9a44071000L).setNid(32725).setPriority(10),
-                daemon("Service Thread").setTid(0x7f9a440a9000L).setNid(32731).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(10),
-                daemon("Finalizer").setTid(0x7f9a44077800L).setNid(32727).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
-                        .setWaitingOnLock(lock("java.lang.ref.ReferenceQueue$Lock", 0x7ae484858L))
+                daemon("Attach Listener").setTid(0x7fb8f8001000L).setNid(12525).setId(14).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9),
+                thread("GC Thread#0").setTid(0x7fb980028000L).setNid(12396),
+                thread("GC Thread#1").setTid(0x7fb980029800L).setNid(12397),
+                thread("GC Thread#2").setTid(0x7fb98002b000L).setNid(12398),
+                thread("GC Thread#3").setTid(0x7fb98002c800L).setNid(12399),
+                thread("GC Thread#4").setTid(0x7fb98002e800L).setNid(12400),
+                thread("GC Thread#5").setTid(0x7fb980030000L).setNid(12401),
+                thread("GC Thread#6").setTid(0x7fb980032000L).setNid(12402),
+                thread("GC Thread#7").setTid(0x7fb980033800L).setNid(12403),
+                thread("G1 Main Marker").setTid(0x7fb980089000L).setNid(12413),
+                thread("G1 Marker#0").setTid(0x7fb98008b000L).setNid(12414),
+                thread("G1 Marker#1").setTid(0x7fb98008c800L).setNid(12415),
+                thread("G1 Refine#0").setTid(0x7fb980042000L).setNid(12411),
+                thread("G1 Refine#1").setTid(0x7fb980040800L).setNid(12410),
+                thread("G1 Refine#2").setTid(0x7fb98003e800L).setNid(12409),
+                thread("G1 Refine#3").setTid(0x7fb98003d000L).setNid(12408),
+                thread("G1 Refine#4").setTid(0x7fb98003b000L).setNid(12407),
+                thread("G1 Refine#5").setTid(0x7fb980039800L).setNid(12406),
+                thread("G1 Refine#6").setTid(0x7fb980037800L).setNid(12405),
+                thread("G1 Refine#7").setTid(0x7fb980036000L).setNid(12404),
+                thread("G1 Young RemSet Sampling").setTid(0x7fb980044000L).setNid(0x307c),
+                thread("Common-Cleaner").setTid(0x7fb98022c800L).setNid(12426).setId(11).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT_TIMED).setPriority(8).setDaemon(true)
+                        .setWaitingOnLock(lock("java.lang.ref.ReferenceQueue$Lock", 0x6d8b47ea0L))
                 ,
-                daemon("Reference Handler").setTid(0x7f9a44075800L).setNid(32726).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
-                        .setWaitingOnLock(lock("java.lang.ref.Reference$Lock", 0x7ae484470L))
+                thread("VM Periodic Task Thread").setTid(0x7fb9802d2000L).setNid(12428),
+                daemon("Signal Dispatcher").setTid(0x7fb9801ff000L).setNid(12420).setId(5).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9),
+                daemon("C2 CompilerThread0").setTid(0x7fb980201800L).setNid(12421).setId(6).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9),
+                daemon("C2 CompilerThread1").setTid(0x7fb980203800L).setNid(12422).setId(7).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9),
+                daemon("C2 CompilerThread2").setTid(0x7fb980205800L).setNid(12423).setId(8).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9),
+                //daemon("C2 CompilerThread3").setTid(0x7fb980207800L).setNid(12424).setId(9).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9),
+                daemon("C1 CompilerThread3").setTid(0x7fb980207800L).setNid(12424).setId(9).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9),
+                thread("VM Thread").setTid(0x7fb9801c7000L).setNid(12416),
+                daemon("Service Thread").setTid(0x7fb9802cf000L).setNid(12427).setId(12).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9),
+                daemon("Sweeper thread").setTid(0x7fb980211000L).setNid(12425).setId(10).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9),
+                daemon("Reference Pending List Locker").setTid(0x7fb9801fd800L).setNid(12419).setId(4).setThreadStatus(ThreadStatus.RUNNABLE).setPriority(9),
+                daemon("Finalizer").setTid(0x7fb9801d7000L).setNid(12418).setId(3).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(8)
+                        .setWaitingOnLock(lock("java.lang.ref.ReferenceQueue$Lock", 0x6d8b47e90L))
                 ,
-                thread("main").setTid(0x7f9a44008800L).setNid(32716).setThreadStatus(ThreadStatus.SLEEPING).setPriority(10)
+                daemon("Reference Handler").setTid(0x7fb9801d3000L).setNid(12417).setId(2).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setPriority(10)
+                        .setWaitingOnLock(lock("java.lang.ref.Reference$Lock", 0x6d8b47e80L))
+                ,
+                thread("main").setTid(0x7fb980010800L).setNid(12395).setId(1).setThreadStatus(ThreadStatus.SLEEPING).setPriority(5)
         );
 
         ThreadDumpRuntime actual = runtimeFrom("oraclejdk-1.9.log");
@@ -297,10 +317,10 @@ public class ThreadDumpFactoryTest {
 
         StackTrace expectedStackTrace = new StackTrace(
                 StackTrace.nativeElement("java.lang.Thread", "sleep"),
-                StackTrace.nativeElement("sun.reflect.NativeMethodAccessorImpl", "invoke0"),
-                StackTrace.element("sun.reflect.NativeMethodAccessorImpl", "invoke", "NativeMethodAccessorImpl.java", 57),
-                StackTrace.element("sun.reflect.DelegatingMethodAccessorImpl", "invoke", "DelegatingMethodAccessorImpl.java", 43),
-                StackTrace.element("java.lang.reflect.Method", "invoke", "Method.java", 606),
+                StackTrace.nativeElement("jdk.internal.reflect.NativeMethodAccessorImpl", "invoke0"),
+                StackTrace.element("jdk.internal.reflect.NativeMethodAccessorImpl", "invoke", "NativeMethodAccessorImpl.java", 62),
+                StackTrace.element("jdk.internal.reflect.DelegatingMethodAccessorImpl", "invoke", "DelegatingMethodAccessorImpl.java", 43),
+                StackTrace.element("java.lang.reflect.Method", "invoke", "Method.java", 535),
                 StackTrace.element("org.codehaus.groovy.reflection.CachedMethod", "invoke", "CachedMethod.java", 93),
                 StackTrace.element("groovy.lang.MetaMethod", "doMethodInvoke", "MetaMethod.java", 325),
                 StackTrace.element("org.codehaus.groovy.runtime.callsite.StaticMetaMethodSite$StaticMetaMethodSiteNoUnwrap", "invoke", "StaticMetaMethodSite.java", 133),
@@ -317,10 +337,10 @@ public class ThreadDumpFactoryTest {
                 StackTrace.element("groovy.ui.GroovyMain", "process", "GroovyMain.java", 370),
                 StackTrace.element("groovy.ui.GroovyMain", "processArgs", "GroovyMain.java", 129),
                 StackTrace.element("groovy.ui.GroovyMain", "main", "GroovyMain.java", 109),
-                StackTrace.nativeElement("sun.reflect.NativeMethodAccessorImpl", "invoke0"),
-                StackTrace.element("sun.reflect.NativeMethodAccessorImpl", "invoke", "NativeMethodAccessorImpl.java", 57),
-                StackTrace.element("sun.reflect.DelegatingMethodAccessorImpl", "invoke", "DelegatingMethodAccessorImpl.java", 43),
-                StackTrace.element("java.lang.reflect.Method", "invoke", "Method.java", 606),
+                StackTrace.nativeElement("jdk.internal.reflect.NativeMethodAccessorImpl", "invoke0"),
+                StackTrace.element("jdk.internal.reflect.NativeMethodAccessorImpl", "invoke", "NativeMethodAccessorImpl.java", 62),
+                StackTrace.element("jdk.internal.reflect.DelegatingMethodAccessorImpl", "invoke", "DelegatingMethodAccessorImpl.java", 43),
+                StackTrace.element("java.lang.reflect.Method", "invoke", "Method.java", 535),
                 StackTrace.element("org.codehaus.groovy.tools.GroovyStarter", "rootLoader", "GroovyStarter.java", 109),
                 StackTrace.element("org.codehaus.groovy.tools.GroovyStarter", "main", "GroovyStarter.java", 131)
         );
