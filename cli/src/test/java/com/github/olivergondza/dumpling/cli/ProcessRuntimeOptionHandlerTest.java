@@ -26,6 +26,7 @@ package com.github.olivergondza.dumpling.cli;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
@@ -34,10 +35,11 @@ public class ProcessRuntimeOptionHandlerTest extends AbstractCliTest {
 
     @Test
     public void readStdin() throws Exception {
-        stdin(Util.resource("jstack/deadlock.log"));
+        stdin(Util.asString(Util.resource("jstack/deadlock.log")));
         exitValue = run("deadlocks", "--in", "threaddump", "-");
 
-        assertThat(exitValue, equalTo(1));
+        assertThat(err.toString(), isEmptyString());
+        assertThat(exitValue, equalTo(1)); // One deadlock
     }
 
     @Test
