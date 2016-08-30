@@ -23,7 +23,6 @@
  */
 package com.github.olivergondza.dumpling.groovy;
 
-import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 
 import java.util.Arrays;
@@ -82,41 +81,19 @@ public class GroovyInterpretterConfig {
 
     /**
      * Decorate Dumpling API with groovy extensions.
+     *
+     * @deprecated This is no longer needed to be called.
      */
+    @Deprecated
     public void setupDecorateMethods() {
-        setupDecorateMethods(this.getClass().getClassLoader());
     }
 
     /**
      * Decorate Dumpling API with groovy extensions.
+     *
+     * @deprecated This is no longer needed to be called.
      */
+    @Deprecated
     public void setupDecorateMethods(ClassLoader cl) {
-        synchronized (STAR_IMPORTS) {
-            if (DECORATED) return;
-
-            GroovyShell shell = new GroovyShell(cl, new Binding(), getCompilerConfiguration());
-            try {
-                shell.run(
-                        "import org.codehaus.groovy.runtime.DefaultGroovyMethods;" +
-                        "def mc = ThreadSet.metaClass;" +
-                        "mc.asImmutable << { -> delegate };" +
-                        "mc.toSet << { -> delegate };" +
-                        "mc.grep << { Object filter -> delegate.derive(DefaultGroovyMethods.grep(delegate.threadsAsSet, filter)) };" +
-                        "mc.grep << { -> delegate.derive(delegate.threadsAsSet.grep()) };" +
-                        "mc.findAll << { Closure closure -> delegate.derive(DefaultGroovyMethods.findAll((Object) delegate.threadsAsSet, closure)) };" +
-                        "mc.findAll << { -> delegate.derive(delegate.threadsAsSet.findAll()) };" +
-                        "mc.intersect << { rhs -> if (!delegate.getProcessRuntime().equals(rhs.getProcessRuntime())) throw new IllegalArgumentException('Unable to intersect ThreadSets bound to different ProcessRuntimes'); return delegate.derive(DefaultGroovyMethods.intersect(delegate.threadsAsSet, rhs.threadsAsSet)) };" +
-                        "mc.plus << { rhs -> if (!delegate.getProcessRuntime().equals(rhs.getProcessRuntime())) throw new IllegalArgumentException('Unable to merge ThreadSets bound to different ProcessRuntimes'); return delegate.derive(DefaultGroovyMethods.plus(delegate.threadsAsSet, rhs.threadsAsSet)) };",
-                        "dumpling-metaclass-setup",
-                        Arrays.asList()
-                );
-            } catch (Exception ex) {
-                AssertionError err = new AssertionError("Unable to decorate object model");
-                err.initCause(ex);
-                throw err; // Java 6
-            }
-            DECORATED = true;
-        }
     }
-    private static boolean DECORATED = false;
 }

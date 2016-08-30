@@ -28,6 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.File;
 
+import com.github.olivergondza.dumpling.factory.JvmRuntimeFactory;
 import org.junit.Rule;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
@@ -252,11 +253,11 @@ public class GroovyRuntimeTest extends AbstractCliTest {
 
     @Theory
     public void groovyToSet(String command) {
-        stdin("print D.load.jvm.threads.toSet().getClass()%n");
+        stdin("println D.load.jvm.threads.toSet() instanceof Set%n");
         run(command);
 
         assertThat(err.toString(), equalTo(""));
-        assertThat(out.toString(), containsString("class com.github.olivergondza.dumpling.model.jvm.JvmThreadSet"));
+        assertThat(out.toString(), containsString("true"));
         assertThat(this, succeeded());
     }
 

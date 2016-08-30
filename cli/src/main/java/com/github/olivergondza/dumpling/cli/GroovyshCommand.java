@@ -43,8 +43,6 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
 /**
  * Run groovysh with imported Dumpling to investigate threaddump interactively.
  *
- * Run <tt>rt = load("my_jstack.log")</tt> to load threaddumps.
- *
  * @author ogondza
  */
 public class GroovyshCommand implements CliCommand {
@@ -82,7 +80,7 @@ public class GroovyshCommand implements CliCommand {
 
         configureHistory(process, groovysh);
 
-        return groovysh.run(new String[] {});
+        return groovysh.run("");
     }
 
     private Collection<String> getImports() {
