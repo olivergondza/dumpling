@@ -23,6 +23,7 @@
  */
 package com.github.olivergondza.dumpling.factory.jmx;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -38,6 +39,8 @@ import javax.management.remote.JMXServiceURL;
 
 import com.github.olivergondza.dumpling.factory.JmxRuntimeFactory;
 import com.github.olivergondza.dumpling.factory.JmxRuntimeFactory.FailedToInitializeJmxConnection;
+import com.sun.tools.attach.AgentInitializationException;
+import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 //import sun.tools.attach.HotSpotVirtualMachine;
@@ -114,61 +117,39 @@ import com.sun.tools.attach.VirtualMachine;
         } catch (ClassNotFoundException e) {
             diag.add("not a HotSpot VM - jcmd likely unsupported");
         } catch (NoSuchMethodException e) {
-            // Not Hotspot && Java 7+
+            diag.add("HotSpot VM with no jcmd support");
         } catch (InvocationTargetException e) {
             throw new AssertionError(e);
         } catch (IllegalAccessException e) {
             throw new AssertionError(e);
         }
 
-//        String version = systemProperties.getProperty("java.class.version");
-//        assert version.endsWith(".0");
-//        Integer bytecodeVersion = Integer.valueOf(version.substring(0, version.length() - 2));
-//        System.out.println(bytecodeVersion);
-//        if (bytecodeVersion < 50) {
-//            throw new JmxRuntimeFactory.FailedToInitializeJmxConnection(String.format(
-//                    "Target process version is %s, 6 or newer required. Try parsing log from jstack instead.",
-//                    systemProperties.getProperty("java.version")
-//            ));
-//        }
-//
-//        switch (bytecodeVersion) {
-//            case 50: case 51: // JAVA 7 TODO
-//            break;
-//
-//
-//
-//        }
-
         // If the JVM is not able to listen to JMX connections, it is necessary to have the agent loaded.
         // There does not seem to be a portable way to do so. This mostly works for hotspot:
-        // Java 6 to 8: The management-agent.jar needs to be loaded
-        // Java 7+, jcmd can be used to load the agent
-        // Java 9+, management-agent.jar is deleted
-        // https://bugs.openjdk.java.net/browse/JDK-8043939
+        // Java 6: The management-agent.jar needs to be loaded
 
         // Try management-agent.jar
-//        String agentPath = systemProperties.getProperty("java.home")
-//                + File.separator + "lib" + File.separator
-//                + "management-agent.jar"
-//        ;
-//        if (new File(agentPath).exists()) {
-//            try {
-//                vm.loadAgent(agentPath);
-//            } catch (AgentLoadException ex) {
-//                throw failed("Unable to load agent", ex);
-//            } catch (AgentInitializationException ex) {
-//                throw failed("Unable to initialize agent", ex);
-//            }
-//
-//            address = vm.getAgentProperties().getProperty(CONNECTOR_ADDRESS);
-//            if (address != null) return address;
-//
-//            diag.add("management-agent.jar loaded successfully");
-//        } else {
-//            diag.add("management-agent.jar not found");
-//        }
-//
+        String agentPath = systemProperties.getProperty("java.home")
+                + File.separator + "lib" + File.separator
+                + "management-agent.jar"
+        ;
+        if (new File(agentPath).exists()) {
+            try {
+                vm.loadAgent(agentPath);
+            } catch (AgentLoadException ex) {
+                throw failed("Unable to load agent", ex);
+            } catch (AgentInitializationException ex) {
+                throw failed("Unable to initialize agent", ex);
+            }
+
+            address = vm.getAgentProperties().getProperty(CONNECTOR_ADDRESS);
+            if (address != null) return address;
+
+            diag.add("management-agent.jar loaded successfully");
+        } else {
+            diag.add("management-agent.jar not found");
+        }
+
 
         throw failedUnsupported("Unable to connect to JVM: " + diag.toString(), systemProperties);
     }
