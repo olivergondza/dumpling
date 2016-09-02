@@ -159,7 +159,7 @@ import com.sun.tools.attach.VirtualMachine;
             Object ibmVm = attach.invoke(null, String.valueOf(pid));
 
             Method method = ibmVm.getClass().getMethod("getTargetProperties", Boolean.class);
-            Properties props = (Properties) method.invoke(ibmVmClass, true);
+            Properties props = (Properties) method.invoke(ibmVm, true);
 
             address = props.getProperty(CONNECTOR_ADDRESS);
             if (address != null) return address;
@@ -168,7 +168,7 @@ import com.sun.tools.attach.VirtualMachine;
         } catch (ClassNotFoundException e) {
             diag.add("not an IBM JDK - unable to create local JMX connection; try HOSTNAME:PORT instead");
         } catch (NoSuchMethodException e) {
-            diag.add("IBM JDK does not seem to support attach");
+            diag.add("IBM JDK does not seem to support attach: " + e.getMessage());
         } catch (InvocationTargetException e) {
             throw new AssertionError(e);
         } catch (IllegalAccessException e) {
