@@ -155,18 +155,16 @@ import com.sun.tools.attach.VirtualMachine;
         // Note this require both JVMs are IBM ones
         try {
             Class<?> ibmVmClass = Class.forName("com.ibm.tools.attach.VirtualMachine");
-            if (ibmVmClass.isInstance(vm)) {
-                Method attach = ibmVmClass.getMethod("attach", String.class);
-                Object ibmVm = attach.invoke(null, String.valueOf(pid));
+            Method attach = ibmVmClass.getMethod("attach", String.class);
+            Object ibmVm = attach.invoke(null, String.valueOf(pid));
 
-                Method method = ibmVm.getClass().getMethod("getTargetProperties", Boolean.class);
-                Properties props = (Properties) method.invoke(ibmVmClass, true);
+            Method method = ibmVm.getClass().getMethod("getTargetProperties", Boolean.class);
+            Properties props = (Properties) method.invoke(ibmVmClass, true);
 
-                address = props.getProperty(CONNECTOR_ADDRESS);
-                if (address != null) return address;
+            address = props.getProperty(CONNECTOR_ADDRESS);
+            if (address != null) return address;
 
-                diag.add("IBM JDK attach successful - no address provided");
-            }
+            diag.add("IBM JDK attach successful - no address provided");
         } catch (ClassNotFoundException e) {
             diag.add("not an IBM JDK - unable to create local JMX connection; try HOSTNAME:PORT instead");
         } catch (NoSuchMethodException e) {
