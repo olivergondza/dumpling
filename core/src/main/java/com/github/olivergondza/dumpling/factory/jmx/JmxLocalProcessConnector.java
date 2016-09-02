@@ -43,7 +43,6 @@ import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
-//import sun.tools.attach.HotSpotVirtualMachine;
 
 /**
  * Wrapper around tools.jar classes to be loaded using isolated classloader.
@@ -61,9 +60,9 @@ import com.sun.tools.attach.VirtualMachine;
     // This has to be called by reflection so it can as well be private to stress this is not an API
     @SuppressWarnings("unused")
     private static MBeanServerConnection getServerConnection(int pid) {
-        VirtualMachine vm = getVm(pid);
+
         try {
-            JMXServiceURL serviceURL = new JMXServiceURL(connectorAddress(vm));
+            JMXServiceURL serviceURL = new JMXServiceURL(connectorAddress(pid));
             return JMXConnectorFactory.connect(serviceURL).getMBeanServerConnection();
         } catch (MalformedURLException ex) {
             throw failed("JMX connection failed", ex);
@@ -83,7 +82,9 @@ import com.sun.tools.attach.VirtualMachine;
         }
     }
 
-    private static String connectorAddress(VirtualMachine vm) throws IOException {
+    private static String connectorAddress(int pid) throws IOException {
+        VirtualMachine vm = getVm(pid);
+
         String address = vm.getAgentProperties().getProperty(CONNECTOR_ADDRESS);
         if (address != null) return address;
 
@@ -150,6 +151,31 @@ import com.sun.tools.attach.VirtualMachine;
             diag.add("management-agent.jar not found");
         }
 
+        // IBM JDK uses specific class hierarchy
+        // Note this require both JVMs are IBM ones
+        try {
+            Class<?> ibmVmClass = Class.forName("com.ibm.tools.attach.VirtualMachine");
+            if (ibmVmClass.isInstance(vm)) {
+                Method attach = ibmVmClass.getMethod("attach", String.class);
+                Object ibmVm = attach.invoke(null, String.valueOf(pid));
+
+                Method method = ibmVm.getClass().getMethod("getTargetProperties", Boolean.class);
+                Properties props = (Properties) method.invoke(ibmVmClass, true);
+
+                address = props.getProperty(CONNECTOR_ADDRESS);
+                if (address != null) return address;
+
+                diag.add("IBM JDK attach successful - no address provided");
+            }
+        } catch (ClassNotFoundException e) {
+            diag.add("not an IBM JDK - unable to create local JMX connection; try HOSTNAME:PORT instead");
+        } catch (NoSuchMethodException e) {
+            diag.add("IBM JDK does not seem to support attach");
+        } catch (InvocationTargetException e) {
+            throw new AssertionError(e);
+        } catch (IllegalAccessException e) {
+            throw new AssertionError(e);
+        }
 
         throw failedUnsupported("Unable to connect to JVM: " + diag.toString(), systemProperties);
     }
