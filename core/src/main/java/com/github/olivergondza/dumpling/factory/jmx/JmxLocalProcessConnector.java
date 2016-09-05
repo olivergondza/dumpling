@@ -160,7 +160,7 @@ import com.sun.tools.attach.VirtualMachine;
 
             Method method = ibmVm.getClass().getMethod("getSystemProperties");
             method.setAccessible(true); // the class is likely package protected
-            Properties props = (Properties) method.invoke(vm);
+            Properties props = (Properties) method.invoke(ibmVm);
 
             address = props.getProperty(CONNECTOR_ADDRESS);
             if (address != null) return address;
