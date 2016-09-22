@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -48,7 +49,21 @@ import javax.annotation.Nonnull;
  */
 public final class TestThread {
 
-    public static final int JMX_PORT = 9876;
+    public static final int JMX_PORT;
+    static { // Allocate random local port
+        int port = 9876;
+        try {
+            ServerSocket serverSocket = new ServerSocket(0);
+            try {
+                port = serverSocket.getLocalPort();
+            } finally {
+                serverSocket.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        JMX_PORT = port;
+    }
     public static final @Nonnull String JMX_HOST = "localhost";
     public static final @Nonnull String JMX_USER = "user";
     public static final @Nonnull String JMX_PASSWD = "secret_passwd";
