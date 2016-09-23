@@ -13,7 +13,7 @@ dumpling-sh-url: http://bit.ly/dumpling-sh
 Dumpling provides convenient wrapper called [`./dumpling.sh`]({{page.dumpling-sh-url}}) to access dumpling in a convenient way:
 
 ```bash
-$ wget {{page.dumpling-sh-url}}
+$ wget {{page.dumpling-sh-url}} -O dumpling.sh
 $ chmod +x dumpling.sh
 ```
 
