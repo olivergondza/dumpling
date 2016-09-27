@@ -52,8 +52,12 @@ import com.github.olivergondza.dumpling.model.ThreadStatus;
 import com.github.olivergondza.dumpling.model.jvm.JvmRuntime;
 import com.github.olivergondza.dumpling.model.jvm.JvmThread;
 import com.github.olivergondza.dumpling.model.jvm.JvmThreadSet;
+import org.junit.rules.Timeout;
 
 public class JvmRuntimeFactoryTest {
+
+    // Abort after 10 seconds - gets stuck on strange architectures
+    public @Rule Timeout timeout = new Timeout(100000);
 
     public @Rule DisposeRule clean = new DisposeRule();
 
