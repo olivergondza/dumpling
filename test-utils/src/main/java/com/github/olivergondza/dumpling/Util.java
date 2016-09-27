@@ -178,20 +178,16 @@ public class Util {
 
     public static ProcessBuilder processBuilder() {
         ProcessBuilder pb = new ProcessBuilder();
-        try { // Inherit error on JAVA 7 and above
-            Class<?> redirect = Class.forName("java.lang.ProcessBuilder.Redirect");
-            ProcessBuilder.class.getMethod("redirectError", redirect).invoke(redirect.getField("INHERIT"));
-        } catch (ClassNotFoundException e) {
-            // Java 6 - less helpful messages
-        } catch (NoSuchFieldException e) {
-            // Java 6 - less helpful messages
-        } catch (IllegalAccessException e) {
-            // Java 6 - less helpful messages
-        } catch (NoSuchMethodException e) {
-            // Java 6 - less helpful messages
-        } catch (InvocationTargetException e) {
-            // Java 6 - less helpful messages
+        try { // Inherit error out on JAVA 7 and above
+            Class<?> redirect = Class.forName("java.lang.ProcessBuilder$Redirect");
+            Object inherit = redirect.getDeclaredField("INHERIT").get(null);
+            ProcessBuilder.class.getMethod("redirectError", redirect).invoke(pb, inherit);
+            return pb;
+        } catch (Throwable e) {
+            System.out.println("Java 6 detected - unable to diagnose test process failures");
+            e.printStackTrace();
         }
+
         return pb;
     }
 }
