@@ -3,7 +3,7 @@ layout: default
 title: Dumpling as CLI tool
 category: toplevel
 prio: 20
-dumpling-sh-url: http://bit.ly/dumpling-sh
+dumpling-sh-url: https://bit.ly/dumpling-sh
 ---
 
 # {{page.title}}
