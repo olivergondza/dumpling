@@ -28,10 +28,14 @@ import com.github.olivergondza.dumpling.model.ThreadSet;
 import groovy.lang.Closure;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
+import java.util.Collection;
 import java.util.Set;
 
 /**
  * Extension methods for ThreadSet class.
+ *
+ * This implementation delegate to Object based overloads of methods as they ware available much sooner than their
+ * typesafe alternatives (2.4.0) which allow dumpling to run on older groovy.
  */
 /*package*/ class ThreadSetExtension {
     public static ThreadSet asImmutable(ThreadSet t) {
@@ -43,11 +47,11 @@ import java.util.Set;
     }
 
     public static ThreadSet grep(ThreadSet t, Object filter) {
-        return t.derive(DefaultGroovyMethods.grep(t.getThreadsAsSet(), filter));
+        return t.derive(DefaultGroovyMethods.grep((Object) t.getThreadsAsSet(), filter));
     }
 
     public static ThreadSet grep(ThreadSet t) {
-        return t.derive(DefaultGroovyMethods.grep(t.getThreadsAsSet()));
+        return t.derive(DefaultGroovyMethods.grep((Object) t.getThreadsAsSet()));
     }
 
     public static ThreadSet findAll(ThreadSet t, Closure closure) {
@@ -68,7 +72,7 @@ import java.util.Set;
                 "Unable to intersect ThreadSets bound to different ProcessRuntimes"
         );
 
-        return t.derive(DefaultGroovyMethods.intersect(t.getThreadsAsSet(), rhs));
+        return t.derive(DefaultGroovyMethods.intersect((Collection) t.getThreadsAsSet(), (Collection) rhs.getThreadsAsSet()));
     }
 
     public static ThreadSet plus(ThreadSet t, Iterable other) {

@@ -39,8 +39,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <!-- Java 9 support: https://issues.apache.org/jira/browse/GROOVY-7587 -->
-    <groovy.version>2.4.6</groovy.version>
+    <!-- Test against older version not to drop support accidentally -->
+    <groovy.version>2.3.3</groovy.version>
   </properties>
 
   <dependencies>
@@ -112,6 +112,10 @@
 
     <profile>
       <id>release</id>
+      <properties>
+        <!-- Distribute newer version for Java 9 support: https://issues.apache.org/jira/browse/GROOVY-7587 -->
+        <groovy.verions>2.4.6</groovy.verions>
+      </properties>
       <build>
         <plugins>
           <plugin>
