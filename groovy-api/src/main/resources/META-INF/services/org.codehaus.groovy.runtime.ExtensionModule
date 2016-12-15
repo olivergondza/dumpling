@@ -1,3 +1,0 @@
-moduleName = com.github.olivergondza.dumpling.groovy
-moduleVersion = 1.0
-extensionClasses = com.github.olivergondza.dumpling.groovy.ThreadSetExtension
