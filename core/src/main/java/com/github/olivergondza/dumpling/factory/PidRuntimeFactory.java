@@ -107,11 +107,21 @@ public class PidRuntimeFactory {
             jstack = new File(javaHome + "/../bin/jstack" + suffix);
         }
 
-        if (!jstack.exists()) {
-            throw new UnsupportedJdk(javaHome);
+        if (jstack.exists()) return jstack.getAbsolutePath();
+
+        // Chances are there is 'jstack' on PATH that happens to be compatible
+        try {
+            Process p = new ProcessBuilder("jstack", "-h").start();
+            if (p.waitFor() == 0) {
+                return "jstack";
+            }
+        } catch (IOException e) {
+            // Likely does not exist
+        } catch (InterruptedException e) {
+            // Likely does not exist
         }
 
-        return jstack.getAbsolutePath();
+        throw new UnsupportedJdk(javaHome);
     }
 
     public static final class UnsupportedJdk extends RuntimeException {
