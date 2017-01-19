@@ -75,10 +75,4 @@ public class PidRuntimeFactoryTest {
             assertThat(ex.getMessage(), containsString("jstack failed with code "));
         }
     }
-
-    @Test(expected = PidRuntimeFactory.UnsupportedJdk.class)
-    public void jstackNotExecutable() throws Exception {
-        PidRuntimeFactory factory = new PidRuntimeFactory(System.getProperty("java.home") + "/no_such_dir/");
-        factory.fromProcess(Util.currentPid());
-    }
 }
