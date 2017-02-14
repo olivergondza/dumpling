@@ -23,6 +23,7 @@
  */
 package com.github.olivergondza.dumpling.model;
 
+import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
@@ -36,16 +37,23 @@ public abstract class ModelObject {
     /**
      * Print object into stream.
      */
-    public abstract void toString(PrintStream stream, Mode mode);
+    public abstract void toString(@Nonnull PrintStream stream, @Nonnull Mode mode);
+
+    /**
+     * Print model object to string in specified mode.
+     */
+    public String toString(@Nonnull Mode mode) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        toString(new PrintStream(baos), mode);
+        return baos.toString();
+    }
 
     /**
      * Default toString implementation for ModelObject.
      */
     @Override
     public String toString() {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        toString(new PrintStream(baos), Mode.HUMAN);
-        return baos.toString();
+        return toString(Mode.HUMAN);
     }
 
     /**
