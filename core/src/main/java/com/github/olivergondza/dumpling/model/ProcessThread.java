@@ -543,4 +543,21 @@ public class ProcessThread<
             }
         };
     }
+
+    /**
+     * Match thread its stacktrace contains frame that exactly matches pattern.
+     *
+     * @param pattern Fully qualified method name like "com.github.olivergondza.dumpling.model.ProcessThread.evaluating".
+     */
+    public static @Nonnull Predicate evaluating(final @Nonnull String pattern) {
+        return new Predicate() {
+            @Override
+            public boolean isValid(@Nonnull ProcessThread<?, ?, ?> thread) {
+                for (StackTraceElement element : thread.getStackTrace().getElements()) {
+                    if ((element.getClassName() + "." + element.getMethodName()).equals(pattern)) return true;
+                }
+                return false;
+            }
+        };
+    }
 }

@@ -25,7 +25,8 @@ package com.github.olivergondza.dumpling.factory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.lang.management.ManagementFactory;
+import java.lang.reflect.Field;
 
 import javax.annotation.Nonnull;
 
@@ -59,8 +60,8 @@ public class PidRuntimeFactory {
      * @throws IOException When jstack invocation failed.
      * @throws InterruptedException When jstack invocation was interrupted.
      */
-    public @Nonnull ThreadDumpRuntime fromProcess(int pid) throws IOException, InterruptedException {
-        ProcessBuilder pb = new ProcessBuilder(jstackBinary(), "-l", Integer.toString(pid));
+    public @Nonnull ThreadDumpRuntime fromProcess(long pid) throws IOException, InterruptedException {
+        ProcessBuilder pb = new ProcessBuilder(jstackBinary(), "-l", Long.toString(pid));
 
         Process process = pb.start();
 
@@ -80,6 +81,67 @@ public class PidRuntimeFactory {
         if (runtimeEx != null) throw runtimeEx;
 
         return runtime;
+    }
+
+    // Kept for binary compatibility.
+    public @Nonnull ThreadDumpRuntime fromProcess(int pid) throws IOException, InterruptedException {
+        return fromProcess((long) pid);
+    }
+
+    /**
+     * Extract runtime from running process.
+     * @param process Jvm process.
+     * @throws UnsupportedOperationException Dumpling is not able to extract needed information from Process instance.
+     * @throws IllegalStateException Process has already terminated.
+     */
+    public @Nonnull ThreadDumpRuntime fromProcess(@Nonnull Process process) throws IOException, InterruptedException {
+        try {
+            int exitValue = process.exitValue();
+            throw new IllegalStateException("Process terminated with " + exitValue);
+        } catch (IllegalThreadStateException expected) {
+            // Process alive
+        }
+
+        long pid;
+        try {
+            // Protected class
+            Class<?>  clazz = Class.forName("java.lang.UNIXProcess");
+            if (!clazz.isAssignableFrom(process.getClass())) throw new UnsupportedOperationException(
+                    "Unknown java.lang.Process implementation: " + process.getClass().getName()
+            );
+            Field pidField = clazz.getDeclaredField("pid");
+            pidField.setAccessible(true);
+            pid = pidField.getLong(process);
+        } catch (ClassNotFoundException e) {
+            throw new UnsupportedOperationException("Unable to find java.lang.UNIXProcess", e);
+        } catch (NoSuchFieldException e) {
+            throw new UnsupportedOperationException("Unable to find java.lang.UNIXProcess.pid", e);
+        } catch (IllegalAccessException e) {
+            throw new UnsupportedOperationException("Unable to access java.lang.UNIXProcess.pid", e);
+        }
+
+        return fromProcess(pid);
+    }
+
+    /**
+     * Extract runtime from current process.
+     *
+     * This approach is somewhat external and {@link JvmRuntimeFactory} should be preferred.
+     */
+    public @Nonnull ThreadDumpRuntime fromCurrentProcess() throws IOException, InterruptedException {
+        final String jvmName = ManagementFactory.getRuntimeMXBean().getName();
+        final int index = jvmName.indexOf('@');
+
+        if (index < 1) throw new IOException("Unable to extract PID from " + jvmName);
+
+        long pid;
+        try {
+            pid = Long.parseLong(jvmName.substring(0, index));
+        } catch (NumberFormatException e) {
+            throw new IOException("Unable to extract PID from " + jvmName);
+        }
+
+        return fromProcess(pid);
     }
 
     protected ThreadDumpRuntime createRuntime(Process process) {

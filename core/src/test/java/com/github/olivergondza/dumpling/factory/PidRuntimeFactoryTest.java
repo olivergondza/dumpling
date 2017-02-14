@@ -24,12 +24,14 @@
 package com.github.olivergondza.dumpling.factory;
 
 import static com.github.olivergondza.dumpling.Util.only;
+import static com.github.olivergondza.dumpling.model.ProcessThread.evaluating;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertFalse;
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -73,6 +75,31 @@ public class PidRuntimeFactoryTest {
             fail("No exception thrown");
         } catch(IOException ex) {
             assertThat(ex.getMessage(), containsString("jstack failed with code "));
+        }
+    }
+
+    @Test
+    public void fromCurrentProcess() throws Exception {
+        String pattern = "com.github.olivergondza.dumpling.factory.PidRuntimeFactoryTest.fromCurrentProcess";
+        ThreadDumpThread main = new PidRuntimeFactory().fromCurrentProcess().getThreads().where(evaluating(pattern)).onlyThread();
+        assertEquals(Thread.currentThread().getName(), main.getName());
+    }
+
+    @Test
+    public void fromJavaLangProcess() throws Exception {
+        Process process = TestThread.runJmxObservableProcess(false);
+        disposer.register(process);
+
+        ThreadDumpRuntime runtime = new PidRuntimeFactory().fromProcess(process);
+
+        process.destroy();
+        process.waitFor();
+
+        try {
+            new PidRuntimeFactory().fromProcess(process);
+            fail();
+        } catch (IllegalStateException ex) {
+            assertThat(ex.getMessage(), startsWith("Process terminated"));
         }
     }
 }
