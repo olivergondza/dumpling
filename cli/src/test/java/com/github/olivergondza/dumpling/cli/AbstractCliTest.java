@@ -40,7 +40,7 @@ import org.hamcrest.TypeSafeMatcher;
 
 public abstract class AbstractCliTest {
 
-    protected InputStream in = null;
+    protected InputStream in = new ByteArrayInputStream(new byte[0]);
     protected ByteArrayOutputStream err;
     protected ByteArrayOutputStream out;
     protected int exitValue;

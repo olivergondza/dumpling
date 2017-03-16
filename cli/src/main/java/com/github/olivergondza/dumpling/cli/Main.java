@@ -23,6 +23,7 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -101,17 +102,26 @@ public class Main {
 
             String scheme = namedParameter("KIND", params, 0);
 
-            String locator;
-            int read;
+            String locator = null;
             int delim = scheme.indexOf(':');
-            if (delim == -1) {
-                locator = namedParameter("LOCATOR", params, 1);
-                read = 2;
+            if (delim == -1) { // No scheme provided - guess
+                try {
+                    Integer.parseInt(scheme);
+                    locator = scheme;
+                    scheme = "process";
+                } catch (NumberFormatException ex) {
+                    File file = new File(scheme);
+                    if (file.exists() && !file.isDirectory()) {
+                        locator = scheme;
+                        scheme = "threaddump";
+                    }
+                }
             } else {
                 locator = scheme.substring(delim + 1);
                 scheme = scheme.substring(0, delim);
-                read = 1;
             }
+
+            if (locator == null) throw new UnknownRuntimeKind(owner, "Unknown runtime source kind: " + scheme);
 
             CliRuntimeFactory<?> factory = getFactory(scheme);
             if (factory == null) throw new UnknownRuntimeKind(owner, "Unknown runtime source kind: " + scheme);
@@ -121,7 +131,7 @@ public class Main {
 
             setter.addValue(runtime);
 
-            return read;
+            return 1;
         }
 
         private @Nonnull String namedParameter(String name, Parameters params, int index) throws CmdLineException {

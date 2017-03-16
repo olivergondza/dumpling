@@ -125,4 +125,23 @@ public class SourceTest extends AbstractCliTest {
         assertThat(err.toString(), containsString("Unable to parse 'not_a_pid' as process ID"));
         assertThat(exitValue, not(equalTo(0)));
     }
+
+    @Test
+    public void inferSourcePid() throws Exception {
+        run("threaddump", "--in", Integer.toString(Util.currentPid()));
+        assertThat(err.toString(), equalTo(""));
+        assertThat(exitValue, equalTo(0));
+
+        new ThreadDumpFactory().fromStream(new ByteArrayInputStream(out.toByteArray()));
+    }
+
+    @Test
+    public void inferSourceFile() throws Exception {
+        String path = Util.asFile(Util.resource("jstack/producer-consumer.log")).getAbsolutePath();
+        run("threaddump", "--in", path);
+        assertThat(err.toString(), equalTo(""));
+        assertThat(exitValue, equalTo(0));
+
+        new ThreadDumpFactory().fromStream(new ByteArrayInputStream(out.toByteArray()));
+    }
 }
