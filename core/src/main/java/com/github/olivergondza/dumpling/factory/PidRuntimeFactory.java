@@ -91,10 +91,11 @@ public class PidRuntimeFactory {
     /**
      * Extract runtime from running process.
      * @param process Jvm process.
-     * @throws UnsupportedOperationException Dumpling is not able to extract needed information from Process instance.
+     * @throws UnsupportedOperationException Process implementation is not supported.
      * @throws IllegalStateException Process has already terminated.
+     * @throws IOException Unable to extract runtime from the process.
      */
-    public @Nonnull ThreadDumpRuntime fromProcess(@Nonnull Process process) throws IOException, InterruptedException {
+    public @Nonnull ThreadDumpRuntime fromProcess(@Nonnull Process process) throws IOException, InterruptedException, UnsupportedOperationException {
         try {
             int exitValue = process.exitValue();
             throw new IllegalStateException("Process terminated with " + exitValue);
@@ -102,13 +103,14 @@ public class PidRuntimeFactory {
             // Process alive
         }
 
+        if (!"java.lang.UNIXProcess".equals(process.getClass().getName())) throw new UnsupportedOperationException(
+                "Unknown java.lang.Process implementation: " + process.getClass().getName()
+        );
+
         long pid;
         try {
             // Protected class
             Class<?>  clazz = Class.forName("java.lang.UNIXProcess");
-            if (!clazz.isAssignableFrom(process.getClass())) throw new UnsupportedOperationException(
-                    "Unknown java.lang.Process implementation: " + process.getClass().getName()
-            );
             Field pidField = clazz.getDeclaredField("pid");
             pidField.setAccessible(true);
             pid = pidField.getLong(process);
