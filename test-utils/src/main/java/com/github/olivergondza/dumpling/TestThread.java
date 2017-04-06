@@ -145,6 +145,7 @@ public final class TestThread {
         }
         args.add("com.github.olivergondza.dumpling.TestThread");
         ProcessBuilder pb = processBuilder().command(args);
+        String processLine = pb.command().toString();
         final Process process = pb.start();
 
         BufferedInputStream bis = new BufferedInputStream(process.getInputStream());
@@ -156,7 +157,7 @@ public final class TestThread {
 
             try {
                 int exit = process.exitValue();
-                throw processTerminatedPrematurely(process, exit, null);
+                throw processTerminatedPrematurely(process, exit, null, processLine);
             } catch (IllegalThreadStateException ex) {
                 // Still running
             }

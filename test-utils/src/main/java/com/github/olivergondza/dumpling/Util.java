@@ -175,11 +175,15 @@ public class Util {
         }
     }
 
-    public static Error processTerminatedPrematurely(Process process, int exit, Exception cause) {
+    public static Error processTerminatedPrematurely(Process process, int exit, Exception cause, String line) {
         AssertionError error = new AssertionError(
-                "Process under test probably terminated prematurely. Exit code: "
-                        + exit + "\nSTDOUT: " + currentProcessOut(process.getInputStream())
-                        + "\nSTDERR: " + currentProcessOut(process.getErrorStream())
+                String.format(
+                        "Process under test '%s' probably terminated prematurely. Exit code: %d%nSTDOUT: %s%nSTDERR: %s",
+                        line,
+                        exit,
+                        currentProcessOut(process.getInputStream()),
+                        currentProcessOut(process.getErrorStream())
+                )
         );
         error.initCause(cause);
         return error;

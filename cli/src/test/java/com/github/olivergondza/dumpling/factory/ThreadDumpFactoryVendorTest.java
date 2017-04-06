@@ -255,6 +255,7 @@ public class ThreadDumpFactoryVendorTest {
         };
 
         private Process process;
+        private String processLine;
         private ThreadDumpRuntime runtime = null;
         private File pidFile = null;
         private File scriptFile = null;
@@ -270,7 +271,7 @@ public class ThreadDumpFactoryVendorTest {
                         ThreadDumpFactoryVendorTest.class, method.getName() + ".groovy"
                 ));
 
-                process = run(init + script);
+                run(init + script);
             } catch (Exception ex) {
                 throw new AssertionError(ex);
             }
@@ -298,7 +299,7 @@ public class ThreadDumpFactoryVendorTest {
             };
         }
 
-        private Process run(String script) throws IOException {
+        private void run(String script) throws IOException {
             pidFile = File.createTempFile("dumpling", getClass().getName() + ".pid");
             pidFile.deleteOnExit();
             scriptFile = File.createTempFile("dumpling", getClass().getName() + ".script");
@@ -318,7 +319,8 @@ public class ThreadDumpFactoryVendorTest {
                     "--script", scriptFile.getAbsolutePath(),
                     pidFile.getAbsolutePath()
             );
-            return pb.start();
+            processLine = pb.command().toString();
+            process = pb.start();
         }
 
         public ThreadDumpThread thread(@Nonnull String name) {
@@ -330,16 +332,16 @@ public class ThreadDumpFactoryVendorTest {
 
             try {
                 int exit = process.exitValue();
-                throw processTerminatedPrematurely(process, exit, null);
+                throw processTerminatedPrematurely(process, exit, null, processLine);
             } catch (IllegalThreadStateException ex) {
                 // Still running as expected
                 try {
 
                     return runtime = waitForInitialized();
                 } catch (IOException e) {
-                    throw processTerminatedPrematurely(process, getExitIfDone(), e);
+                    throw processTerminatedPrematurely(process, getExitIfDone(), e, processLine);
                 } catch (InterruptedException e) {
-                    throw processTerminatedPrematurely(process, getExitIfDone(), e);
+                    throw processTerminatedPrematurely(process, getExitIfDone(), e, processLine);
                 }
             }
         }
