@@ -197,8 +197,7 @@ public class Util {
             ProcessBuilder.class.getMethod("redirectError", redirect).invoke(pb, inherit);
             return pb;
         } catch (Throwable e) {
-            System.out.println("Java 6 detected - unable to diagnose test process failures");
-            e.printStackTrace();
+            System.err.println("Java 6 detected - unable to diagnose test process failures: " + e.toString());
         }
 
         return pb;
