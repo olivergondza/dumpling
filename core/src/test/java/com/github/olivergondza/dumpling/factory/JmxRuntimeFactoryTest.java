@@ -45,8 +45,13 @@ import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.StackTrace;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 import com.github.olivergondza.dumpling.model.jmx.JmxRuntime;
+import org.junit.rules.Timeout;
+
+import java.util.concurrent.TimeUnit;
 
 public class JmxRuntimeFactoryTest {
+
+    @Rule public Timeout to = new Timeout(10, TimeUnit.SECONDS);
 
     @Rule public DisposeRule disposer = new DisposeRule();
 
