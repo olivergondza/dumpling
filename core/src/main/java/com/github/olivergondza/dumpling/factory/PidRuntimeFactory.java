@@ -27,6 +27,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import javax.annotation.Nonnull;
 
@@ -103,17 +105,47 @@ public class PidRuntimeFactory {
             // Process alive
         }
 
+        long pid = extractPid(process);
+        return fromProcess(pid);
+    }
+
+    private long extractPid(@Nonnull Process process) {
+        Throwable problem = null;
+        try {
+            Method toHandle = Process.class.getMethod("toHandle");
+            Object handle = toHandle.invoke(process);
+            return (Long) Class.forName("java.lang.ProcessHandle").getMethod("getPid").invoke(handle);
+        } catch (NoSuchMethodException e) {
+            // Not Java 9 - Fallback
+        } catch (IllegalAccessException e) {
+            throw new AssertionError(e);
+        } catch (ClassNotFoundException e) {
+            throw new AssertionError(e);
+        } catch (InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof UnsupportedOperationException) {
+                // Process impl might not support management - Fallback
+                problem = cause;
+            } else if (cause instanceof SecurityException) {
+                // Access to monitoring is rejected - Fallback
+                problem = cause;
+            } else {
+                throw new AssertionError(e);
+            }
+        }
+
+        // Fallback for Java6+ on unix. This is known not to work for Java8 on Windows.
         if (!"java.lang.UNIXProcess".equals(process.getClass().getName())) throw new UnsupportedOperationException(
-                "Unknown java.lang.Process implementation: " + process.getClass().getName()
+                "Unknown java.lang.Process implementation: " + process.getClass().getName(),
+                problem
         );
 
-        long pid;
         try {
             // Protected class
             Class<?>  clazz = Class.forName("java.lang.UNIXProcess");
             Field pidField = clazz.getDeclaredField("pid");
             pidField.setAccessible(true);
-            pid = pidField.getLong(process);
+            return pidField.getLong(process);
         } catch (ClassNotFoundException e) {
             throw new UnsupportedOperationException("Unable to find java.lang.UNIXProcess", e);
         } catch (NoSuchFieldException e) {
@@ -121,8 +153,6 @@ public class PidRuntimeFactory {
         } catch (IllegalAccessException e) {
             throw new UnsupportedOperationException("Unable to access java.lang.UNIXProcess.pid", e);
         }
-
-        return fromProcess(pid);
     }
 
     /**
