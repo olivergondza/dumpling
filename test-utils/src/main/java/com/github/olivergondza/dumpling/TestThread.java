@@ -126,8 +126,8 @@ public final class TestThread {
     /* Client is expected to dispose the thread */
     public static Process runJmxObservableProcess(boolean auth) throws Exception {
         String //cp = "target/test-classes:target/classes"; // Current module
-        cp = TestThread.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-
+        // Use file to convert URI to a path platform FS would understand,
+        cp = new File(TestThread.class.getProtectionDomain().getCodeSource().getLocation().toURI().getSchemeSpecificPart()).getAbsolutePath();
         List<String> args = new ArrayList<String>();
         args.add("java");
         args.add("-cp");
