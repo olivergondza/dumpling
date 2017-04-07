@@ -157,7 +157,7 @@ public final class TestThread {
 
             try {
                 int exit = process.exitValue();
-                throw processTerminatedPrematurely(process, exit, null, processLine);
+                throw processTerminatedPrematurely(process, exit, processLine);
             } catch (IllegalThreadStateException ex) {
                 // Still running
             }

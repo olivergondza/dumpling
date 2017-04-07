@@ -23,6 +23,7 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
+import static com.github.olivergondza.dumpling.Util.currentProcessOut;
 import static com.github.olivergondza.dumpling.Util.only;
 import static com.github.olivergondza.dumpling.Util.pause;
 import static com.github.olivergondza.dumpling.Util.processTerminatedPrematurely;
@@ -332,25 +333,32 @@ public class ThreadDumpFactoryVendorTest {
 
             try {
                 int exit = process.exitValue();
-                throw processTerminatedPrematurely(process, exit, null, processLine);
+                throw processTerminatedPrematurely(process, exit, processLine);
             } catch (IllegalThreadStateException ex) {
                 // Still running as expected
                 try {
 
                     return runtime = waitForInitialized();
                 } catch (IOException e) {
-                    throw processTerminatedPrematurely(process, getExitIfDone(), e, processLine);
+                    String message = String.format(
+                            "Unable to get Runtime from %s, Exit code: %d%nSTDOUT: %s%nSTDERR: %s",
+                            processLine,
+                            getExitIfDone(),
+                            currentProcessOut(process.getInputStream()),
+                            currentProcessOut(process.getErrorStream())
+                    );
+                    throw new Error(message, e);
                 } catch (InterruptedException e) {
-                    throw processTerminatedPrematurely(process, getExitIfDone(), e, processLine);
+                    throw new Error("Interrupted: " + processLine, e);
                 }
             }
         }
 
-        private int getExitIfDone() {
+        private Integer getExitIfDone() {
             try {
                 return process.exitValue();
             } catch (IllegalThreadStateException ex) {
-                return -1;
+                return null;
             }
         }
 
