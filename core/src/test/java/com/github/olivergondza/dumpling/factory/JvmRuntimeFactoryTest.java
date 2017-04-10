@@ -34,6 +34,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -348,8 +349,8 @@ public class JvmRuntimeFactoryTest {
             assertThat(waiting.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
 
             // Current thread is
-            JvmThread current = runtime.getThreads().where(nameIs(Thread.currentThread().getName())).onlyThread();
-            final Set<ThreadLock> expected = new HashSet<ThreadLock>(Arrays.asList(
+            JvmThread current = runtime.getThreads().forCurrentThread();
+            final Set<ThreadLock> expected = new HashSet<ThreadLock>(Collections.singletonList(
                     ThreadLock.fromInstance(lock)
             ));
             assertThat(current.getAcquiredLocks(), equalTo(expected));
@@ -377,7 +378,7 @@ public class JvmRuntimeFactoryTest {
             Thread.sleep(100); // Wait until blocked
 
             JvmRuntime runtime = runtime();
-            JvmThread owner = runtime.getThreads().where(nameIs(Thread.currentThread().getName())).onlyThread();
+            JvmThread owner = runtime.getThreads().forCurrentThread();
             JvmThread blocked = runtime.getThreads().where(nameIs("ownableSynchronizers")).onlyThread();
 
             assertThat(owner.getStatus(), equalTo(ThreadStatus.RUNNABLE));
