@@ -29,6 +29,7 @@ import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
@@ -56,6 +57,7 @@ import com.github.olivergondza.dumpling.DisposeRule;
 import com.github.olivergondza.dumpling.model.jvm.JvmRuntime;
 import com.github.olivergondza.dumpling.model.jvm.JvmThread;
 import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.collection.IsEmptyCollection;
@@ -900,6 +902,14 @@ public class ThreadDumpFactoryTest {
 
         assertEquals(140685595015168L, (long) thread.getTid());
         assertEquals(5199638528L, (long) thread.getNid());
+    }
+
+    @Test // Observed on OS X with oracle JDK6. Fixed in later versions.
+    public void lockIdsMightNotHavePrefix() throws Exception {
+        ThreadDumpThread thread = runtimeFrom("unprefixed-synchronizers.log").getThreads().onlyThread();
+        Set<ThreadLock> locks = thread.getAcquiredSynchronizers();
+        assertThat(locks, Matchers.<ThreadLock>iterableWithSize(1));
+        assertThat(locks.iterator().next().getId(), equalTo(34151939696L));
     }
 
     @Test

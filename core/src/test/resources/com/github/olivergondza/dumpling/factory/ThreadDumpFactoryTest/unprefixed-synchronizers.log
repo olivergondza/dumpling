@@ -1,0 +1,10 @@
+2015-04-13 14:18:38
+Full thread dump Java HotSpot(TM) 64-Bit Server VM (20.14-b01 mixed mode):
+
+"Attach Listener" daemon prio=10 tid=0x000000000b9d7000 nid=0x49dd runnable [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+   Locked ownable synchronizers:
+       - <7f39d3e70> (a java.util.concurrent.locks.ReentrantLock$NonfairSync)
+
+JNI global references: 1329

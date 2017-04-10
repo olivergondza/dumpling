@@ -67,7 +67,7 @@ public class ThreadDumpFactory {
     private static final StackTraceElement WAIT_TRACE_ELEMENT = StackTrace.nativeElement("java.lang.Object", "wait");
 
     private static final String NL = "(?:\\r\\n|\\n)";
-    private static final String LOCK_SUBPATTERN = "<0x(\\w+)> \\(a ([^\\)]+)\\)";
+    private static final String LOCK_SUBPATTERN = "<(?:0x)?(\\w+)> \\(a ([^\\)]+)\\)";
 
     private static final Pattern THREAD_DELIMITER = Pattern.compile(NL + "(?:" + NL + "(?!\\s)|(?=\"))");
     // TODO the regex is ignoring module name and version at the time: java.lang.Thread.sleep(java.base@9-ea/Native Method)
