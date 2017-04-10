@@ -23,7 +23,6 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
-import static com.github.olivergondza.dumpling.TestThread.JMX_CONNECTION;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -59,9 +58,9 @@ public class SourceTest extends AbstractCliTest {
 
     @Test
     public void jmxRemoteConnectViaCli() throws Exception {
-        disposer.register(TestThread.runJmxObservableProcess(false));
+        TestThread.JMXProcess process = disposer.register(TestThread.runJmxObservableProcess(false));
         stdin("runtime.threads.where(nameIs('remotely-observed-thread'))");
-        run("groovy", "--in", "jmx", JMX_CONNECTION);
+        run("groovy", "--in", "jmx", process.JMX_CONNECTION);
 
         assertThat(err.toString(), equalTo(""));
         // Reuse verification logic re-parsing the output as thread dump
