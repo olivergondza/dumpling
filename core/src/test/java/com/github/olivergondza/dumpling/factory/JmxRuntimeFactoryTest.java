@@ -43,13 +43,8 @@ import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.StackTrace;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 import com.github.olivergondza.dumpling.model.jmx.JmxRuntime;
-import org.junit.rules.Timeout;
-
-import java.util.concurrent.TimeUnit;
 
 public class JmxRuntimeFactoryTest {
-
-    @Rule public Timeout to = new Timeout(20, TimeUnit.SECONDS);
 
     @Rule public DisposeRule disposer = new DisposeRule();
 
@@ -82,7 +77,7 @@ public class JmxRuntimeFactoryTest {
         assertThreadState(new JmxRuntimeFactory().forConnectionString(process.JMX_AUTH_CONNECTION));
     }
 
-    @Test
+    @Test(timeout = 10000) // Not using Timeout rule as that would not clean the test resources
     public void jmxRemoteConnectMissingPasswd() throws Exception {
         TestThread.JMXProcess process = runRemoteSut(true);
         try {
