@@ -23,10 +23,8 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
-import static com.github.olivergondza.dumpling.TestThread.JMX_AUTH_CONNECTION;
 import static com.github.olivergondza.dumpling.TestThread.JMX_HOST;
 import static com.github.olivergondza.dumpling.TestThread.JMX_PASSWD;
-import static com.github.olivergondza.dumpling.TestThread.JMX_PORT;
 import static com.github.olivergondza.dumpling.TestThread.JMX_USER;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.Matchers.equalTo;
@@ -51,7 +49,7 @@ import java.util.concurrent.TimeUnit;
 
 public class JmxRuntimeFactoryTest {
 
-    @Rule public Timeout to = new Timeout(10, TimeUnit.SECONDS);
+    @Rule public Timeout to = new Timeout(20, TimeUnit.SECONDS);
 
     @Rule public DisposeRule disposer = new DisposeRule();
 
@@ -72,23 +70,23 @@ public class JmxRuntimeFactoryTest {
 
     @Test
     public void jmxRemoteConnect() throws Exception {
-        runRemoteSut();
-        JmxRuntime runtime = new JmxRuntimeFactory().forRemoteProcess(JMX_HOST, JMX_PORT);
+        TestThread.JMXProcess process = runRemoteSut();
+        JmxRuntime runtime = new JmxRuntimeFactory().forRemoteProcess(JMX_HOST, process.JMX_PORT);
         assertThreadState(runtime);
     }
 
     @Test
     public void jmxRemoteConnectWithPasswd() throws Exception {
-        runRemoteSut(true);
-        assertThreadState(new JmxRuntimeFactory().forRemoteProcess(JMX_HOST, JMX_PORT, JMX_USER, JMX_PASSWD));
-        assertThreadState(new JmxRuntimeFactory().forConnectionString(JMX_AUTH_CONNECTION));
+        TestThread.JMXProcess process = runRemoteSut(true);
+        assertThreadState(new JmxRuntimeFactory().forRemoteProcess(JMX_HOST, process.JMX_PORT, JMX_USER, JMX_PASSWD));
+        assertThreadState(new JmxRuntimeFactory().forConnectionString(process.JMX_AUTH_CONNECTION));
     }
 
     @Test
     public void jmxRemoteConnectMissingPasswd() throws Exception {
-        runRemoteSut(true);
+        TestThread.JMXProcess process = runRemoteSut(true);
         try {
-            new JmxRuntimeFactory().forRemoteProcess(JMX_HOST, JMX_PORT);
+            new JmxRuntimeFactory().forRemoteProcess(JMX_HOST, process.JMX_PORT);
             fail();
         } catch (JmxRuntimeFactory.FailedToInitializeJmxConnection ex) {
             assertThat(ex.getMessage(), containsString("Credentials required"));
@@ -97,9 +95,9 @@ public class JmxRuntimeFactoryTest {
 
     @Test
     public void jmxRemoteConnectWithIncorrectPasswd() throws Exception {
-        runRemoteSut(true);
+        TestThread.JMXProcess process = runRemoteSut(true);
         try {
-            new JmxRuntimeFactory().forRemoteProcess(JMX_HOST, JMX_PORT, JMX_USER, "incorrect_passwd");
+            new JmxRuntimeFactory().forRemoteProcess(JMX_HOST, process.JMX_PORT, JMX_USER, "incorrect_passwd");
             fail();
         } catch (JmxRuntimeFactory.FailedToInitializeJmxConnection ex) {
             assertThat(ex.getMessage(), containsString("Invalid username or password"));
@@ -152,11 +150,11 @@ public class JmxRuntimeFactoryTest {
         disposer.register(TestThread.runThread());
     }
 
-    private void runRemoteSut() throws Exception {
-        disposer.register(TestThread.runJmxObservableProcess(false));
+    private TestThread.JMXProcess runRemoteSut() throws Exception {
+        return runRemoteSut(false);
     }
 
-    private void runRemoteSut(boolean auth) throws Exception {
-        disposer.register(TestThread.runJmxObservableProcess(auth));
+    private TestThread.JMXProcess runRemoteSut(boolean auth) throws Exception {
+        return disposer.register(TestThread.runJmxObservableProcess(auth));
     }
 }

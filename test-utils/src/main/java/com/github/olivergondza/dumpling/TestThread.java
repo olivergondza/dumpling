@@ -49,26 +49,10 @@ import javax.annotation.Nonnull;
  */
 public final class TestThread {
 
-    public static final int JMX_PORT;
-    static { // Allocate random local port
-        int port = 9876;
-        try {
-            ServerSocket serverSocket = new ServerSocket(0);
-            try {
-                port = serverSocket.getLocalPort();
-            } finally {
-                serverSocket.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        JMX_PORT = port;
-    }
     public static final @Nonnull String JMX_HOST = "localhost";
     public static final @Nonnull String JMX_USER = "user";
     public static final @Nonnull String JMX_PASSWD = "secret_passwd";
-    public static final @Nonnull String JMX_CONNECTION = JMX_HOST + ":" + JMX_PORT;
-    public static final @Nonnull String JMX_AUTH_CONNECTION = JMX_USER + ":" + JMX_PASSWD + "@" + JMX_CONNECTION;
+
     public static final String MARKER = "DUMPLING-SUT-IS-READY";
 
     // Observable process entry point - not to be invoked directly
@@ -123,8 +107,19 @@ public final class TestThread {
         return thread;
     }
 
+    private static int getFreePort() throws IOException {
+        ServerSocket serverSocket = new ServerSocket(0);
+        try {
+            return serverSocket.getLocalPort();
+        } finally {
+            serverSocket.close();
+        }
+    }
+
     /* Client is expected to dispose the thread */
-    public static Process runJmxObservableProcess(boolean auth) throws Exception {
+    public static JMXProcess runJmxObservableProcess(boolean auth) throws Exception {
+        int jmxPort = getFreePort();
+
         String //cp = "target/test-classes:target/classes"; // Current module
         // Use file to convert URI to a path platform FS would understand,
         cp = new File(TestThread.class.getProtectionDomain().getCodeSource().getLocation().toURI().getSchemeSpecificPart()).getAbsolutePath();
@@ -134,7 +129,7 @@ public final class TestThread {
         args.add(cp);
         args.add("-Djava.util.logging.config.file=" + Util.asFile(Util.resource(TestThread.class, "logging.properties")).getAbsolutePath());
         args.add("-Dcom.sun.management.jmxremote");
-        args.add("-Dcom.sun.management.jmxremote.port=" + JMX_PORT);
+        args.add("-Dcom.sun.management.jmxremote.port=" + jmxPort);
         args.add("-Dcom.sun.management.jmxremote.local.only=false");
         args.add("-Dcom.sun.management.jmxremote.authenticate=" + auth);
         args.add("-Dcom.sun.management.jmxremote.ssl=false");
@@ -153,7 +148,7 @@ public final class TestThread {
         String out = "never_tried";
         for (int i = 0; i < 10; i++) {
             out = isUp(bis);
-            if (out != null) return process;
+            if (out != null) return new JMXProcess(process, jmxPort);
 
             try {
                 int exit = process.exitValue();
@@ -166,6 +161,49 @@ public final class TestThread {
         }
 
         throw new AssertionError("Unable to bring to SUT up in time: " + out);
+    }
+
+    public static final class JMXProcess extends Process {
+
+        private final Process p;
+        public final int JMX_PORT;
+        public final @Nonnull String JMX_CONNECTION;
+        public final @Nonnull String JMX_AUTH_CONNECTION;
+
+        public JMXProcess(Process p, int port) {
+            this.p = p;
+            JMX_PORT = port;
+            JMX_CONNECTION = JMX_HOST + ":" + JMX_PORT;
+            JMX_AUTH_CONNECTION = JMX_USER + ":" + JMX_PASSWD + "@" + JMX_CONNECTION;
+        }
+
+        @Override public OutputStream getOutputStream() {
+            return p.getOutputStream();
+        }
+
+        @Override public InputStream getInputStream() {
+            return p.getInputStream();
+        }
+
+        @Override public InputStream getErrorStream() {
+            return p.getErrorStream();
+        }
+
+        @Override public int waitFor() throws InterruptedException {
+            return p.waitFor();
+        }
+
+        @Override public int exitValue() {
+            return p.exitValue();
+        }
+
+        @Override public void destroy() {
+            p.destroy();
+        }
+
+        public Process getNativeProcess() {
+            return p;
+        }
     }
 
     private static String isUp(BufferedInputStream is) throws IOException {

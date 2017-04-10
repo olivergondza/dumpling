@@ -87,10 +87,9 @@ public class PidRuntimeFactoryTest {
 
     @Test
     public void fromJavaLangProcess() throws Exception {
-        Process process = TestThread.runJmxObservableProcess(false);
-        disposer.register(process);
+        Process process = disposer.register(TestThread.runJmxObservableProcess(false)).getNativeProcess();
 
-        ThreadDumpRuntime runtime = new PidRuntimeFactory().fromProcess(process);
+        new PidRuntimeFactory().fromProcess(process);
 
         process.destroy();
         process.waitFor();

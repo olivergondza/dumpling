@@ -187,9 +187,9 @@ public class GroovyRuntimeTest {
     }
 
     private void assertLoadJmx(String command, AbstractCliTest i, String script) throws Exception {
-        disposer.register(TestThread.runJmxObservableProcess(false));
+        TestThread.JMXProcess process = disposer.register(TestThread.runJmxObservableProcess(false));
         i.stdin(script);
-        i.run(command, TestThread.JMX_CONNECTION);
+        i.run(command, process.JMX_CONNECTION);
 
         assertThat(i.err.toString(), i.isEmptyString());
         assertThat(i.out.toString(), i.containsString("\"remotely-observed-thread\""));
