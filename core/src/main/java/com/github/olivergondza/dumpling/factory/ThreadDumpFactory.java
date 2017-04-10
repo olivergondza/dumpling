@@ -82,6 +82,18 @@ public class ThreadDumpFactory {
             Pattern.DOTALL
     );
 
+    private boolean failOnErrors = false;
+
+    /**
+     * Historically, dumpling tolerates some of the errors silently.
+     *
+     * Turning this on will replace log records for failures to parse the threaddump.
+     */
+    public ThreadDumpFactory failOnErrors(boolean failOnErrors) {
+        this.failOnErrors = failOnErrors;
+        return this;
+    }
+
     /**
      * Create runtime from thread dump.
      *
@@ -122,7 +134,13 @@ public class ThreadDumpFactory {
                     continue;
                 }
 
-                LOG.warning("Skipping unrecognized chunk: " + singleChunk);
+
+                String msg = "Skipping unrecognized chunk: " + singleChunk;
+                if (failOnErrors) {
+                    throw new IllegalRuntimeStateException(msg);
+                } else {
+                    LOG.warning(msg);
+                }
             }
         } finally {
             scanner.close();
@@ -225,7 +243,7 @@ public class ThreadDumpFactory {
                     if (matcher.find()) {
                         synchronizers.add(createLock(matcher));
                     } else {
-                        LOG.warning("Unable to parse ownable synchronizer: " + line);
+                        throw new IllegalRuntimeStateException("Unable to parse ownable synchronizer: " + line);
                     }
                 }
             }

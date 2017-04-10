@@ -47,7 +47,7 @@ import com.github.olivergondza.dumpling.model.dump.ThreadDumpThreadSet;
 
 public class ProcessThreadTest {
 
-    private final ThreadDumpFactory factory = new ThreadDumpFactory();
+    private final ThreadDumpFactory factory = new ThreadDumpFactory().failOnErrors(true);
 
     @Test
     public void printLocksOnCorrectPosionInStackTrace() throws Exception {

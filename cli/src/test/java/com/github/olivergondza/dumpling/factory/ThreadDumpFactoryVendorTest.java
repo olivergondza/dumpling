@@ -246,7 +246,7 @@ public class ThreadDumpFactoryVendorTest {
     }
 
     private static final class Runner implements MethodRule {
-        public static final ThreadDumpFactory THREAD_DUMP_FACTORY = new ThreadDumpFactory();
+        public static final ThreadDumpFactory THREAD_DUMP_FACTORY = new ThreadDumpFactory().failOnErrors(true);
         private final PidRuntimeFactory prf = new PidRuntimeFactory() {
             @Override
             protected ThreadDumpRuntime createRuntime(Process process) {

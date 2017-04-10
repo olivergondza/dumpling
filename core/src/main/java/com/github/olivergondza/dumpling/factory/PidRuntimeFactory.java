@@ -48,6 +48,7 @@ import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
 public class PidRuntimeFactory {
 
     private final @Nonnull String javaHome;
+    private final @Nonnull ThreadDumpFactory threadDumpFactory = new ThreadDumpFactory();
 
     public PidRuntimeFactory() {
         this(System.getProperty("java.home"));
@@ -55,6 +56,16 @@ public class PidRuntimeFactory {
 
     public PidRuntimeFactory(@Nonnull String javaHome) {
         this.javaHome = javaHome;
+    }
+
+    /**
+     * Historically, dumpling tolerates some of the errors silently.
+     *
+     * Turning this on will replace log records for failures to parse the threaddump.
+     */
+    public PidRuntimeFactory failOnErrors(boolean failOnErrors) {
+        threadDumpFactory.failOnErrors(failOnErrors);
+        return this;
     }
 
     /**
@@ -177,7 +188,7 @@ public class PidRuntimeFactory {
     }
 
     protected ThreadDumpRuntime createRuntime(Process process) {
-        return new ThreadDumpFactory().fromStream(process.getInputStream());
+        return threadDumpFactory.fromStream(process.getInputStream());
     }
 
     private void validateResult(Process process, int ret) throws IOException {

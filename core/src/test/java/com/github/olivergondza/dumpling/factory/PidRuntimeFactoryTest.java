@@ -50,13 +50,15 @@ import com.github.olivergondza.dumpling.model.dump.ThreadDumpThread;
 
 public class PidRuntimeFactoryTest {
 
+    private static final PidRuntimeFactory FACTORY = new PidRuntimeFactory().failOnErrors(true);
+
     @Rule public DisposeRule disposer = new DisposeRule();
 
     @Test
     public void invokeFactory() throws Exception {
         disposer.register(TestThread.setupSleepingThreadWithLock());
 
-        ThreadDumpRuntime pidRuntime = new PidRuntimeFactory().fromProcess(Util.currentPid());
+        ThreadDumpRuntime pidRuntime = FACTORY.fromProcess(Util.currentPid());
 
         ThreadDumpThread thread = pidRuntime.getThreads().where(nameIs("sleepingThreadWithLock")).onlyThread();
         assertThat(thread.getStatus(), equalTo(ThreadStatus.SLEEPING));

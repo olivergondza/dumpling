@@ -44,6 +44,7 @@ import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -54,7 +55,6 @@ import javax.annotation.Nonnull;
 import com.github.olivergondza.dumpling.DisposeRule;
 import com.github.olivergondza.dumpling.model.jvm.JvmRuntime;
 import com.github.olivergondza.dumpling.model.jvm.JvmThread;
-import com.github.olivergondza.dumpling.query.BlockingTree;
 import org.hamcrest.Description;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
@@ -76,7 +76,7 @@ import com.github.olivergondza.dumpling.model.dump.ThreadDumpThreadSet;
 
 public class ThreadDumpFactoryTest {
 
-    public static final ThreadDumpFactory FACTORY = new ThreadDumpFactory();
+    private static final ThreadDumpFactory FACTORY = new ThreadDumpFactory().failOnErrors(true);
 
     public @Rule DisposeRule cleaner = new DisposeRule();
 
@@ -737,7 +737,7 @@ public class ThreadDumpFactoryTest {
         ThreadDumpThread owning = threads.where(nameIs("main")).onlyThread();
 
         final ThreadLock lock = new ThreadLock("java.util.concurrent.locks.ReentrantLock$NonfairSync", 32296902960L);
-        final Set<ThreadLock> locks = new HashSet<ThreadLock>(Arrays.asList(lock));
+        final Set<ThreadLock> locks = new HashSet<ThreadLock>(Collections.singletonList(lock));
         assertThat(owning.getAcquiredLocks(), equalTo(locks));
         assertThat(owning.getWaitingToLock(), equalTo(null));
 
@@ -905,11 +905,28 @@ public class ThreadDumpFactoryTest {
     @Test
     public void failToParseWhatIsNotAThreaddump() throws IOException, URISyntaxException {
         try {
-            runtimeFrom("not-a-threaddump.log");
+            runtimeFrom("unknown-chunks.log");
             fail();
         } catch (IllegalRuntimeStateException e) {
-            // Expected
+            assertThat(e.getMessage(), startsWith("Skipping unrecognized chunk: "));
         }
+
+        try {
+            runtimeFrom("no-threads.log");
+            fail();
+        } catch (IllegalRuntimeStateException e) {
+            assertThat(e.getMessage(), startsWith("No threads found in threaddump"));
+        }
+
+        try {
+            runtimeFrom("broken-synchronizers.log");
+            fail();
+        } catch (IllegalRuntimeStateException e) {
+            assertThat(e.getMessage(), startsWith("Unable to parse ownable synchronizer: "));
+        }
+
+        // Should work if we ignore failures
+        new ThreadDumpFactory().fromStream(Util.resource(getClass(), "unknown-chunks.log"));
     }
 
     @Test
@@ -962,7 +979,7 @@ public class ThreadDumpFactoryTest {
     private ThreadDumpRuntime runtime(ThreadDumpThread.Builder... builders) {
         return new ThreadDumpRuntime(
                 new LinkedHashSet<ThreadDumpThread.Builder>(Arrays.asList(builders)),
-                Arrays.asList("Expected threaddump")
+                Collections.singletonList("Expected threaddump")
         );
     }
 
@@ -1120,8 +1137,7 @@ public class ThreadDumpFactoryTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         actual.getThreads().toString(new PrintStream(baos), mode);
         ByteArrayInputStream stream = new ByteArrayInputStream(baos.toByteArray());
-        ThreadDumpRuntime reparsed = FACTORY.fromStream(stream);
-        return reparsed;
+        return FACTORY.fromStream(stream);
     }
 
     // Deep equality for test purposes
