@@ -63,6 +63,7 @@ public final class TestThread {
 
         // Block process forever
         TestThread.class.wait();
+        throw new Error("Should never get here");
     }
 
     public static Thread runThread() {
