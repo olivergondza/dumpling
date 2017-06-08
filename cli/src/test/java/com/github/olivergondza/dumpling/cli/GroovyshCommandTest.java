@@ -46,7 +46,7 @@ public class GroovyshCommandTest extends AbstractCliTest {
     @Test
     public void useInputRuntime() {
         stdin("D.runtime.threads.size()%n");
-        run("groovysh", "--in", "threaddump", logPath);
+        run("groovysh", "--in", "threaddump:" + logPath);
 
         assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), containsString(" 18%n"));

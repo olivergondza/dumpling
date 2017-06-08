@@ -81,11 +81,10 @@ public class MainTest extends AbstractCliTest {
 
     @Test
     public void factoryWithoutLocator() {
-
-        run("deadlocks", "--in", "threaddump");
+        run("deadlocks", "--in", "threaddump:");
         assertThat(out.toString(), equalTo(""));
         assertThat(exitValue, not(equalTo(0)));
-        assertThat(err.toString(), containsString("takes an operand LOCATOR"));
+        assertThat(err.toString(), containsString("No locator provided for scheme: threaddump"));
     }
 
     @Test

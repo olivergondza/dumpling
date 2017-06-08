@@ -50,7 +50,7 @@ public class BlockingTreeTest extends AbstractCliTest {
 
     @Test
     public void cliQuery() {
-        run("blocking-tree", "--in", "threaddump", logPath);
+        run("blocking-tree", "--in", "threaddump:" + logPath);
         assertThat(err.toString(), equalTo(""));
 
         assertQueryListing(out.toString());
@@ -79,7 +79,7 @@ public class BlockingTreeTest extends AbstractCliTest {
 
     @Test
     public void cliQueryTraces() {
-        run("blocking-tree", "--show-stack-traces", "--in", "threaddump", logPath);
+        run("blocking-tree", "--show-stack-traces", "--in", "threaddump:" + logPath);
         assertThat(err.toString(), equalTo(""));
 
         final String stdout = out.toString();

@@ -40,7 +40,7 @@ public class TopContendersTest extends AbstractCliTest {
 
     @Test
     public void cliQuery() throws Exception {
-        run("top-contenders", "--in", "threaddump", logPath);
+        run("top-contenders", "--in", "threaddump:" + logPath);
         assertThat(err.toString(), equalTo(""));
         assertListing(out.toString());
         assertThat(exitValue, equalTo(1)); // Number of blocking threads
@@ -70,7 +70,7 @@ public class TopContendersTest extends AbstractCliTest {
 
     @Test
     public void cliQueryTraces() throws Exception {
-        run("top-contenders", "--show-stack-traces", "--in", "threaddump", logPath);
+        run("top-contenders", "--show-stack-traces", "--in", "threaddump:" + logPath);
         assertThat(err.toString(), equalTo(""));
         assertLongListing(out.toString());
         assertThat(exitValue, equalTo(1)); // Number of blocking threads

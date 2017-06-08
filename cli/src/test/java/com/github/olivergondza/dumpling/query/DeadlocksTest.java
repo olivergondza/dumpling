@@ -40,7 +40,7 @@ public class DeadlocksTest extends AbstractCliTest {
 
     @Test
     public void cliQuery() throws Exception {
-        run("deadlocks", "--in", "threaddump", logPath);
+        run("deadlocks", "--in", "threaddump:" + logPath);
         assertThat(err.toString(), equalTo(""));
         assertListing(out.toString());
 
@@ -70,7 +70,7 @@ public class DeadlocksTest extends AbstractCliTest {
 
     @Test
     public void cliQueryTraces() throws Exception {
-        run("deadlocks", "--show-stack-traces", "--in", "threaddump", logPath);
+        run("deadlocks", "--show-stack-traces", "--in", "threaddump:" + logPath);
         assertThat(err.toString(), equalTo(""));
         assertLongListing(out.toString());
 

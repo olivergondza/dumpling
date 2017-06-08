@@ -66,13 +66,13 @@ public class GroovyCommandTest extends AbstractCliTest {
         final String log = Util.asFile(Util.resource("jstack/producer-consumer.log")).getAbsolutePath();
 
         stdin("D.runtime.threads%n");
-        run("groovy", "--in", "threaddump", log);
+        run("groovy", "--in", "threaddump:" + log);
         assertThat(this, succeeded());
         assertThat(out.toString(), containsString("\"blocked_thread\" prio=10 tid=0x2ad39c16b800 nid=32297"));
         assertThat(out.toString(), containsString("- waiting to lock <0x4063a9378> (a hudson.model.Queue)"));
 
         stdin("D.runtime.threads%n");
-        run("groovy", "--in", "threaddump", log, "--porcelain");
+        run("groovy", "--in", "threaddump:" + log, "--porcelain");
         assertThat(this, succeeded());
         assertThat(out.toString(), containsString("\"blocked_thread\" prio=10 tid=0x00002ad39c16b800 nid=0x7e29"));
         assertThat(out.toString(), containsString("- waiting to lock <0x00000004063a9378> (a hudson.model.Queue)"));

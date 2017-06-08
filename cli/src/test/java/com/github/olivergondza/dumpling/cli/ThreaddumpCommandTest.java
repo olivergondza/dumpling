@@ -34,13 +34,13 @@ public class ThreaddumpCommandTest extends AbstractCliTest {
 
     @Test
     public void cli() throws Exception {
-        run("threaddump", "--in", "threaddump", Util.asFile(Util.resource("jstack/deadlock.log")).getAbsolutePath());
+        run("threaddump", "--in", "threaddump:" + Util.asFile(Util.resource("jstack/deadlock.log")).getAbsolutePath());
         assertThat(this, succeeded());
         assertThat(err.toString(), equalTo(""));
 
         String parsed = out.toString();
         stdin(parsed);
-        run("threaddump", "--in", "threaddump", "-");
+        run("threaddump", "--in", "threaddump:-");
         assertThat(this, succeeded());
         String reparsed = out.toString();
 
@@ -52,12 +52,12 @@ public class ThreaddumpCommandTest extends AbstractCliTest {
     public void porcelain() throws Exception {
         final String log = Util.asFile(Util.resource("jstack/producer-consumer.log")).getAbsolutePath();
 
-        run("threaddump", "--in", "threaddump", log);
+        run("threaddump", "--in", "threaddump:" + log);
         assertThat(this, succeeded());
         assertThat(out.toString(), containsString("\"blocked_thread\" prio=10 tid=0x2ad39c16b800 nid=32297"));
         assertThat(out.toString(), containsString("- waiting to lock <0x4063a9378> (a hudson.model.Queue)"));
 
-        run("threaddump", "--in", "threaddump", log, "--porcelain");
+        run("threaddump", "--in", "threaddump:" + log, "--porcelain");
         assertThat(this, succeeded());
         assertThat(out.toString(), containsString("\"blocked_thread\" prio=10 tid=0x00002ad39c16b800 nid=0x7e29"));
         assertThat(out.toString(), containsString("- waiting to lock <0x00000004063a9378> (a hudson.model.Queue)"));

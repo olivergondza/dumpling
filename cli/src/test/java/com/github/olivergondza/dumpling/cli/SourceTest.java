@@ -27,6 +27,7 @@ import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.startsWith;
 
 import java.io.ByteArrayInputStream;
 
@@ -49,7 +50,7 @@ public class SourceTest extends AbstractCliTest {
 
     @Test
     public void cliNoSuchFile() {
-        run("deadlocks", "--in", "threaddump", "/there_is_no_such_file");
+        run("deadlocks", "--in", "threaddump:/there_is_no_such_file");
         assertThat(exitValue, equalTo(-1));
         assertThat(out.toString(), equalTo(""));
         // Error message is platform specific
@@ -60,7 +61,7 @@ public class SourceTest extends AbstractCliTest {
     public void jmxRemoteConnectViaCli() throws Exception {
         TestThread.JMXProcess process = disposer.register(TestThread.runJmxObservableProcess(false));
         stdin("runtime.threads.where(nameIs('remotely-observed-thread'))");
-        run("groovy", "--in", "jmx", process.JMX_CONNECTION);
+        run("groovy", "--in", "jmx:" + process.JMX_CONNECTION);
 
         assertThat(err.toString(), equalTo(""));
         // Reuse verification logic re-parsing the output as thread dump
@@ -72,7 +73,7 @@ public class SourceTest extends AbstractCliTest {
     public void jmxLocalConnectViaCli() {
         disposer.register(TestThread.runThread());
         stdin("runtime.threads.where(nameIs('remotely-observed-thread'))");
-        run("groovy", "--in", "jmx", Integer.toString(Util.currentPid()));
+        run("groovy", "--in", "jmx:" + Util.currentPid());
 
         assertThat(err.toString(), equalTo(""));
         // Reuse verification logic re-parsing the output as thread dump
@@ -110,7 +111,7 @@ public class SourceTest extends AbstractCliTest {
         disposer.register(TestThread.setupSleepingThreadWithLock());
 
         stdin("t = runtime.threads.where(nameIs('sleepingThreadWithLock')).onlyThread(); print \"${t.status}:${t.acquiredLocks.collect{it.className}}\"");
-        run("groovy", "--in", "process", Integer.toString(Util.currentPid()));
+        run("groovy", "--in", "process:" + Util.currentPid());
 
         assertThat(err.toString(), equalTo(""));
         assertThat(out.toString(), equalTo("SLEEPING:[java.util.concurrent.locks.ReentrantLock$NonfairSync]"));
@@ -119,28 +120,9 @@ public class SourceTest extends AbstractCliTest {
 
     @Test
     public void illegalPid() {
-        run("groovy", "--in", "process", "not_a_pid");
+        run("groovy", "--in", "process:not_a_pid");
         assertThat(out.toString(), equalTo(""));
         assertThat(err.toString(), containsString("Unable to parse 'not_a_pid' as process ID"));
         assertThat(exitValue, not(equalTo(0)));
-    }
-
-    @Test
-    public void inferSourcePid() throws Exception {
-        run("threaddump", "--in", Integer.toString(Util.currentPid()));
-        assertThat(err.toString(), equalTo(""));
-        assertThat(exitValue, equalTo(0));
-
-        new ThreadDumpFactory().fromStream(new ByteArrayInputStream(out.toByteArray()));
-    }
-
-    @Test
-    public void inferSourceFile() throws Exception {
-        String path = Util.asFile(Util.resource("jstack/producer-consumer.log")).getAbsolutePath();
-        run("threaddump", "--in", path);
-        assertThat(err.toString(), equalTo(""));
-        assertThat(exitValue, equalTo(0));
-
-        new ThreadDumpFactory().fromStream(new ByteArrayInputStream(out.toByteArray()));
     }
 }

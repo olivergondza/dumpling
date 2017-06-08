@@ -116,15 +116,23 @@ public class Main {
                         scheme = "threaddump";
                     }
                 }
+
+                // Inference failed
+                if (locator == null) {
+                    if (getFactory(scheme) != null) {
+                        throw new UnknownRuntimeKind(owner, "Source format mismatch. Expected " + scheme + ":LOCATOR");
+                    }
+                    throw new UnknownRuntimeKind(owner, "Unable to infer source from: " + scheme);
+                }
             } else {
                 locator = scheme.substring(delim + 1);
                 scheme = scheme.substring(0, delim);
             }
 
-            if (locator == null) throw new UnknownRuntimeKind(owner, "Unknown runtime source kind: " + scheme);
-
             CliRuntimeFactory<?> factory = getFactory(scheme);
             if (factory == null) throw new UnknownRuntimeKind(owner, "Unknown runtime source kind: " + scheme);
+
+            if (locator.isEmpty()) throw new UnknownRuntimeKind(owner, "No locator provided for scheme: " + scheme);
 
             ProcessRuntime<?, ?, ?> runtime = factory.createRuntime(locator, streams);
             if (runtime == null) throw new AssertionError(factory.getClass() + " failed to create runtime");
