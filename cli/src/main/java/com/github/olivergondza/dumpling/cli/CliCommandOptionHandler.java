@@ -60,7 +60,14 @@ public class CliCommandOptionHandler extends OptionHandler<CliCommand> {
         for (int i = 1; i < paramCount; i++) {
             subCommandParams[i - 1] = params.getParameter(i);
         }
-        new CmdLineParser(handler).parseArgument(subCommandParams);
+        try {
+            new CmdLineParser(handler).parseArgument(subCommandParams);
+        } catch (HandlerCmdLineException ex) {
+            // Capture the innermost handler only
+            throw ex;
+        } catch (CmdLineException ex) {
+            throw new HandlerCmdLineException(ex.getParser(), ex.getLocalizedMessage(), ex, handler);
+        }
 
         return params.size(); // All arguments consumed
     }

@@ -68,11 +68,26 @@ public class HelpCommand implements CliCommand {
     /*package*/ static void printUsage(CliCommand handler, PrintStream out, CmdLineException ex) {
         if (handler == null) {
             printUsage(out);
-        } else if (ex instanceof Main.ProcessRuntimeOptionHandler.UnknownRuntimeKind) {
-            printAvailableRuntimeSources(out);
-        } else {
-            printUsage(handler, out);
+            return;
         }
+        if (getCauseOf(ex, Main.ProcessRuntimeOptionHandler.UnknownRuntimeKind.class) != null) {
+            printAvailableRuntimeSources(out);
+            return;
+        }
+
+        // Nested commands can throw errors related to nested handler so report help for the one that failed and the wrapper
+        HandlerCmdLineException he = getCauseOf(ex, HandlerCmdLineException.class);
+        if (he != null) {
+            handler = he.getHandler();
+        }
+        printUsage(handler, out);
+    }
+
+    private static <T extends Throwable> T getCauseOf(CmdLineException ex, Class<T> type) {
+        for (Throwable x = ex; x != null; x = x.getCause()) {
+            if (type.isInstance(x)) return (T) x;
+        }
+        return null;
     }
 
     /*package*/ static void printUsage(PrintStream out) {
