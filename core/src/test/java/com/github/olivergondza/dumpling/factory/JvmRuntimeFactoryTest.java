@@ -33,7 +33,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -437,6 +436,17 @@ public class JvmRuntimeFactoryTest {
         assertThat(currentThread.getId(), equalTo(threads.forThread(currentThread).getId()));
         assertNull(threads.forThread(null));
         assertNull(threads.forThread(new Thread()));
+    }
+
+    @Test
+    public void groupName() throws Exception {
+        JvmThreadSet threads = new JvmRuntimeFactory().currentRuntime().getThreads();
+        Thread actual = Thread.currentThread();
+
+        JvmThread extracted = threads.forCurrentThread();
+        String actualName = actual.getThreadGroup().getName();
+        assertThat(actualName, equalTo(extracted.getGroupName()));
+        assertThat(extracted.toString(), containsString("groupName=\"" + actualName + "\""));
     }
 
     private void assertStatusIs(ThreadStatus expected, Thread thread) {

@@ -24,11 +24,13 @@
 
 package com.github.olivergondza.dumpling.model.jvm;
 
+import java.io.PrintStream;
 import java.lang.ref.WeakReference;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
+import com.github.olivergondza.dumpling.model.ModelObject;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.mxbean.MXBeanThread;
 
@@ -55,13 +57,37 @@ public final class JvmThread extends MXBeanThread<JvmThread, JvmThreadSet, JvmRu
         return state.thread.get();
     }
 
+    /**
+     * Get the name of the thread group this thread belongs to.
+     *
+     * @return Might be null in rare cases.
+     */
+    public @CheckForNull String getGroupName() {
+        return state.groupName;
+    }
+
     public final static class Builder extends MXBeanThread.Builder<Builder> {
 
         // Using weak reference not to keep the thread in memory once terminated
         private final @Nonnull WeakReference<Thread> thread;
+        private final @CheckForNull String groupName;
 
         public Builder(@Nonnull Thread thread) {
             this.thread = new WeakReference<Thread>(thread);
+            ThreadGroup threadGroup = thread.getThreadGroup();
+            if (threadGroup != null) { // Observed during unit-testing - presumably when thread is being destroyed
+                groupName = threadGroup.getName();
+                assert groupName != null;
+            } else {
+                groupName = null;
+            }
+        }
+
+        @Override protected void printHeader(PrintStream stream, Mode mode) {
+            super.printHeader(stream, mode);
+            if (groupName != null) {
+                stream.append(" groupName=\"").append(groupName).append('"');
+            }
         }
     }
 }

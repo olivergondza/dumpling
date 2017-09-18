@@ -440,7 +440,15 @@ public class ProcessThread<
             throw new AssertionError(status + " thread can not declare a lock: " + name);
         }
 
-        private void printHeader(PrintStream stream, Mode mode) {
+        /**
+         * Appends thread header to stream.
+         *
+         * Subclasses are encouraged to only append to the existing output rather than modifying it.
+         *
+         * @param stream Output.
+         * @param mode Output mode.
+         */
+        protected void printHeader(PrintStream stream, Mode mode) {
             stream.append('"').append(name).append('"');
             if (id != null) stream.append(" #").append(id.toString());
             if (daemon) stream.append(" daemon");
