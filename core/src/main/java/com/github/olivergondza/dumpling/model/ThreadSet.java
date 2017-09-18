@@ -149,7 +149,8 @@ public class ThreadSet<
     }
 
     @Override
-    public void toString(PrintStream stream, Mode mode) {
+    public void toString(@Nonnull PrintStream stream, @Nonnull Mode mode) {
+
         for (ThreadType thread: threads) {
             thread.toString(stream, mode);
             stream.format("%n%n");

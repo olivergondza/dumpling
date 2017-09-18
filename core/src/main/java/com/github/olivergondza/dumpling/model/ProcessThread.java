@@ -432,7 +432,7 @@ public class ProcessThread<
             }
         }
 
-        private final String waitingVerb() {
+        private String waitingVerb() {
             if (status.isParked()) return "parking to wait for";
             if (status.isWaiting()) return "waiting on";
             if (status.isBlocked()) return "waiting to lock";
@@ -481,7 +481,7 @@ public class ProcessThread<
     public static @Nonnull Predicate nameIs(final @Nonnull String name) {
         return new Predicate() {
             @Override
-            public boolean isValid(ProcessThread<?, ?, ?> thread) {
+            public boolean isValid(@Nonnull ProcessThread<?, ?, ?> thread) {
                 return thread.getName().equals(name);
             }
         };
@@ -493,7 +493,7 @@ public class ProcessThread<
     public static @Nonnull Predicate nameContains(final @Nonnull Pattern pattern) {
         return new Predicate() {
             @Override
-            public boolean isValid(ProcessThread<?, ?, ?> thread) {
+            public boolean isValid(@Nonnull ProcessThread<?, ?, ?> thread) {
                 return pattern.matcher(thread.getName()).find();
             }
         };
@@ -505,7 +505,7 @@ public class ProcessThread<
     public static @Nonnull Predicate nameContains(final @Nonnull String pattern) {
         return new Predicate() {
             @Override
-            public boolean isValid(ProcessThread<?, ?, ?> thread) {
+            public boolean isValid(@Nonnull ProcessThread<?, ?, ?> thread) {
                 return thread.getName().contains(pattern);
             }
         };
@@ -517,7 +517,7 @@ public class ProcessThread<
     public static @Nonnull Predicate waitingOnLock(final @Nonnull String className) {
         return new Predicate() {
             @Override
-            public boolean isValid(ProcessThread<?, ?, ?> thread) {
+            public boolean isValid(@Nonnull ProcessThread<?, ?, ?> thread) {
                 final ThreadLock lock = thread.getWaitingOnLock();
                 return lock != null && lock.getClassName().equals(className);
             }
@@ -530,7 +530,7 @@ public class ProcessThread<
     public static @Nonnull Predicate waitingToLock(final @Nonnull String className) {
         return new Predicate() {
             @Override
-            public boolean isValid(ProcessThread<?, ?, ?> thread) {
+            public boolean isValid(@Nonnull ProcessThread<?, ?, ?> thread) {
                 final ThreadLock lock = thread.getWaitingToLock();
                 return lock != null && lock.getClassName().equals(className);
             }
