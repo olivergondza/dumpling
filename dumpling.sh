@@ -27,7 +27,7 @@
 function download() {
   url_prefix="https://oss.sonatype.org/content/repositories/releases/com/github/olivergondza/dumpling/dumpling-cli"
   metadata_url="${url_prefix}/maven-metadata.xml"
-  latest=$(wget --no-check-certificate $metadata_url -O - 2> /dev/null | grep \<version\> | sed -e "s/\s*<[^>]*>//g" | tail -n 1)
+  latest=$(wget --no-check-certificate $metadata_url -O - 2> /dev/null | grep \<version\> | sed -e 's/^.*>\(.*\)<.*$/\1/' | tail -n 1)
   jar_url="${url_prefix}/$latest/dumpling-cli-$latest-shaded.jar"
   echo "Downloading Dumpling $latest now..." >&2
   wget --no-check-certificate -nv -O $1 $jar_url
