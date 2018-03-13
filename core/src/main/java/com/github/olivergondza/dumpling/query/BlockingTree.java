@@ -240,7 +240,9 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
         }
 
         private void writeInto(String prefix, PrintStream sb, Mode mode) {
-            sb.append(prefix).append(root.getHeader()).println();
+            sb.append(prefix);
+            root.printHeader(sb, mode);
+            sb.println();
             for (Tree<ThreadType> l: leaves) {
                 l.writeInto(prefix + "\t", sb, mode);
             }

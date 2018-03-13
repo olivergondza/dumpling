@@ -221,8 +221,25 @@ public class ProcessThread<
         return null;
     }
 
-    public String getHeader() {
-        return state.getHeader();
+    /**
+     * @see #printHeader(PrintStream, Mode).
+     */
+    public @Nonnull String getHeader() {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        toString(new PrintStream(baos), Mode.HUMAN);
+        return baos.toString();
+    }
+
+    /**
+     * Appends thread header to stream.
+     *
+     * Subclasses are encouraged to only append to the existing output rather than modifying it.
+     *
+     * @param stream Output.
+     * @param mode Output mode.
+     */
+    public void printHeader(PrintStream stream, Mode mode) {
+        state.printHeader(stream, mode);
     }
 
     @Override
@@ -373,12 +390,6 @@ public class ProcessThread<
             return new ArrayList<Monitor>(acquiredMonitors);
         }
 
-        private String getHeader() {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            printHeader(new PrintStream(baos), Mode.HUMAN);
-            return baos.toString();
-        }
-
         private List<ThreadLock> getMonitorsByDepth(int depth) {
             List<ThreadLock> monitors = new ArrayList<ThreadLock>();
 
@@ -392,7 +403,7 @@ public class ProcessThread<
         }
 
         @Override
-        public void toString(PrintStream stream, Mode mode) {
+        public void toString(@Nonnull PrintStream stream, @Nonnull Mode mode) {
             printHeader(stream, mode);
             stream.format("%n   java.lang.Thread.State: %s", status.getName());
 

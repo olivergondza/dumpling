@@ -33,6 +33,7 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
+import com.github.olivergondza.dumpling.model.ModelObject;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadLock;
@@ -124,7 +125,7 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result<?,
         }
 
         @Override
-        protected void printResult(PrintStream out) {
+        protected void printResult(@Nonnull PrintStream out) {
             int i = 1;
             for(SetType deadlock: deadlocks) {
                 HashSet<ThreadLock> involvedLocks = new HashSet<ThreadLock>(deadlock.size());
@@ -139,7 +140,8 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result<?,
 
                 out.printf("%n%sDeadlock #%d:%n", allMonitors ? "Monitor ": "", i++);
                 for(ThreadType thread: deadlock) {
-                    out.println(thread.getHeader());
+                    thread.printHeader(out, ModelObject.Mode.HUMAN);
+                    out.println();
                     if (thread.getWaitingToLock() != null) {
                         out.printf("\tWaiting to %s%n", thread.getWaitingToLock());
                     } else if (thread.getWaitingOnLock() != null) {
@@ -158,12 +160,12 @@ public final class Deadlocks implements SingleThreadSetQuery<Deadlocks.Result<?,
         }
 
         @Override
-        protected SetType involvedThreads() {
+        protected @Nonnull SetType involvedThreads() {
             return involved;
         }
 
         @Override
-        protected void printSummary(PrintStream out) {
+        protected void printSummary(@Nonnull PrintStream out) {
             out.printf("Deadlocks: %d%n", deadlocks.size());
         }
 

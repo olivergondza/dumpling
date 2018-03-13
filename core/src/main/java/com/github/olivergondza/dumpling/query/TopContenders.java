@@ -36,6 +36,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 
+import com.github.olivergondza.dumpling.model.ModelObject;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.ThreadSet;
@@ -126,12 +127,12 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
             for (Entry<ThreadType, SetType> contention: contenders.entrySet()) {
 
                 out.print("* ");
-                out.println(contention.getKey().getHeader());
+                contention.getKey().printHeader(out, ModelObject.Mode.HUMAN);
                 int i = 1;
                 for (ProcessThread<?, ?, ?> blocked: contention.getValue()) {
 
                     out.printf("  (%d) ", i++);
-                    out.println(blocked.getHeader());
+                    blocked.printHeader(out, ModelObject.Mode.HUMAN);
                 }
             }
         }

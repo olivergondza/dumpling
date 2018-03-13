@@ -23,11 +23,15 @@
  */
 package com.github.olivergondza.dumpling.model;
 
+import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -150,8 +154,7 @@ public class ThreadSet<
 
     @Override
     public void toString(@Nonnull PrintStream stream, @Nonnull Mode mode) {
-
-        for (ThreadType thread: threads) {
+        for (ThreadType thread : threads) {
             thread.toString(stream, mode);
             stream.format("%n%n");
         }
