@@ -23,24 +23,24 @@
  */
 package com.github.olivergondza.dumpling;
 
-import static com.github.olivergondza.dumpling.Util.pause;
-import static com.github.olivergondza.dumpling.Util.processBuilder;
-import static com.github.olivergondza.dumpling.Util.processTerminatedPrematurely;
-
+import javax.annotation.Nonnull;
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.annotation.Nonnull;
+import static com.github.olivergondza.dumpling.Util.pause;
+import static com.github.olivergondza.dumpling.Util.processBuilder;
+import static com.github.olivergondza.dumpling.Util.processTerminatedPrematurely;
 
 /**
  * SUT thread to be observed from tests.
@@ -204,6 +204,51 @@ public final class TestThread {
 
         public Process getNativeProcess() {
             return p;
+        }
+
+        // Copy&paste from PidRuntimeFactory
+        public long pid() {
+            Throwable problem = null;
+            try {
+                Method pidMethod = Process.class.getMethod("pid");
+                return (long) (Long) pidMethod.invoke(p);
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+                // Not Java 9 - Fallback
+            } catch (IllegalAccessException e) {
+                throw new AssertionError(e);
+            } catch (InvocationTargetException e) {
+                Throwable cause = e.getCause();
+                if (cause instanceof UnsupportedOperationException) {
+                    // Process impl might not support management - Fallback
+                    problem = cause;
+                } else if (cause instanceof SecurityException) {
+                    // Access to monitoring is rejected - Fallback
+                    problem = cause;
+                } else {
+                    throw new AssertionError(e);
+                }
+            }
+
+            // Fallback for Java6+ on unix. This is known not to work for Java8 on Windows.
+            if (!"java.lang.UNIXProcess".equals(p.getClass().getName())) throw new UnsupportedOperationException(
+                    "Unknown java.lang.Process implementation: " + p.getClass().getName(),
+                    problem
+            );
+
+            try {
+                // Protected class
+                Class<?>  clazz = Class.forName("java.lang.UNIXProcess");
+                Field pidField = clazz.getDeclaredField("pid");
+                pidField.setAccessible(true);
+                return pidField.getLong(p);
+            } catch (ClassNotFoundException e) {
+                throw new UnsupportedOperationException("Unable to find java.lang.UNIXProcess", e);
+            } catch (NoSuchFieldException e) {
+                throw new UnsupportedOperationException("Unable to find java.lang.UNIXProcess.pid", e);
+            } catch (IllegalAccessException e) {
+                throw new UnsupportedOperationException("Unable to access java.lang.UNIXProcess.pid", e);
+            }
         }
     }
 

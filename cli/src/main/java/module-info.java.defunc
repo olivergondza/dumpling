@@ -1,0 +1,4 @@
+module dumpling.cli {
+
+    opens jdk.internal;
+}

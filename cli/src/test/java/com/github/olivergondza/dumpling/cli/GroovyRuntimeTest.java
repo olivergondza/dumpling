@@ -167,13 +167,13 @@ public class GroovyRuntimeTest {
     }
 
     @Theory
-    public void loadPidOverJmx(String command, AbstractCliTest i) {
+    public void loadPidOverJmx(String command, AbstractCliTest i) throws Exception {
         assertLoadPidOverJmx(command, i, "D.load.jmx(%d).threads.where(nameIs('remotely-observed-thread'));%n");
     }
 
-    private void assertLoadPidOverJmx(String command, AbstractCliTest i, String script) {
-        disposer.register(TestThread.runThread());
-        i.stdin(String.format(script, Util.currentPid()));
+    private void assertLoadPidOverJmx(String command, AbstractCliTest i, String script) throws Exception {
+        TestThread.JMXProcess process = disposer.register(TestThread.runJmxObservableProcess(false));
+        i.stdin(String.format(script, process.pid()));
         i.run(command);
 
         assertThat(i.err.toString(), i.isEmptyString());

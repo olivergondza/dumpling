@@ -69,18 +69,6 @@ public class SourceTest extends AbstractCliTest {
         assertThreadState(reparsed);
     }
 
-    @Test
-    public void jmxLocalConnectViaCli() {
-        disposer.register(TestThread.runThread());
-        stdin("runtime.threads.where(nameIs('remotely-observed-thread'))");
-        run("groovy", "--in", "jmx:" + Util.currentPid());
-
-        assertThat(err.toString(), equalTo(""));
-        // Reuse verification logic re-parsing the output as thread dump
-        ThreadDumpRuntime reparsed = new ThreadDumpFactory().fromStream(new ByteArrayInputStream(out.toByteArray()));
-        assertThreadState(reparsed);
-    }
-
     private void assertThreadState(ProcessRuntime<?, ?, ?> runtime) {
         ProcessThread<?, ?, ?> actual = runtime.getThreads().where(nameIs("remotely-observed-thread")).onlyThread();
         StackTrace trace = actual.getStackTrace();

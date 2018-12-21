@@ -120,7 +120,7 @@ public class PidRuntimeFactory {
         return fromProcess(pid);
     }
 
-    private long extractPid(@Nonnull Process process) {
+    private static long extractPid(@Nonnull Process process) {
         Throwable problem = null;
         try {
             Method pidMethod = Process.class.getMethod("pid");
