@@ -36,6 +36,7 @@ import javax.annotation.Nonnull;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.hamcrest.TypeSafeMatcher;
 
 public abstract class AbstractCliTest {
@@ -97,12 +98,35 @@ public abstract class AbstractCliTest {
         return org.hamcrest.text.IsEmptyString.isEmptyString();
     }
 
+    protected Matcher<AbstractCliTest> reportedNoError() {
+        return new TypeSafeDiagnosingMatcher<AbstractCliTest>() {
+
+            private String stderr;
+
+            @Override protected boolean matchesSafely(AbstractCliTest item, Description mismatchDescription) {
+                stderr = item.err.toString();
+                if ("".equals(stderr)) return true;
+
+                mismatchDescription.appendText("Got >>>" + stderr + "<<<");
+
+                // Java 9+ spits this warnings for libraries
+                return stderr.startsWith("WARNING: An illegal reflective access operation has occurred")
+                        && stderr.endsWith(String.format("WARNING: All illegal access operations will be denied in a future release%n"))
+                ;
+            }
+
+            @Override public void describeTo(Description description) {
+                description.appendText("No error was expected");
+            }
+        };
+    }
+
     protected Matcher<AbstractCliTest> succeeded() {
         return new TypeSafeMatcher<AbstractCliTest>() {
 
             @Override
             public void describeTo(Description description) {
-                description.appendText("Successfull execution");
+                description.appendText("Successful execution");
             }
 
             @Override
