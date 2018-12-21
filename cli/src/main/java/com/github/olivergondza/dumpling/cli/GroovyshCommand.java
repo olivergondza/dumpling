@@ -82,7 +82,7 @@ public class GroovyshCommand implements CliCommand {
 
         configureHistory(process, groovysh);
 
-        return groovysh.run(new String[] {});
+        return groovysh.run("");
     }
 
     private Collection<String> getImports() {
