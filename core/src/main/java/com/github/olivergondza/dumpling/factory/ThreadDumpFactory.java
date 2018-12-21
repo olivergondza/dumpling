@@ -117,7 +117,8 @@ public class ThreadDumpFactory {
         try {
             while (scanner.hasNext()) {
                 String singleChunk = scanner.next();
-                if (singleChunk.startsWith("JNI global references")) {
+                // Java until 8 vs. Java after 9
+                if (singleChunk.startsWith("JNI global references") || singleChunk.startsWith("JNI global refs")) {
                     // Nothing interesting is expected after this point. Also, this is a convenient way to eliminate the
                     // deadlock report that is spread over several chunks
                     break;
@@ -134,8 +135,12 @@ public class ThreadDumpFactory {
                     continue;
                 }
 
+                // New info in Java 9
+                if (singleChunk.startsWith("Threads class SMR info:")) {
+                    continue;
+                }
 
-                String msg = "Skipping unrecognized chunk: " + singleChunk;
+                String msg = "Skipping unrecognized chunk: >>>" + singleChunk + "<<<";
                 if (failOnErrors) {
                     throw new IllegalRuntimeStateException(msg);
                 } else {
