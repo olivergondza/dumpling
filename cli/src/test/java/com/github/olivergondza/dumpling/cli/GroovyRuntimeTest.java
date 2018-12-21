@@ -291,7 +291,7 @@ public class GroovyRuntimeTest {
         i.run(command);
 
         assertThat(i.err.toString(), i.containsString("java.lang.IllegalArgumentException"));
-        assertThat(i.err.toString(), i.containsString("Unable to intersect ThreadSets bound to different ProcessRuntimes"));
+        assertThat(i.err.toString(), i.containsString("Arguments bound to different ProcessRuntimes"));
     }
 
     @Theory
@@ -310,7 +310,7 @@ public class GroovyRuntimeTest {
         i.run(command);
 
         assertThat(i.err.toString(), i.containsString("java.lang.IllegalArgumentException"));
-        assertThat(i.err.toString(), i.containsString("Unable to merge ThreadSets bound to different ProcessRuntimes"));
+        assertThat(i.err.toString(), i.containsString("Arguments bound to different ProcessRuntimes"));
     }
 
     @Theory
