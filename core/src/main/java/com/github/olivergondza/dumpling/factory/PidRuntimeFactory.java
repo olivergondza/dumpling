@@ -126,7 +126,6 @@ public class PidRuntimeFactory {
             Method pidMethod = Process.class.getMethod("pid");
             return (long) (Long) pidMethod.invoke(process);
         } catch (NoSuchMethodException e) {
-            e.printStackTrace();
             // Not Java 9 - Fallback
         } catch (IllegalAccessException e) {
             throw new AssertionError(e);
