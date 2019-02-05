@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package com.github.olivergondza.dumpling.groovy
 
 import com.github.olivergondza.dumpling.model.ThreadSet
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpThreadSet
@@ -30,9 +31,6 @@ import com.github.olivergondza.dumpling.model.jvm.JvmThreadSet
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
 
 class ThreadSetExtensions extends DelegatingMetaClass {
-    ThreadSetExtensions(MetaClass delegate) {
-        super(delegate)
-    }
 
     ThreadSetExtensions(Class theClass) {
         super(theClass)
@@ -67,7 +65,12 @@ class ThreadSetExtensions extends DelegatingMetaClass {
         return super.invokeMethod(object, methodName, arguments)
     }
 
-    ThreadSet assertSetsCompatible(ThreadSet lhs, ThreadSet rhs) {
+    static ThreadSet assertSetsCompatible(ThreadSet lhs, Object o) {
+        if (!(o instanceof ThreadSet)) {
+            throw new IllegalArgumentException('Unexpected right-hand side argument ' + o.getClass().name + '. Expected ThreadSet')
+        }
+
+        ThreadSet rhs = (ThreadSet) o
         if (!lhs.getProcessRuntime().equals(rhs.getProcessRuntime())) {
             throw new IllegalArgumentException('Arguments bound to different ProcessRuntimes')
         }

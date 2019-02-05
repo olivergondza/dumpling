@@ -213,7 +213,6 @@ public final class TestThread {
                 Method pidMethod = Process.class.getMethod("pid");
                 return (long) (Long) pidMethod.invoke(p);
             } catch (NoSuchMethodException e) {
-                e.printStackTrace();
                 // Not Java 9 - Fallback
             } catch (IllegalAccessException e) {
                 throw new AssertionError(e);

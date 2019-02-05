@@ -23,9 +23,16 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import com.github.olivergondza.dumpling.DisposeRule;
+import com.github.olivergondza.dumpling.TestThread;
+import com.github.olivergondza.dumpling.Util;
+import org.junit.Rule;
+import org.junit.experimental.theories.DataPoints;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 
+import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -34,19 +41,8 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
 
-import org.junit.Rule;
-import org.junit.experimental.theories.DataPoints;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
-
-import com.github.olivergondza.dumpling.DisposeRule;
-import com.github.olivergondza.dumpling.TestThread;
-import com.github.olivergondza.dumpling.Util;
-
-import javax.annotation.Nonnull;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Test interoperability between groovy and groovysh command and main method invocation with uberjar invocation.

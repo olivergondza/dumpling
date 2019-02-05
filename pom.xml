@@ -39,10 +39,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <!-- Test against older version not to drop support accidentally -->
-    <groovy.version>2.3.3</groovy.version>
-    <!-- Distribute newer version for Java 9 support: https://issues.apache.org/jira/browse/GROOVY-7587 -->
-    <java9.groovy.version>2.4.16</java9.groovy.version>
+    <groovy.version>2.4.7</groovy.version>
   </properties>
 
   <dependencies>
@@ -113,20 +110,7 @@
     </profile>
 
     <profile>
-      <id>java9-groovy</id>
-      <activation>
-        <jdk>[1.9,)</jdk>
-      </activation>
-      <properties>
-        <groovy.version>${java9.groovy.version}</groovy.version>
-      </properties>
-    </profile>
-
-    <profile>
       <id>release</id>
-      <properties>
-        <groovy.version>${java9.groovy.version}</groovy.version>
-      </properties>
       <build>
         <plugins>
           <plugin>
