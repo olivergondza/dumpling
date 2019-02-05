@@ -23,9 +23,16 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import com.github.olivergondza.dumpling.DisposeRule;
+import com.github.olivergondza.dumpling.TestThread;
+import com.github.olivergondza.dumpling.Util;
+import org.junit.Rule;
+import org.junit.experimental.theories.DataPoints;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 
+import javax.annotation.Nonnull;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -34,19 +41,8 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
 
-import org.junit.Rule;
-import org.junit.experimental.theories.DataPoints;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
-
-import com.github.olivergondza.dumpling.DisposeRule;
-import com.github.olivergondza.dumpling.TestThread;
-import com.github.olivergondza.dumpling.Util;
-
-import javax.annotation.Nonnull;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Test interoperability between groovy and groovysh command and main method invocation with uberjar invocation.
@@ -121,7 +117,7 @@ public class GroovyRuntimeTest {
         i.stdin("println D.load.jvm.threads.size() instanceof Integer;%n");
         i.run(command);
 
-        assertThat(i.err.toString(), equalTo(""));
+        assertThat(i, i.reportedNoError());
         assertThat(i.out.toString().trim(), i.containsString("true"));
         assertThat(i, i.succeeded());
     }
@@ -131,7 +127,7 @@ public class GroovyRuntimeTest {
         i.stdin("D.load.threaddump(D.args[0]).threads.where(nameIs('owning_thread')).collect { it.name };%n");
         i.run(command, Util.asFile(Util.resource("jstack/producer-consumer.log")).getAbsolutePath());
 
-        assertThat(i.err.toString(), equalTo(""));
+        assertThat(i, i.reportedNoError());
         assertThat(i.out.toString().trim(), i.containsString("[owning_thread]"));
         assertThat(i, i.succeeded());
     }
@@ -146,9 +142,9 @@ public class GroovyRuntimeTest {
         i.stdin(script);
         i.run(command, file.getAbsolutePath());
 
-        assertThat(i.err.toString(), i.isEmptyString());
+        assertThat(i, i.reportedNoError());
         assertThat(i.out.toString(), i.containsString("\"blocked_thread\""));
-        assertThat(i.exitValue, equalTo(0));
+        assertThat(i, i.succeeded());
     }
 
     @Theory
@@ -161,24 +157,24 @@ public class GroovyRuntimeTest {
         i.stdin(String.format(script, Util.currentPid()));
         i.run(command);
 
-        assertThat(i.err.toString(), i.isEmptyString());
+        assertThat(i, i.reportedNoError());
         assertThat(i.out.toString(), i.containsString("\"remotely-observed-thread\""));
-        assertThat(i.exitValue, equalTo(0));
+        assertThat(i, i.succeeded());
     }
 
     @Theory
-    public void loadPidOverJmx(String command, AbstractCliTest i) {
+    public void loadPidOverJmx(String command, AbstractCliTest i) throws Exception {
         assertLoadPidOverJmx(command, i, "D.load.jmx(%d).threads.where(nameIs('remotely-observed-thread'));%n");
     }
 
-    private void assertLoadPidOverJmx(String command, AbstractCliTest i, String script) {
-        disposer.register(TestThread.runThread());
-        i.stdin(String.format(script, Util.currentPid()));
+    private void assertLoadPidOverJmx(String command, AbstractCliTest i, String script) throws Exception {
+        TestThread.JMXProcess process = disposer.register(TestThread.runJmxObservableProcess(false));
+        i.stdin(String.format(script, process.pid()));
         i.run(command);
 
-        assertThat(i.err.toString(), i.isEmptyString());
+        assertThat(i, i.reportedNoError());
         assertThat(i.out.toString(), i.containsString("\"remotely-observed-thread\""));
-        assertThat(i.exitValue, equalTo(0));
+        assertThat(i, i.succeeded());
     }
 
     @Theory
@@ -191,9 +187,9 @@ public class GroovyRuntimeTest {
         i.stdin(script);
         i.run(command, process.JMX_CONNECTION);
 
-        assertThat(i.err.toString(), i.isEmptyString());
+        assertThat(i, i.reportedNoError());
         assertThat(i.out.toString(), i.containsString("\"remotely-observed-thread\""));
-        assertThat(i.exitValue, equalTo(0));
+        assertThat(i, i.succeeded());
     }
 
     @Theory
@@ -201,7 +197,7 @@ public class GroovyRuntimeTest {
         i.stdin("new Deadlocks(); ModelObject.Mode.HUMAN; new JvmRuntimeFactory(); new CommandFailedException('');%n");
         i.run(command);
 
-        assertThat(i.err.toString(), equalTo(""));
+        assertThat(i, i.reportedNoError());
         assertThat(i, i.succeeded());
     }
 
@@ -220,7 +216,7 @@ public class GroovyRuntimeTest {
 
         assertThat(i.err.toString(), i.containsString("stderr content"));
         assertThat(i.out.toString(), i.containsString("stdout content"));
-        assertThat(i.exitValue, equalTo(0));
+        assertThat(i, i.succeeded());
     }
 
     @Theory
@@ -228,7 +224,7 @@ public class GroovyRuntimeTest {
         i.stdin("def threads = D.load.jvm.threads; assert threads == threads.grep(); println threads.class;%n");
         i.run(command);
 
-        assertThat(i.err.toString(), equalTo(""));
+        assertThat(i, i.reportedNoError());
         assertThat(i.out.toString(), i.containsString("class com.github.olivergondza.dumpling.model.jvm.JvmThreadSet"));
         assertThat(i, i.succeeded());
     }
@@ -239,7 +235,7 @@ public class GroovyRuntimeTest {
         i.stdin("def threads = D.load.jvm.threads.grep { it.name == '" + name + "' }; assert threads.size() == 1; println threads.class%n");
         i.run(command);
 
-        assertThat(i.err.toString(), equalTo(""));
+        assertThat(i, i.reportedNoError());
         assertThat(i.out.toString(), i.containsString("class com.github.olivergondza.dumpling.model.jvm.JvmThreadSet"));
         assertThat(i, i.succeeded());
     }
@@ -249,7 +245,7 @@ public class GroovyRuntimeTest {
         i.stdin("def threads = D.load.jvm.threads; assert threads == threads.findAll(); println threads.getClass()%n");
         i.run(command);
 
-        assertThat(i.err.toString(), equalTo(""));
+        assertThat(i, i.reportedNoError());
         assertThat(i.out.toString(), i.containsString("class com.github.olivergondza.dumpling.model.jvm.JvmThreadSet"));
         assertThat(i, i.succeeded());
     }
@@ -260,7 +256,7 @@ public class GroovyRuntimeTest {
         i.stdin("def threads = D.load.jvm.threads.findAll { it.name == '" + name + "' }; assert threads.size() == 1; println threads.getClass()%n");
         i.run(command);
 
-        assertThat(i.err.toString(), equalTo(""));
+        assertThat(i, i.reportedNoError());
         assertThat(i.out.toString(), i.containsString("class com.github.olivergondza.dumpling.model.jvm.JvmThreadSet"));
         assertThat(i, i.succeeded());
     }
@@ -270,7 +266,7 @@ public class GroovyRuntimeTest {
         i.stdin("def threads = D.load.jvm.threads; assert threads.asImmutable() == threads; print threads.getClass()%n");
         i.run(command);
 
-        assertThat(i.err.toString(), equalTo(""));
+        assertThat(i, i.reportedNoError());
         assertThat(i.out.toString(), i.containsString("class com.github.olivergondza.dumpling.model.jvm.JvmThreadSet"));
         assertThat(i, i.succeeded());
     }
@@ -280,7 +276,7 @@ public class GroovyRuntimeTest {
         i.stdin("def threads = D.load.jvm.threads; def intersected = threads.intersect(threads); assert threads == intersected; print intersected.getClass()%n");
         i.run(command);
 
-        assertThat(i.err.toString(), equalTo(""));
+        assertThat(i, i.reportedNoError());
         assertThat(i.out.toString(), i.containsString("class com.github.olivergondza.dumpling.model.jvm.JvmThreadSet"));
         assertThat(i, i.succeeded());
     }
@@ -291,7 +287,7 @@ public class GroovyRuntimeTest {
         i.run(command);
 
         assertThat(i.err.toString(), i.containsString("java.lang.IllegalArgumentException"));
-        assertThat(i.err.toString(), i.containsString("Unable to intersect ThreadSets bound to different ProcessRuntimes"));
+        assertThat(i.err.toString(), i.containsString("Arguments bound to different ProcessRuntimes"));
     }
 
     @Theory
@@ -299,7 +295,7 @@ public class GroovyRuntimeTest {
         i.stdin("rt = D.load.jvm; threadSum = rt.threads + rt.threads; print threadSum.getClass()%n");
         i.run(command);
 
-        assertThat(i.err.toString(), equalTo(""));
+        assertThat(i, i.reportedNoError());
         assertThat(i.out.toString(), i.containsString("class com.github.olivergondza.dumpling.model.jvm.JvmThreadSet"));
         assertThat(i, i.succeeded());
     }
@@ -310,7 +306,7 @@ public class GroovyRuntimeTest {
         i.run(command);
 
         assertThat(i.err.toString(), i.containsString("java.lang.IllegalArgumentException"));
-        assertThat(i.err.toString(), i.containsString("Unable to merge ThreadSets bound to different ProcessRuntimes"));
+        assertThat(i.err.toString(), i.containsString("Arguments bound to different ProcessRuntimes"));
     }
 
     @Theory
@@ -318,7 +314,7 @@ public class GroovyRuntimeTest {
         i.stdin("print D.load.jvm.threads.toSet().getClass()%n");
         i.run(command);
 
-        assertThat(i.err.toString(), equalTo(""));
+        assertThat(i, i.reportedNoError());
         assertThat(i.out.toString(), i.containsString("class com.github.olivergondza.dumpling.model.jvm.JvmThreadSet"));
         assertThat(i, i.succeeded());
     }
@@ -329,7 +325,7 @@ public class GroovyRuntimeTest {
         i.stdin("print D.load.jvm.threads.grep { " + choices + " }.empty%n");
         i.run(command);
 
-        assertThat(i.err.toString(), equalTo(""));
+        assertThat(i, i.reportedNoError());
         assertThat(i.out.toString(), i.containsString("false"));
         assertThat(i, i.succeeded());
     }
@@ -339,7 +335,7 @@ public class GroovyRuntimeTest {
         i.stdin("print \"${D.args[1]} ${D.args[0]}!\"%n");
         i.run(command, "World", "Hello");
 
-        assertThat(i.err.toString(), equalTo(""));
+        assertThat(i, i.reportedNoError());
         assertThat(i.out.toString(), i.containsString("Hello World!"));
         assertThat(i, i.succeeded());
     }
@@ -349,7 +345,7 @@ public class GroovyRuntimeTest {
         i.stdin("print D%n");
         i.run(command);
 
-        assertThat(i.err.toString(), equalTo(""));
+        assertThat(i, i.reportedNoError());
         assertThat(i.out.toString(), i.containsString("D.args: java.util.List%n  CLI arguments passed to the script"));
         assertThat(i.out.toString(), i.containsString("D.load.threaddump(String): com.github.olivergondza.dumpling.model.ProcessRuntime"));
         assertThat(i, i.succeeded());

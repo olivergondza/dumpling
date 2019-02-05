@@ -637,6 +637,53 @@ public class ThreadDumpFactoryTest {
         assertThat(actual, stacktraceEquals(expectedStackTrace, "main"));
     }
 
+    @Test
+    public void openjdk11() throws Exception {
+
+        ThreadDumpRuntime expected = runtime(
+                thread("main").setId(1).setTid(139994257758208L).setNid(14692).setPriority(5).setThreadStatus(ThreadStatus.SLEEPING),
+                daemon("Reference Handler").setId(2).setTid(139994260099072L).setNid(14699).setPriority(10).setThreadStatus(ThreadStatus.RUNNABLE),
+                daemon("Finalizer").setId(3).setTid(139994260115456L).setNid(14700).setPriority(8).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT).setWaitingOnLock(
+                        lock("java.lang.ref.ReferenceQueue$Lock", 26562553064L)
+                ),
+                daemon("Signal Dispatcher").setId(4).setTid(139994260195328L).setNid(14701).setPriority(9).setThreadStatus(ThreadStatus.RUNNABLE),
+                daemon("C2 CompilerThread0").setId(5).setTid(139994260203520L).setNid(14702).setPriority(9).setThreadStatus(ThreadStatus.RUNNABLE),
+                daemon("C1 CompilerThread0").setId(8).setTid(139994260213760L).setNid(14703).setPriority(9).setThreadStatus(ThreadStatus.RUNNABLE),
+                daemon("Sweeper thread").setId(9).setTid(139994260221952L).setNid(14704).setPriority(9).setThreadStatus(ThreadStatus.RUNNABLE),
+                daemon("Service Thread").setId(10).setTid(139994260838400L).setNid(14705).setPriority(9).setThreadStatus(ThreadStatus.RUNNABLE),
+                daemon("Common-Cleaner").setId(11).setTid(139994260920320L).setNid(14707).setPriority(8).setThreadStatus(ThreadStatus.IN_OBJECT_WAIT_TIMED).setWaitingOnLock(
+                        lock("java.lang.ref.ReferenceQueue$Lock", 26562551112L)
+                ),
+                daemon("Attach Listener").setId(13).setTid(139992848404480L).setNid(14797).setPriority(9).setThreadStatus(ThreadStatus.RUNNABLE),
+                thread("VM Thread").setTid(139994260064256L).setNid(14698),
+                thread("GC Thread#0").setTid(139994257848320L).setNid(14693),
+                thread("GC Thread#1").setTid(139993183948800L).setNid(14710),
+                thread("GC Thread#2").setTid(139993183954944L).setNid(14711),
+                thread("GC Thread#3").setTid(139993183961088L).setNid(14712),
+                thread("GC Thread#4").setTid(139993183967232L).setNid(14713),
+                thread("GC Thread#5").setTid(139993183973376L).setNid(14714),
+                thread("GC Thread#6").setTid(139993183979520L).setNid(14715),
+                thread("GC Thread#7").setTid(139993183985664L).setNid(14716),
+                thread("G1 Main Marker").setTid(139994258083840L).setNid(14694),
+                thread("G1 Conc#0").setTid(139994258092032L).setNid(14695),
+                thread("G1 Refine#0").setTid(139994259652608L).setNid(14696),
+                thread("G1 Young RemSet Sampling").setTid(139994259660800L).setNid(14697),
+                thread("VM Periodic Task Thread").setTid(139994260846592L).setNid(14706)
+        );
+
+        ThreadDumpRuntime actual = runtimeFrom("openjdk-11.0.2.log");
+        assertThat(actual, sameThreadsAs(expected));
+
+        StackTrace expectedStackTrace = new StackTrace(
+                StackTrace.nativeElement("java.lang.Object", "wait"),
+                StackTrace.element("java.lang.ref.ReferenceQueue", "remove", "ReferenceQueue.java", 155),
+                StackTrace.element("jdk.internal.ref.CleanerImpl", "run", "CleanerImpl.java", 148),
+                StackTrace.element("java.lang.Thread", "run", "Thread.java", 834),
+                StackTrace.element("jdk.internal.misc.InnocuousThread", "run", "InnocuousThread.java", 134)
+        );
+        assertThat(actual, stacktraceEquals(expectedStackTrace, "Common-Cleaner"));
+    }
+
     @Test @Ignore
     public void jrockit6() throws Exception {
 

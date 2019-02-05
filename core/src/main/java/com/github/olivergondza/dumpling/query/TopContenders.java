@@ -128,11 +128,13 @@ public final class TopContenders implements SingleThreadSetQuery<TopContenders.R
 
                 out.print("* ");
                 contention.getKey().printHeader(out, ModelObject.Mode.HUMAN);
+                out.println();
                 int i = 1;
                 for (ProcessThread<?, ?, ?> blocked: contention.getValue()) {
 
                     out.printf("  (%d) ", i++);
                     blocked.printHeader(out, ModelObject.Mode.HUMAN);
+                    out.println();
                 }
             }
         }

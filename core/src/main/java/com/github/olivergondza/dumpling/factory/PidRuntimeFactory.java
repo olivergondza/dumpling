@@ -120,17 +120,14 @@ public class PidRuntimeFactory {
         return fromProcess(pid);
     }
 
-    private long extractPid(@Nonnull Process process) {
+    private static long extractPid(@Nonnull Process process) {
         Throwable problem = null;
         try {
-            Method toHandle = Process.class.getMethod("toHandle");
-            Object handle = toHandle.invoke(process);
-            return (Long) Class.forName("java.lang.ProcessHandle").getMethod("getPid").invoke(handle);
+            Method pidMethod = Process.class.getMethod("pid");
+            return (long) (Long) pidMethod.invoke(process);
         } catch (NoSuchMethodException e) {
             // Not Java 9 - Fallback
         } catch (IllegalAccessException e) {
-            throw new AssertionError(e);
-        } catch (ClassNotFoundException e) {
             throw new AssertionError(e);
         } catch (InvocationTargetException e) {
             Throwable cause = e.getCause();

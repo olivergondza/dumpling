@@ -409,7 +409,7 @@ public class ProcessThread<
 
             int depth = 0;
             for (StackTraceElement traceLine: stackTrace.getElements()) {
-                stream.format("%n\tat %s", traceLine);
+                printTraceElement(stream, traceLine);
 
                 if (depth == 0) {
                     if (waitingToLock != null) {
@@ -449,6 +449,18 @@ public class ProcessThread<
             if (status.isBlocked()) return "waiting to lock";
 
             throw new AssertionError(status + " thread can not declare a lock: " + name);
+        }
+
+        // Stolen from StackTraceElement#toString() in Java 8 to prevent the new fields from Java 9+ to be printed
+        // as they can not be parsed correctly at the moment. Note this affect JMX/JVM factory reparsing only - threaddump is fine
+        private void printTraceElement(PrintStream stream, StackTraceElement traceLine) {
+            String fileName = traceLine.getFileName();
+            int lineNumber = traceLine.getLineNumber();
+            String source = traceLine.isNativeMethod() ? "(Native Method)":
+                    (fileName != null && lineNumber >= 0 ?
+                            "(" + fileName + ":" + lineNumber + ")":
+                            (fileName != null ? "(" + fileName + ")": "(Unknown Source)"));
+            stream.format("%n\tat %s.%s%s", traceLine.getClassName(), traceLine.getMethodName(), source);
         }
 
         /**

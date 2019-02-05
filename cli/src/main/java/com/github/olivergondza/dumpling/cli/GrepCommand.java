@@ -27,6 +27,7 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -63,12 +64,13 @@ public class GrepCommand implements CliCommand {
 
     @Override
     public int run(ProcessStream process) throws CmdLineException {
-        Binding binding = CONFIG.getDefaultBinding(process, Arrays.<String>asList(), runtime);
+        CONFIG.setupDecorateMethods();
+        Binding binding = CONFIG.getDefaultBinding(process, Collections.<String>emptyList(), runtime);
         GroovyShell shell = new GroovyShell(binding, CONFIG.getCompilerConfiguration());
 
         CONFIG.setupDecorateMethods();
         String script = String.format(SCRIPT_STUB, predicate);
-        ThreadSet<?, ?, ?> set = (ThreadSet<?, ?, ?>) shell.run(script, "dumpling-script", Arrays.asList());
+        ThreadSet<?, ?, ?> set = (ThreadSet<?, ?, ?>) shell.run(script, "dumpling-script", Collections.emptyList());
 
         set.toString(process.out(), porcelain ? Mode.MACHINE : Mode.HUMAN);
         process.err().printf("Threads: %d%n", set.size());

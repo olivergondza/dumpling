@@ -48,21 +48,6 @@ public class JmxRuntimeFactoryTest {
 
     @Rule public DisposeRule disposer = new DisposeRule();
 
-//    @Test
-//    public void parseRemoteLogin() {
-//        RemoteConnector login = new RemoteConnector("localhost:8080");
-//        assertThat(login.host, equalTo("localhost"));
-//        assertThat(login.port, equalTo(8080));
-//        assertThat(login.username, equalTo(null));
-//        assertThat(login.password, equalTo(null));
-//
-//        login = new RemoteConnector("user:passwd@localhost:8080");
-//        assertThat(login.host, equalTo("localhost"));
-//        assertThat(login.port, equalTo(8080));
-//        assertThat(login.username, equalTo("user"));
-//        assertThat(login.password, equalTo("passwd"));
-//    }
-
     @Test
     public void jmxRemoteConnect() throws Exception {
         TestThread.JMXProcess process = runRemoteSut();
@@ -99,13 +84,6 @@ public class JmxRuntimeFactoryTest {
         }
     }
 
-    @Test
-    public void jmxLocalConnect() {
-        runLocalSut();
-        assertThreadState(new JmxRuntimeFactory().forLocalProcess(Util.currentPid()));
-        assertThreadState(new JmxRuntimeFactory().forConnectionString(String.valueOf(Util.currentPid())));
-    }
-
     @Test(expected = JmxRuntimeFactory.FailedToInitializeJmxConnection.class)
     public void connectToNonexistingLocalProcess() {
         new JmxRuntimeFactory().forLocalProcess(299);
@@ -139,10 +117,6 @@ public class JmxRuntimeFactoryTest {
         assertThat(testFrame.getClassName(), equalTo("com.github.olivergondza.dumpling.TestThread$1"));
         assertThat(testFrame.getMethodName(), equalTo("run"));
         assertThat(testFrame.getFileName(), equalTo("TestThread.java"));
-    }
-
-    private void runLocalSut() {
-        disposer.register(TestThread.runThread());
     }
 
     private TestThread.JMXProcess runRemoteSut() throws Exception {
