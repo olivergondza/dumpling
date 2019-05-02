@@ -9,4 +9,12 @@ Full thread dump OpenJDK 64-Bit Server VM (24.65-b04 mixed mode):
         at com.github.olivergondza.dumpling.factory.ThreadDumpFactoryTest$1.run(ThreadDumpFactoryTest.java:689)
         - locked <0x00000007d757b550> (a java.lang.Object)
 
+"Finalizer" #3 daemon prio=8 os_prio=0 tid=0x00007f8f741d3800 nid=0x4a3 in Object.wait() [0x00007f8f5d674000]
+   java.lang.Thread.State: WAITING (on object monitor)
+  at java.lang.Object.wait(Native Method)
+  at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:144)
+  - locked <0x00000005d203eea8> (a java.lang.ref.ReferenceQueue$Lock)
+  at java.lang.ref.ReferenceQueue.remove(ReferenceQueue.java:165)
+  at java.lang.ref.Finalizer$FinalizerThread.run(Finalizer.java:216)
+
 JNI global references: 126

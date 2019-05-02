@@ -29,10 +29,10 @@ import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.spy;
@@ -912,12 +912,18 @@ public class ThreadDumpFactoryTest {
         assertThat(blockedLocked.getWaitingToLock(), equalTo(expected));
     }
 
-    @Test // Do not require tab indented stacktraces
+    // Do not require tab indented stacktraces. The use-case here is a copy&paste between systems that does not preserve them
+    @Test
     public void doNotRequireTabs() throws Exception {
         ThreadDumpRuntime runtime = runtimeFrom("no-tabs.log");
-        ThreadDumpThread thread = runtime.getThreads().where(nameIs("main")).onlyThread();
 
-        assertThat(thread.getStackTrace().getElements().size(), equalTo(3));
+        ThreadDumpThread main = runtime.getThreads().where(nameIs("main")).onlyThread();
+        assertThat(main.getStackTrace().getElements().size(), equalTo(3));
+        assertNotNull(main.getWaitingToLock()); // Careful, fixups in effect here
+
+        ThreadDumpThread finalizer = runtime.getThreads().where(nameIs("Finalizer")).onlyThread();
+        assertThat(finalizer.getStackTrace().getElements().size(), equalTo(4));
+        assertNotNull(finalizer.getWaitingOnLock());
     }
 
     @Test

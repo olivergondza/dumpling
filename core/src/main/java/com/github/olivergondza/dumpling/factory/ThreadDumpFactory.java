@@ -343,7 +343,7 @@ public class ThreadDumpFactory {
 
     private static final WeakHashMap<String, StackTraceElement> traceElementCache = new WeakHashMap<String, StackTraceElement>();
     private StackTraceElement traceElement(String line) {
-        if (!line.startsWith("\tat ") && !line.startsWith("        at ")) return null;
+        if (!line.startsWith("\tat ") && !line.matches("(  )+at .*")) return null;
 
         StackTraceElement cached = traceElementCache.get(line);
         if (cached != null) return cached;
