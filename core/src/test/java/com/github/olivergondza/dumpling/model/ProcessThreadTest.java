@@ -30,9 +30,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 
 import org.junit.Test;
@@ -50,7 +52,7 @@ public class ProcessThreadTest {
     private final ThreadDumpFactory factory = new ThreadDumpFactory().failOnErrors(true);
 
     @Test
-    public void printLocksOnCorrectPosionInStackTrace() throws Exception {
+    public void printLocksOnCorrectPosionInStackTrace() {
         String dump = factory.fromStream(Util.resource("jstack/producer-consumer.log")).getThreads().toString();
 
         assertThat(dump, containsString(Util.formatTrace(
@@ -71,7 +73,7 @@ public class ProcessThreadTest {
     }
 
     @Test
-    public void differentWaitingVerbs() throws Exception {
+    public void differentWaitingVerbs() {
         ThreadDumpRuntime runtime = factory.fromStream(Util.resource("jstack/deadlock.log"));
         assertThat(runtime.getThreads().toString(), containsString(
                 "- waiting to lock <0x404325338> (a hudson.model.Hudson)"
@@ -84,10 +86,27 @@ public class ProcessThreadTest {
     }
 
     @Test
-    public void filterByLocks() throws Exception {
+    public void filterByLocks() {
         ThreadDumpThreadSet threads = factory.fromStream(Util.resource("jstack/producer-consumer.log")).getThreads();
         assertThat(threads.where(nameIs("blocked_thread")), equalTo(threads.where(waitingToLock("hudson.model.Queue"))));
         assertThat(threads.where(nameIs("owning_thread")), equalTo(threads.where(acquiredLock("hudson.model.Queue"))));
+    }
+
+    @Test
+    public void parkingBlockage() {
+        ThreadDumpRuntime rl = factory.fromStream(Util.resource("jstack/ReentrantLock-parking-blockage.log"));
+        ThreadDumpRuntime rlr = factory.fromStream(Util.resource("jstack/ReentrantReadWriteLock-parking-blockage-read.log"));
+        ThreadDumpRuntime rlw = factory.fromStream(Util.resource("jstack/ReentrantReadWriteLock-parking-blockage-write.log"));
+
+        verifyParkingBlockage(rl);
+        verifyParkingBlockage(rlr);
+        verifyParkingBlockage(rlw);
+    }
+
+    private void verifyParkingBlockage(ThreadDumpRuntime rl) {
+        ThreadDumpThreadSet rlb = rl.getThreads().where(nameIs("Thread-1")).onlyThread().getBlockedThreads();
+        assertThat(rlb.size(), equalTo(1));
+        assertEquals("Thread-1", rlb.onlyThread().getBlockingThread().getName());
     }
 
     @Test @SuppressWarnings("null")
@@ -129,7 +148,7 @@ public class ProcessThreadTest {
     private ThreadDumpRuntime runtime(ThreadDumpThread.Builder... builders) {
         return new ThreadDumpRuntime(
                 new LinkedHashSet<ThreadDumpThread.Builder>(Arrays.asList(builders)),
-                Arrays.asList("A Header")
+                Collections.singletonList("A Header")
         );
     }
 }

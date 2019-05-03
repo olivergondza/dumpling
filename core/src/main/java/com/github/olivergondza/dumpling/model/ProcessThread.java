@@ -178,14 +178,44 @@ public class ProcessThread<
      * Get threads that are waiting for lock held by this thread.
      */
     public @Nonnull SetType getBlockedThreads() {
+        Set<ThreadLock> acquiredMonitors = getAcquiredMonitors();
+
         Set<ThreadType> blocked = new LinkedHashSet<ThreadType>();
         for (ThreadType thread: runtime.getThreads()) {
             if (thread == this) continue;
-            if (getAcquiredLocks().contains(thread.getWaitingToLock())) {
+            if (acquiredMonitors.contains(thread.getWaitingToLock()) || isParkingBlocking(this, thread)) {
                 blocked.add(thread);
+                assert thread.getBlockingThread() == this; // Verify consistency of back references
+            } else {
+                assert thread.getBlockingThread() != this; // Verify consistency of back references
             }
         }
+
         return runtime.getThreadSet(blocked);
+    }
+
+    /**
+     * Some threads are blocked by other particular ones when parking, but not all parking threads are blocked by a
+     * thread (we can identify). This naive implementation seems to work reasonably well. These notes might be of value:
+     *
+     * Not detectable:
+     *
+     * com.google.common.util.concurrent.AbstractFuture$Sync
+     * java.util.concurrent.CountDownLatch$Sync
+     * java.util.concurrent.FutureTask
+     * java.util.concurrent.FutureTask$Sync
+     * java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject
+     * java.util.concurrent.Semaphore$NonfairSync
+     * java.util.concurrent.SynchronousQueue$TransferStack (Idle ThreadPoolExecutor$Worker)
+     *
+     * Detectable in certain situations:
+     *
+     * java.util.concurrent.locks.ReentrantLock$NonfairSync
+     * java.util.concurrent.locks.ReentrantReadWriteLock$NonfairSync (both write lock or write/read lock blockage)
+     */
+    // Cannot be a private instance method since ths and tht are statically distinct types javac fail to permit private access on - strange
+    private static boolean isParkingBlocking(ProcessThread<?, ?, ?> ths, ProcessThread<?, ?, ?> tht) {
+        return tht.getStatus().isParked() && ths.getAcquiredSynchronizers().contains(tht.getWaitingOnLock());
     }
 
     /**
@@ -211,11 +241,9 @@ public class ProcessThread<
 
         for (ThreadType thread: runtime.getThreads()) {
             if (thread == this) continue;
-            Set<ThreadLock> acquired = thread.getAcquiredLocks();
-            if (acquired.isEmpty()) continue;
-            if (acquired.contains(state.waitingToLock) || acquired.contains(state.waitingOnLock)) {
-                return thread;
-            }
+            Set<ThreadLock> acquired = thread.getAcquiredMonitors();
+            if (acquired.contains(state.waitingToLock)) return thread;
+            if (isParkingBlocking(thread, this)) return thread;
         }
 
         return null;
