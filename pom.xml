@@ -183,6 +183,7 @@
         <version>2.5.2</version>
         <configuration>
           <releaseProfiles>release</releaseProfiles>
+          <autoversionsubmodules>true</autoversionsubmodules>
         </configuration>
       </plugin>
       <plugin>
