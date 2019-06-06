@@ -39,6 +39,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.target>1.6</maven.compiler.target>
+    <maven.compiler.source>1.6</maven.compiler.source>
     <groovy.version>2.4.7</groovy.version>
   </properties>
 
@@ -199,20 +201,6 @@
           <releaseProfiles>release</releaseProfiles>
           <autoversionsubmodules>true</autoversionsubmodules>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.5.1</version>
-        <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
-        </configuration>
-        <executions>
-          <execution>
-            <id>default-compile</id>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
