@@ -110,6 +110,20 @@
     </profile>
 
     <profile>
+      <id>lambdas-support</id>
+      <activation>
+        <jdk>[1.8,)</jdk>
+      </activation>
+      <modules>
+        <module>test-utils</module>
+        <module>core</module>
+        <module>groovy-api</module>
+        <module>cli</module>
+        <module>jdk8-testsuite</module>
+      </modules>
+    </profile>
+
+    <profile>
       <id>release</id>
       <build>
         <plugins>
