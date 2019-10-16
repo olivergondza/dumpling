@@ -1,4 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# https://github.com/olivergondza/bash-strict-mode
+set -euo pipefail
+trap 's=$?; echo >&2 "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
+
 #
 # The MIT License
 #
@@ -30,27 +34,26 @@ function download() {
   latest=$(wget --no-check-certificate $metadata_url -O - 2> /dev/null | grep \<version\> | sed -e 's/^.*>\(.*\)<.*$/\1/' | tail -n 1)
   jar_url="${url_prefix}/$latest/dumpling-cli-$latest-shaded.jar"
   echo "Downloading Dumpling $latest now..." >&2
-  wget --no-check-certificate -nv -O $1 $jar_url
-  if [ $? != 0 ]; then
+  if ! wget --no-check-certificate -nv -O "$1" "$jar_url"; then
     echo "Download failed" >&2
-    rm -f $1
+    rm -f "$1"
     exit 1
   fi
 }
 
 function working_java() {
-  $1 -version > /dev/null 2>&1
-  return $?
+  "$1" -version > /dev/null 2>&1
 }
 
 function run_java() {
+  exe=""
   if working_java "java"; then
     exe="java"
   else
     # Find interpreter examining running processes
     candidates=$(ps -ef | awk '{ print $8 }' | grep bin/java\\b)
-    for candidate in $candidates; do
-      if working_java $candidate; then
+    for candidate in "$candidates"; do
+      if working_java "$candidate"; then
         exe=$candidate
         break
       fi
@@ -67,20 +70,19 @@ function run_java() {
 dir="$( cd "$( dirname "$0" )" && pwd )"
 cli="$dir/cli"
 
-if [ $(ls $cli/target/dumpling-*-shaded.jar 2> /dev/null | wc -l) != 1 ]; then
-  grep -q com.github.olivergondza.dumpling.cli.Main $cli/pom.xml 2> /dev/null
-  if [ $? == 0 ]; then
+if [ "$(ls "$cli"/target/dumpling-*-shaded.jar 2> /dev/null | wc -l)" != 1 ]; then
+  if grep -q "com.github.olivergondza.dumpling.cli.Main" "$cli/pom.xml" 2> /dev/null; then
     echo "No dumpling.jar found, building it now..." >&2
     mvn -q clean package -DskipTests
-    jar=$(ls $cli/target/dumpling-*-shaded.jar | head -n 1)
+    jar="$(ls "$cli"/target/dumpling-*-shaded.jar | head -n 1)"
   else
     jar="$dir/dumpling.jar"
-    if [ ! -f $jar ]; then
-      download $jar
+    if [ ! -f "$jar" ]; then
+      download "$jar"
     fi
   fi
 else
-  jar=$(ls $cli/target/dumpling-*-shaded.jar | head -n 1)
+  jar="$(ls "$cli"/target/dumpling-*-shaded.jar | head -n 1)"
 fi
 
 # Performance optimization for single runtime queries, provide DUMPLING_OPTS to override
