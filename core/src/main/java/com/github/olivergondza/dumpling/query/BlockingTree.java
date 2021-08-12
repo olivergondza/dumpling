@@ -196,7 +196,7 @@ public final class BlockingTree implements SingleThreadSetQuery<BlockingTree.Res
         protected void printSummary(PrintStream out) {
             out.printf("All threads: %d; Roots: %d", involved.size(), trees.size());
             if (!deadlocks.getDeadlocks().isEmpty()) {
-                out.print(' ');
+                out.print("; ");
                 deadlocks.printSummary(out);
             } else {
                 out.println();
