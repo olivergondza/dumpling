@@ -1,4 +1,6 @@
 target/
 \.*
 *.iml
+
 !.travis.yml
+!.github/
