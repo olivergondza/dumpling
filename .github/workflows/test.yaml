@@ -8,15 +8,16 @@ on:
       - master
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         java: [ '11', '17' ]
     name: Java ${{ matrix.Java }}
     steps:
     - uses: actions/checkout@v2
-    - uses: AutoModality/action-xunit-viewer@v1.0.1
+    - uses: AutoModality/action-xunit-viewer@v1
       id: xunit-viewer
+
     - uses: actions/setup-java@v3
       with:
         java-version: ${{ matrix.java }}
