@@ -45,7 +45,7 @@ class GroovyRuntimeTest {
         cc.addCompilationCustomizers(imports);
 
         GroovyShell shell = new GroovyShell(cc);
-        return shell.run("def rt = new JvmRuntimeFactory().currentRuntime();" + script, "dumpling-script", Arrays.asList());
+        return shell.run("def rt = new JvmRuntimeFactory().currentRuntime();" + script, "dumpling-script", []);
     }
 
     @Test
