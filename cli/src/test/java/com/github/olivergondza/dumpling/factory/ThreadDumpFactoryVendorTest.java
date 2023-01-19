@@ -305,11 +305,9 @@ public class ThreadDumpFactoryVendorTest {
             pidFile.deleteOnExit();
             scriptFile = File.createTempFile("dumpling", getClass().getName() + ".script");
             scriptFile.deleteOnExit();
-            PrintWriter writer = new PrintWriter(scriptFile);
-            try {
+
+            try (PrintWriter writer = new PrintWriter(scriptFile)) {
                 writer.print(script);
-            } finally {
-                writer.close();
             }
 
             ProcessBuilder pb = Util.processBuilder().command(
