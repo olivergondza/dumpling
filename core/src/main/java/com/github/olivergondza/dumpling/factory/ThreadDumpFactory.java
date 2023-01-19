@@ -30,16 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -323,6 +314,12 @@ public class ThreadDumpFactory {
             if (removed) {
                 logFixup("FIXUP: Removed owned monitor that the thread is waiting to lock", wholeThread);
             }
+        }
+
+        // https://bugs.openjdk.org/browse/JDK-8150689
+        if (status.isWaiting() && Objects.equals(waitingOnLock, waitingToLock)) {
+            waitingToLock = null;
+            logFixup("FIXUP: Erasing waiting-to lock when the thread is waiting on the same lock", wholeThread);
         }
 
         if (waitingToLock != null && !status.isBlocked()) throw new IllegalRuntimeStateException(
