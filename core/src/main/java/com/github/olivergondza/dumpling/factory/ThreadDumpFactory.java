@@ -40,6 +40,7 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,7 +76,7 @@ public class ThreadDumpFactory {
     private static final Pattern ACQUIRED_LINE = Pattern.compile("- locked " + LOCK_SUBPATTERN);
     // Oracle/OpenJdk puts unnecessary space after 'parking to wait for'
     private static final Pattern WAITING_ON_LINE = Pattern.compile("- (?:waiting on|parking to wait for ?) " + LOCK_SUBPATTERN);
-    private static final Pattern WAITING_TO_LOCK_LINE = Pattern.compile("- waiting to lock " + LOCK_SUBPATTERN);
+    private static final Pattern WAITING_TO_LOCK_LINE = Pattern.compile("- waiting to (?:lock|re-lock in wait\\(\\)) " + LOCK_SUBPATTERN);
     private static final Pattern OWNABLE_SYNCHRONIZER_LINE = Pattern.compile("- " + LOCK_SUBPATTERN);
     private static final Pattern THREAD_HEADER = Pattern.compile(
             "^\"(.*)\" ([^\\n\\r]+)(?:" + NL + "\\s+java.lang.Thread.State: ([^\\n\\r]+)(?:" + NL + "(.+))?)?",
@@ -251,7 +252,18 @@ public class ThreadDumpFactory {
                         throw new IllegalRuntimeStateException("Unable to parse ownable synchronizer: " + line);
                     }
                 }
+                continue;
             }
+
+            // Ignored
+            if (
+                    line.equals("   No compile task") ||
+                    line.startsWith("   Compiling: ")
+            ) {
+                continue;
+            }
+
+            LOG.warning("Unknown line: " + line);
         }
 
         builder.setStacktrace(new StackTrace(traceElements));
@@ -267,19 +279,17 @@ public class ThreadDumpFactory {
             }
             if (acquiredLocks.size() == 1) {
                 waitingOnLock = acquiredLocks.iterator().next();
-                LOG.fine("FIXUP: Adjust lock state from 'locked' to 'waiting on' when thread entering Object.wait()");
-                LOG.fine(wholeThread);
+                logFixup("FIXUP: Adjust lock state from 'locked' to 'waiting on' when thread entering Object.wait()", wholeThread);
             }
         }
 
         if (waitingOnLock != null) {
-            // Eliminate self lock that is presented in threaddumps when in Object.wait(). It is a matter or convenience - not really a FIXUP
-            filterMonitors(monitors, waitingOnLock);
+            // Eliminate self lock that is presented in threaddumps when in Object.wait(). It is a matter or convenience
+            boolean removed = filterMonitors(monitors, waitingOnLock); // not really a FIXUP, so no logging - too noisy
 
             // 'waiting on' is reported even when blocked re-entering the monitor. Convert it from waitingOn to waitingTo
             if (builder.getThreadStatus().isBlocked()) {
-                LOG.fine("FIXUP: Adjust lock state from 'waiting on' to 'waiting to' when thread re-acquiring the monitor after Object.wait()");
-                LOG.fine(wholeThread);
+                logFixup("FIXUP: Adjust lock state from 'waiting on' to 'waiting to' when thread re-acquiring the monitor after Object.wait()", wholeThread);
                 waitingToLock = waitingOnLock;
                 waitingOnLock = null;
             }
@@ -290,8 +300,7 @@ public class ThreadDumpFactory {
             // Presumably when entering or leaving the parked state.
             // Remove the lock instead of fixing the thread status as there is
             // no general way to tell PARKED and PARKED_TIMED apart.
-            LOG.fine("FIXUP: Remove 'waiting to' lock declared on RUNNABLE thread");
-            LOG.fine(wholeThread);
+            logFixup("FIXUP: Remove 'waiting to' lock declared on RUNNABLE thread", wholeThread);
             waitingOnLock = null;
         }
 
@@ -300,14 +309,19 @@ public class ThreadDumpFactory {
         if (status.isBlocked() && waitingToLock == null) {
             Monitor monitor = getMonitorJustAcquired(monitors);
             if (monitor != null) {
-                LOG.fine("FIXUP: Adjust lock state from 'locked' to 'waiting to' on BLOCKED thread");
-                LOG.fine(wholeThread);
+                logFixup("FIXUP: Adjust lock state from 'locked' to 'waiting to' on BLOCKED thread", wholeThread);
                 waitingToLock = monitor.getLock();
                 monitors.remove(0);
             } else {
-                LOG.fine("FIXUP: Adjust thread state from 'BLOCKED' to 'RUNNABLE' when monitor is missing");
-                LOG.fine(wholeThread);
+                logFixup("FIXUP: Adjust thread state from 'BLOCKED' to 'RUNNABLE' when monitor is missing", wholeThread);
                 builder.setThreadStatus(status = ThreadStatus.RUNNABLE);
+            }
+        }
+
+        if (status.isBlocked() && waitingToLock != null) {
+            boolean removed = filterMonitors(monitors, waitingToLock);
+            if (removed) {
+                logFixup("FIXUP: Removed owned monitor that the thread is waiting to lock", wholeThread);
             }
         }
 
@@ -326,7 +340,12 @@ public class ThreadDumpFactory {
         return builder;
     }
 
-    // get monitor acquired on current stackframe, null when it was acquired earlier or not monitor is held
+    private void logFixup(String msg, String wholeThread) {
+        Level level = failOnErrors ? Level.WARNING : Level.FINE;
+        LOG.log(level, msg + ":" + System.lineSeparator() + wholeThread);
+    }
+
+    // Get monitor acquired on current stack frame, null when it was acquired earlier or no monitor is held
     private Monitor getMonitorJustAcquired(List<ThreadLock.Monitor> monitors) {
         if (monitors.isEmpty()) return null;
         Monitor monitor = monitors.get(0);
@@ -369,18 +388,26 @@ public class ThreadDumpFactory {
         return element;
     }
 
-    private void filterMonitors(List<ThreadLock.Monitor> monitors, ThreadLock lock) {
+    private boolean filterMonitors(List<ThreadLock.Monitor> monitors, ThreadLock lock) {
+        boolean removed = false;
         for (Iterator<Monitor> it = monitors.iterator(); it.hasNext();) {
             Monitor m = it.next();
 
             if (m.getLock().equals(lock)) {
                 it.remove();
+                removed = true;
             }
         }
+        return removed;
     }
 
     private @Nonnull ThreadLock createLock(Matcher matcher) {
-        return new ThreadLock(matcher.group(2), parseLong(matcher.group(1)));
+        String lockId = matcher.group(1);
+        try {
+            return new ThreadLock(matcher.group(2), parseLong(lockId));
+        } catch (NumberFormatException ex) {
+            throw new IllegalRuntimeStateException("Failed parsing lock %s: %s", matcher.group(0), ex.getMessage());
+        }
     }
 
     private void initHeader(ThreadDumpThread.Builder builder, String attrs) {
