@@ -215,9 +215,19 @@ public class ThreadDumpFactory {
 
             Matcher waitingToMatcher = WAITING_TO_LOCK_LINE.matcher(line);
             if (waitingToMatcher.find()) {
-                if (waitingToLock != null) throw new IllegalRuntimeStateException(
-                        "Waiting to lock reported several times per single thread >>>%n%s%n<<<%n", trace
-                );
+                if (waitingToLock != null) {
+                    // https://bugs.openjdk.org/browse/JDK-8150689
+                    // Not only the BLOCKED threads in Object.wait declare to be (still) waiting on, but the frames
+                    // where they entered the monitor reports they are "waiting to re-lock", possibly repeated.
+                    if (line.contains("- waiting to re-lock in wait() <") && createLock(waitingToMatcher).getId() == waitingToLock.getId()) {
+                        logFixup("FIXUP: Ignoring repeated bogus 'waiting to re-lock in wait' lines", wholeThread);
+                        continue;
+                    }
+
+                    throw new IllegalRuntimeStateException(
+                            "Waiting to lock reported several times per single thread:%n%s%n", wholeThread
+                    );
+                }
                 waitingToLock = createLock(waitingToMatcher);
                 continue;
             }
@@ -225,7 +235,7 @@ public class ThreadDumpFactory {
             Matcher waitingOnMatcher = WAITING_ON_LINE.matcher(line);
             if (waitingOnMatcher.find()) {
                 if (waitingOnLock != null) throw new IllegalRuntimeStateException(
-                        "Waiting on lock reported several times per single thread >>>%n%s%n<<<%n", trace
+                        "Waiting on lock reported several times per single thread:%n%s%n", wholeThread
                 );
                 waitingOnLock = createLock(waitingOnMatcher);
                 continue;
@@ -317,16 +327,22 @@ public class ThreadDumpFactory {
         }
 
         // https://bugs.openjdk.org/browse/JDK-8150689
-        if (status.isWaiting() && Objects.equals(waitingOnLock, waitingToLock)) {
-            waitingToLock = null;
-            logFixup("FIXUP: Erasing waiting-to lock when the thread is waiting on the same lock", wholeThread);
+        if (status.isWaiting()) {
+            if (Objects.equals(waitingOnLock, waitingToLock)) {
+                waitingToLock = null;
+                logFixup("FIXUP: Removed waiting-to lock when the thread is waiting on the same lock", wholeThread);
+            }
+            boolean removed = filterMonitors(monitors, waitingOnLock);
+            if (removed) {
+                logFixup("FIXUP: Removed acquired monitor(s) when the thread is waiting on the same lock", wholeThread);
+            }
         }
 
         if (waitingToLock != null && !status.isBlocked()) throw new IllegalRuntimeStateException(
-                "%s thread declares waitingTo lock: >>>%n%s%n<<<%n", status, wholeThread
+                "%s thread declares they are waiting to acquire same lock:%n%s%n", status, wholeThread
         );
         if (waitingOnLock != null && !status.isWaiting() && !status.isParked()) throw new IllegalRuntimeStateException(
-                "%s thread declares waitingOn lock: >>>%n%s%n<<<%n", status, wholeThread
+                "%s thread declares it is waiting on lock:%n%s%n", status, wholeThread
         );
 
         builder.setAcquiredMonitors(monitors);
