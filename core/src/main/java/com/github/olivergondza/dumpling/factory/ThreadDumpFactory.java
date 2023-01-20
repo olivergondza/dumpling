@@ -56,7 +56,7 @@ public class ThreadDumpFactory {
 
     private static final Logger LOG = Logger.getLogger(ThreadDumpFactory.class.getName());
 
-    private static final StackTraceElement WAIT_TRACE_ELEMENT = StackTrace.nativeElement("java.lang.Object", "wait");
+    private static final StackTraceElement WAIT_TRACE_ELEMENT = StackTrace.WAIT_TRACE_ELEMENT;
 
     private static final String NL = "(?:\\r\\n|\\n)";
     private static final String LOCK_SUBPATTERN = "<(?:0x)?(\\w+)> \\(a ([^\\)]+)\\)";

@@ -38,6 +38,8 @@ import javax.annotation.Nonnull;
  */
 public class StackTrace extends ModelObject {
 
+    public static final StackTraceElement WAIT_TRACE_ELEMENT = StackTrace.nativeElement("java.lang.Object", "wait");
+
     public static StackTraceElement element(String declaringClass, String methodName, String fileName, int lineNumber) {
         return new StackTraceElement(declaringClass, methodName, fileName, lineNumber);
     }
