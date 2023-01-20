@@ -1,5 +1,10 @@
-def pid = java.lang.management.ManagementFactory.getRuntimeMXBean().getName().replaceAll(/@.*/, '');
-def writer = new java.io.PrintWriter(D.args[0]);
+import java.lang.management.ManagementFactory
+
+def pid = ManagementFactory.getRuntimeMXBean().getName().replaceAll(/@.*/, '');
+
+assert pid != null && pid != "": "Failed to get ID of the running process"
+
+def writer = new PrintWriter(D.args[0]);
 writer.println(pid);
 writer.close();
 

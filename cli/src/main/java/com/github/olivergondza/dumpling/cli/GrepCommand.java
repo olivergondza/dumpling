@@ -70,7 +70,9 @@ public class GrepCommand implements CliCommand {
 
         CONFIG.setupDecorateMethods();
         String script = String.format(SCRIPT_STUB, predicate);
-        ThreadSet<?, ?, ?> set = (ThreadSet<?, ?, ?>) shell.run(script, "dumpling-script", Collections.emptyList());
+        ThreadSet<?, ?, ?> set = (ThreadSet<?, ?, ?>) shell.run(
+                script, "dumpling-script", Collections.<String>emptyList()
+        );
 
         set.toString(process.out(), porcelain ? Mode.MACHINE : Mode.HUMAN);
         process.err().printf("Threads: %d%n", set.size());

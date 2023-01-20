@@ -474,7 +474,12 @@ public class ProcessThread<
         private String waitingVerb() {
             if (status.isParked()) return "parking to wait for";
             if (status.isWaiting()) return "waiting on";
-            if (status.isBlocked()) return "waiting to lock";
+            if (status.isBlocked()) {
+                return StackTrace.WAIT_TRACE_ELEMENT.equals(stackTrace.head())
+                        ? "waiting to re-lock in wait()" // Enhancement from JDK 12, but helps readability for every threaddump
+                        : "waiting to lock"
+                ;
+            }
 
             throw new AssertionError(status + " thread can not declare a lock: " + name);
         }

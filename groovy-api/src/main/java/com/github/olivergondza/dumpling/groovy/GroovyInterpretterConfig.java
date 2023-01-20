@@ -101,7 +101,7 @@ public class GroovyInterpretterConfig {
                 shell.run(
                         new InputStreamReader(this.getClass().getResourceAsStream("extend.groovy")),
                         "dumpling-metaclass-setup",
-                        Collections.emptyList()
+                        Collections.<String>emptyList()
                 );
             } catch (Exception ex) {
                 AssertionError err = new AssertionError("Unable to decorate object model");
