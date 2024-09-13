@@ -24,7 +24,7 @@
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <!-- switch back to mockito core once on version 5+ -->
+      <!-- switch back to mockito core once on version 5+, since java 11 -->
       <artifactId>mockito-inline</artifactId>
       <version>4.11.0</version>
       <scope>test</scope>
@@ -34,6 +34,20 @@
           <artifactId>hamcrest-core</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <!--
+    Use bytebuddy ahead of mockito's to fix Java 21 support, without migrating to mockito 5.
+    https://github.com/mockito/mockito/pull/1828
+    -->
+    <dependency>
+      <groupId>net.bytebuddy</groupId>
+      <artifactId>byte-buddy</artifactId>
+      <version>1.14.12</version>
+    </dependency>
+    <dependency>
+      <groupId>net.bytebuddy</groupId>
+      <artifactId>byte-buddy-agent</artifactId>
+      <version>1.14.12</version>
     </dependency>
   </dependencies>
 </project>
