@@ -30,6 +30,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.regex.Pattern;
 
+import com.github.olivergondza.dumpling.factory.JvmRuntimeFactory;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.Util;
@@ -49,5 +51,12 @@ public class ThreadSetTest {
         assertThat(root.size(), equalTo(1));
         assertThat(root.getBlockedThreads(), equalTo(blocked));
         assertThat(root.getBlockingThreads(), equalTo(blocking));
+    }
+
+    @Test
+    public void grep() {
+        ThreadSet threads = new JvmRuntimeFactory().currentRuntime().getThreads();
+        ThreadSet main = threads.where(it -> "main".equals(it.getName()));
+        assertThat(main.size(), CoreMatchers.equalTo(1));
     }
 }

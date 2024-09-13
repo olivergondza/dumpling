@@ -25,7 +25,7 @@
   <licenses>
     <license>
       <name>MIT license</name>
-      <url>http://www.opensource.org/licenses/mit-license.php</url>
+      <url>https://opensource.org/license/mit</url>
     </license>
   </licenses>
 
@@ -39,9 +39,10 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.target>1.7</maven.compiler.target>
-    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>1.8</maven.compiler.source>
     <groovy.version>3.0.14</groovy.version>
+    <javadoc.opts>-Xdoclint:none</javadoc.opts>
   </properties>
 
   <dependencies>
@@ -100,31 +101,6 @@
   </distributionManagement>
 
   <profiles>
-    <!-- Do not fail the build because of javadoc warnings http://stackoverflow.com/a/16743137/2091470 -->
-    <profile>
-      <id>doclint-java8-disable</id>
-      <activation>
-        <jdk>[1.8,)</jdk>
-      </activation>
-      <properties>
-        <javadoc.opts>-Xdoclint:none</javadoc.opts>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>lambdas-support</id>
-      <activation>
-        <jdk>[1.8,)</jdk>
-      </activation>
-      <modules>
-        <module>test-utils</module>
-        <module>core</module>
-        <module>groovy-api</module>
-        <module>cli</module>
-        <module>jdk8-testsuite</module>
-      </modules>
-    </profile>
-
     <profile>
       <id>release</id>
       <build>
