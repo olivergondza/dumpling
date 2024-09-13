@@ -38,7 +38,7 @@ import com.github.olivergondza.dumpling.model.jmx.JmxRuntime;
 
 final /*package*/ class Factories {
 
-    final /*package*/ static class ThreadDump implements CliRuntimeFactory<ThreadDumpRuntime> {
+    static final class ThreadDump implements CliRuntimeFactory<ThreadDumpRuntime> {
         @Override
         public @Nonnull String getKind() {
             return "threaddump";
@@ -63,15 +63,13 @@ final /*package*/ class Factories {
 
             try {
                 return factory.fromFile(new File(locator));
-            } catch (IOException ex) {
-                throw new CommandFailedException(ex);
-            } catch (IllegalRuntimeStateException ex) {
+            } catch (IOException | IllegalRuntimeStateException ex) {
                 throw new CommandFailedException(ex);
             }
         }
     }
 
-    final /*package*/ static class Jmx implements CliRuntimeFactory<JmxRuntime> {
+    static final class Jmx implements CliRuntimeFactory<JmxRuntime> {
         @Override
         public @Nonnull String getKind() {
             return "jmx";
@@ -89,15 +87,13 @@ final /*package*/ class Factories {
 
             try {
                 return factory.forConnectionString(locator);
-            } catch (FailedToInitializeJmxConnection ex) {
-                throw new CommandFailedException(ex);
-            } catch (IllegalRuntimeStateException ex) {
+            } catch (FailedToInitializeJmxConnection | IllegalRuntimeStateException ex) {
                 throw new CommandFailedException(ex);
             }
         }
     }
 
-    final /*package*/ static class Pid implements CliRuntimeFactory<ThreadDumpRuntime> {
+    static final class Pid implements CliRuntimeFactory<ThreadDumpRuntime> {
 
         @Override
         public @Nonnull String getKind() {
