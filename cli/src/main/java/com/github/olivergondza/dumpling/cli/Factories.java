@@ -37,10 +37,14 @@ import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
 import com.github.olivergondza.dumpling.model.jmx.JmxRuntime;
 import com.google.auto.service.AutoService;
 
-final /*package*/ class Factories {
+public final class Factories {
 
     @AutoService(CliRuntimeFactory.class)
-    static final class ThreadDump implements CliRuntimeFactory<ThreadDumpRuntime> {
+    public static final class ThreadDump implements CliRuntimeFactory<ThreadDumpRuntime> {
+
+        public ThreadDump() {
+        }
+
         @Override
         public @Nonnull String getKind() {
             return "threaddump";
@@ -72,7 +76,10 @@ final /*package*/ class Factories {
     }
 
     @AutoService(CliRuntimeFactory.class)
-    static final class Jmx implements CliRuntimeFactory<JmxRuntime> {
+    public static final class Jmx implements CliRuntimeFactory<JmxRuntime> {
+        public Jmx() {
+        }
+
         @Override
         public @Nonnull String getKind() {
             return "jmx";
@@ -97,7 +104,9 @@ final /*package*/ class Factories {
     }
 
     @AutoService(CliRuntimeFactory.class)
-    static final class Pid implements CliRuntimeFactory<ThreadDumpRuntime> {
+    public static final class Pid implements CliRuntimeFactory<ThreadDumpRuntime> {
+        public Pid() {
+        }
 
         @Override
         public @Nonnull String getKind() {
