@@ -28,6 +28,7 @@ import static com.github.olivergondza.dumpling.Util.only;
 import static com.github.olivergondza.dumpling.Util.pause;
 import static com.github.olivergondza.dumpling.Util.processTerminatedPrematurely;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
+import static org.hamcrest.Matchers.containsInRelativeOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
@@ -40,6 +41,7 @@ import java.util.ArrayList;
 
 import javax.annotation.Nonnull;
 
+import com.github.olivergondza.dumpling.DumplingMatchers;
 import com.github.olivergondza.dumpling.model.ModelObject;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
@@ -49,7 +51,6 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
 
 import com.github.olivergondza.dumpling.Util;
-import com.github.olivergondza.dumpling.model.StackTrace;
 import com.github.olivergondza.dumpling.model.ThreadLock;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 import com.github.olivergondza.dumpling.model.dump.ThreadDumpRuntime;
@@ -103,8 +104,11 @@ public class ThreadDumpFactoryVendorTest {
         assertThat(main.getAcquiredLocks(), Matchers.<ThreadLock>empty());
         assertThat(main.getWaitingToLock(), nullValue());
         assertThat(
-                main.getStackTrace().getElement(0),
-                equalTo(StackTrace.nativeElement("java.lang.Thread", "sleep"))
+                main.getStackTrace().toString(),
+                main.getStackTrace().getElements(),
+                containsInRelativeOrder(DumplingMatchers.frameOf(
+                        "java.lang.Thread", "sleep", null
+                ))
         );
     }
 
@@ -152,8 +156,11 @@ public class ThreadDumpFactoryVendorTest {
         assertThat(only(main.getAcquiredLocks()), equalTo(reacquiring.getWaitingToLock()));
         assertThat(reacquiring.getAcquiredLocks().size(), equalTo(2));
         assertThat(
-                reacquiring.getStackTrace().getElement(0),
-                equalTo(StackTrace.nativeElement("java.lang.Object", "wait"))
+                reacquiring.getStackTrace().toString(),
+                reacquiring.getStackTrace().getElements(),
+                containsInRelativeOrder(DumplingMatchers.frameOf(
+                        "java.lang.Object", "wait", "Object.java"
+                ))
         );
     }
 

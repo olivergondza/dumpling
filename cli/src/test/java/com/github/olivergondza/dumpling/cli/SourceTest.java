@@ -23,7 +23,9 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
+import static com.github.olivergondza.dumpling.DumplingMatchers.frameOf;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
+import static org.hamcrest.Matchers.containsInRelativeOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -75,23 +77,12 @@ public class SourceTest extends AbstractCliTest {
 
         assertThat(actual.getName(), equalTo("remotely-observed-thread"));
         assertThat(actual.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
-        // TODO other attributes
 
-        // Test class and method name only as MXBean way offer filename too while thread dump way does not
-        final StackTraceElement innerFrame = trace.getElement(0);
-        assertThat(innerFrame.getClassName(), equalTo("java.lang.Object"));
-        assertThat(innerFrame.getMethodName(), equalTo("wait"));
-
-        // Do not assert line number as it changes between JDK versions
-        final StackTraceElement waitElement = trace.getElement(1);
-        assertThat(waitElement.getClassName(), equalTo("java.lang.Object"));
-        assertThat(waitElement.getMethodName(), equalTo("wait"));
-        assertThat(waitElement.getFileName(), equalTo("Object.java"));
-
-        final StackTraceElement testFrame = trace.getElement(2);
-        assertThat(testFrame.getClassName(), equalTo("com.github.olivergondza.dumpling.TestThread$1"));
-        assertThat(testFrame.getMethodName(), equalTo("run"));
-        assertThat(testFrame.getFileName(), equalTo("TestThread.java"));
+        // Cannot do an exact match as different JDK versions have a slightly different #wait() call hierarchy
+        assertThat(trace.getElements(), containsInRelativeOrder(
+                frameOf("java.lang.Object", "wait", "Object.java"),
+                frameOf("com.github.olivergondza.dumpling.TestThread$1", "run", "TestThread.java")
+        ));
     }
 
     @Test

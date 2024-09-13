@@ -23,7 +23,7 @@ Thread.sleep(100);
 
 synchronized (a) {
     a.notify();
-    
+
     // Block forever
     Thread.sleep(60000);
 }

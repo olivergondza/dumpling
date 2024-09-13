@@ -23,6 +23,7 @@
  */
 package com.github.olivergondza.dumpling.factory;
 
+import static com.github.olivergondza.dumpling.DumplingMatchers.*;
 import static com.github.olivergondza.dumpling.TestThread.JMX_HOST;
 import static com.github.olivergondza.dumpling.TestThread.JMX_PASSWD;
 import static com.github.olivergondza.dumpling.TestThread.JMX_USER;
@@ -33,8 +34,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.fail;
 
-import org.hamcrest.Description;
-import org.hamcrest.TypeSafeMatcher;
+import com.github.olivergondza.dumpling.DumplingMatchers;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -45,8 +45,6 @@ import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.StackTrace;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 import com.github.olivergondza.dumpling.model.jmx.JmxRuntime;
-
-import java.util.Objects;
 
 public class JmxRuntimeFactoryTest {
 
@@ -110,25 +108,6 @@ public class JmxRuntimeFactoryTest {
                 frameOf("java.lang.Object", "wait", "Object.java"),
                 frameOf("com.github.olivergondza.dumpling.TestThread$1", "run", "TestThread.java")
         ));
-    }
-
-    private static TypeSafeMatcher<StackTraceElement> frameOf(String cls, String method, String source) {
-        return new TypeSafeMatcher<StackTraceElement>() {
-            @Override
-            protected boolean matchesSafely(StackTraceElement item) {
-                if (!Objects.equals(cls, item.getClassName())) return false;
-                if (!Objects.equals(method, item.getMethodName())) return false;
-                if (source != null && !Objects.equals(source, item.getFileName())) return false;
-
-                return true;
-            }
-
-            @Override
-            public void describeTo(Description description) {
-                StackTraceElement expected = new StackTraceElement(cls, method, source, -1);
-                description.appendText("Stack frame of ").appendValue(expected);
-            }
-        };
     }
 
     private TestThread.JMXProcess runRemoteSut() throws Exception {

@@ -15,6 +15,11 @@
       <artifactId>junit</artifactId>
       <version>4.13.2</version>
     </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-core</artifactId>
+      <version>3.0</version>
+    </dependency>
   </dependencies>
 
   <build>
