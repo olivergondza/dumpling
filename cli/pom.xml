@@ -30,7 +30,7 @@
     <dependency>
       <groupId>org.reflections</groupId>
       <artifactId>reflections</artifactId>
-      <version>0.9.10</version>
+      <version>0.10.2</version>
       <exclusions>
         <exclusion>
           <groupId>com.google.code.findbugs</groupId>
@@ -82,6 +82,7 @@
             </goals>
             <configuration>
               <shadedArtifactAttached>true</shadedArtifactAttached>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
             </configuration>
           </execution>
         </executions>
