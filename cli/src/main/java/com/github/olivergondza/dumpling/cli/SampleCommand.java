@@ -23,6 +23,7 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
+import com.google.auto.service.AutoService;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
@@ -40,6 +41,7 @@ import java.util.regex.Pattern;
 /**
  * @author ogondza.
  */
+@AutoService(CliCommand.class)
 public class SampleCommand implements CliCommand {
 
     private int number = -1;

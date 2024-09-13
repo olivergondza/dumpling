@@ -26,7 +26,9 @@ package com.github.olivergondza.dumpling.cli;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -39,7 +41,6 @@ import org.kohsuke.args4j.OptionHandlerRegistry;
 import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Parameters;
 import org.kohsuke.args4j.spi.Setter;
-import org.reflections.Reflections;
 
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 
@@ -156,42 +157,18 @@ public class Main {
         }
 
         /*package*/ static @Nonnull List<CliRuntimeFactory<?>> getFactories() {
-            List<CliRuntimeFactory<?>> factories = new ArrayList<CliRuntimeFactory<?>>();
-            for (Class<? extends CliRuntimeFactory<?>> type: factoryTypes()) {
-                factories.add(instantiateFactory(type));
+            List<CliRuntimeFactory<?>> out = new ArrayList<>();
+            for (CliRuntimeFactory<?> cliRuntimeFactory : ServiceLoader.load(CliRuntimeFactory.class)) {
+                out.add(cliRuntimeFactory);
             }
-            return factories;
+            return out;
         }
 
         public static @CheckForNull CliRuntimeFactory<?> getFactory(String name) {
-            for (Class<? extends CliRuntimeFactory<?>> type: factoryTypes()) {
-                CliRuntimeFactory<?> factory = instantiateFactory(type);
+            for (CliRuntimeFactory<?> factory : getFactories()) {
                 if (name.equals(factory.getKind())) return factory;
             }
-
             return null;
-        }
-
-        @SuppressWarnings({"rawtypes", "unchecked"})
-        private static Set<Class<? extends CliRuntimeFactory<?>>> factoryTypes() {
-            return (Set) new Reflections("com.github.olivergondza.dumpling").getSubTypesOf(CliRuntimeFactory.class);
-        }
-
-        private static CliRuntimeFactory<?> instantiateFactory(Class<? extends CliRuntimeFactory<?>> type) {
-            try {
-
-                return type.newInstance();
-            } catch (InstantiationException ex) {
-
-                AssertionError e = new AssertionError("Cli handler " + type.getName() + " does not declare default constructor");
-                e.initCause(ex);
-                throw e;
-            } catch (IllegalAccessException ex) {
-
-                AssertionError e = new AssertionError("Cli handler " + type.getName() + " does not declare default constructor");
-                e.initCause(ex);
-                throw e;
-            }
         }
 
         /*package*/ static final class UnknownRuntimeKind extends CmdLineException {

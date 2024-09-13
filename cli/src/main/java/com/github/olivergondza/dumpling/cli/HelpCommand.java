@@ -32,10 +32,12 @@ import java.util.TreeSet;
 
 import javax.annotation.Nonnull;
 
+import com.google.auto.service.AutoService;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
+@AutoService(CliCommand.class)
 public class HelpCommand implements CliCommand {
 
     @Argument(usage = "Print detailed usage", metaVar = "COMMAND")

@@ -25,6 +25,7 @@ package com.github.olivergondza.dumpling.query;
 
 import javax.annotation.Nonnull;
 
+import com.google.auto.service.AutoService;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
@@ -33,6 +34,7 @@ import com.github.olivergondza.dumpling.cli.ProcessStream;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.query.Deadlocks.Result;
 
+@AutoService(CliCommand.class)
 public final class DeadlocksCommand implements CliCommand {
 
     @Option(name = "-i", aliases = {"--in"}, required = true, usage = "Input for process runtime")

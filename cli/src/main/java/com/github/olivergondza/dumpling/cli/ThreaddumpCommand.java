@@ -23,6 +23,7 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
+import com.google.auto.service.AutoService;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
@@ -36,6 +37,7 @@ import javax.annotation.Nonnull;
  *
  * @author ogondza
  */
+@AutoService(CliCommand.class)
 public class ThreaddumpCommand implements CliCommand {
 
     @Option(name = "-i", aliases = {"--in"}, usage = "Input for process runtime")

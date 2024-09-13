@@ -23,6 +23,7 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
+import com.google.auto.service.AutoService;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 
@@ -40,6 +41,7 @@ import com.github.olivergondza.dumpling.model.ThreadSet;
 
 import javax.annotation.Nonnull;
 
+@AutoService(CliCommand.class)
 public class GrepCommand implements CliCommand {
 
     private static final InterpretterConfig CONFIG = new InterpretterConfig();

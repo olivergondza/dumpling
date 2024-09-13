@@ -24,6 +24,7 @@
 package com.github.olivergondza.dumpling.cli;
 
 import java.util.HashSet;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import javax.annotation.CheckForNull;
@@ -35,7 +36,6 @@ import org.kohsuke.args4j.OptionDef;
 import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Parameters;
 import org.kohsuke.args4j.spi.Setter;
-import org.reflections.Reflections;
 
 public class CliCommandOptionHandler extends OptionHandler<CliCommand> {
 
@@ -88,27 +88,10 @@ public class CliCommandOptionHandler extends OptionHandler<CliCommand> {
     }
 
     /*package*/ static @Nonnull Set<? extends CliCommand> getAllHandlers() {
-        Reflections reflections = new Reflections("com.github.olivergondza.dumpling");
-        final Set<Class<? extends CliCommand>> types = reflections.getSubTypesOf(CliCommand.class);
-
-        final Set<CliCommand> handlers = new HashSet<CliCommand>();
-        for (Class<? extends CliCommand> type: types) {
-            try {
-
-                handlers.add(type.newInstance());
-            } catch (InstantiationException ex) {
-
-                AssertionError e = new AssertionError("Cli command " + type.getName() + " does not declare default contructor");
-                e.initCause(ex);
-                throw e;
-            } catch (IllegalAccessException ex) {
-
-                AssertionError e = new AssertionError("Cli command " + type.getName() + " does not declare default contructor");
-                e.initCause(ex);
-                throw e;
-            }
+        final Set<CliCommand> handlers = new HashSet<>();
+        for (CliCommand cliCommand : ServiceLoader.load(CliCommand.class)) {
+            handlers.add(cliCommand);
         }
-
         return handlers;
     }
 }

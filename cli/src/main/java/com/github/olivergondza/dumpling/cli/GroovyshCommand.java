@@ -31,6 +31,7 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import com.google.auto.service.AutoService;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
 import org.kohsuke.args4j.Argument;
@@ -47,6 +48,7 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
  *
  * @author ogondza
  */
+@AutoService(CliCommand.class)
 public class GroovyshCommand implements CliCommand {
 
     private static final InterpretterConfig CONFIG = new InterpretterConfig();

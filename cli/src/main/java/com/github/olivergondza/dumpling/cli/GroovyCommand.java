@@ -23,6 +23,7 @@
  */
 package com.github.olivergondza.dumpling.cli;
 
+import com.google.auto.service.AutoService;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 
@@ -53,6 +54,7 @@ import com.github.olivergondza.dumpling.model.ProcessRuntime;
  *
  * @author ogondza
  */
+@AutoService(CliCommand.class)
 public class GroovyCommand implements CliCommand {
 
     private static final InterpretterConfig CONFIG = new InterpretterConfig();

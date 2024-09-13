@@ -27,7 +27,6 @@ import javax.annotation.Nonnull;
 
 import org.kohsuke.args4j.CmdLineException;
 
-
 /**
  * CLI handler, usually a query invoker.
  *
