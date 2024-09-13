@@ -199,12 +199,15 @@ public enum ThreadStatus {
 
     private static @Nonnull ThreadStatus waitingState(boolean timed, @CheckForNull StackTraceElement head) {
         if (head == null) return ThreadStatus.UNKNOWN;
-        if ("sleep".equals(head.getMethodName()) && "java.lang.Thread".equals(head.getClassName())) return SLEEPING;
-        if ("wait".equals(head.getMethodName()) && "java.lang.Object".equals(head.getClassName())) {
+        String method = head.getMethodName();
+        String cls = head.getClassName();
+
+        if ("java.lang.Thread".equals(cls) && ("sleep".equals(method) || "sleep0".equals(method))) return SLEEPING;
+        if ("java.lang.Object".equals(cls) && ("wait".equals(method) || "wait0".equals(method))) {
             return timed ? IN_OBJECT_WAIT_TIMED : IN_OBJECT_WAIT;
         }
 
-        if ("park".equals(head.getMethodName()) && UNSAFE.contains(head.getClassName())) {
+        if ("park".equals(method) && UNSAFE.contains(cls)) {
             return timed ? PARKED_TIMED : PARKED;
         }
 

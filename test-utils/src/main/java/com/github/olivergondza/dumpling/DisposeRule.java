@@ -35,22 +35,17 @@ import org.junit.runners.model.Statement;
  */
 public class DisposeRule implements TestRule {
 
-    private final List<Disposable> discard = new ArrayList<Disposable>();
+    private final List<Disposable> discard = new ArrayList<>();
 
     public <T extends Thread> T register(final T thread) {
-        if (thread == null) return thread;
+        if (thread == null) return null;
 
-        discard.add(new Disposable() {
-            @Override @SuppressWarnings("deprecation")
-            public void dispose() throws Exception {
-                thread.stop();
-            }
-        });
+        discard.add(thread::interrupt);
         return thread;
     }
 
     public <T extends Process> T register(final T process) {
-        if (process == null) return process;
+        if (process == null) return null;
 
         discard.add(new Disposable() {
             @Override

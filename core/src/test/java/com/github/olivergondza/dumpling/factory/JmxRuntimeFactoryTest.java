@@ -27,22 +27,26 @@ import static com.github.olivergondza.dumpling.TestThread.JMX_HOST;
 import static com.github.olivergondza.dumpling.TestThread.JMX_PASSWD;
 import static com.github.olivergondza.dumpling.TestThread.JMX_USER;
 import static com.github.olivergondza.dumpling.model.ProcessThread.nameIs;
+import static org.hamcrest.Matchers.containsInRelativeOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.fail;
 
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.Rule;
 import org.junit.Test;
 
 import com.github.olivergondza.dumpling.DisposeRule;
-import com.github.olivergondza.dumpling.Util;
 import com.github.olivergondza.dumpling.TestThread;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ProcessThread;
 import com.github.olivergondza.dumpling.model.StackTrace;
 import com.github.olivergondza.dumpling.model.ThreadStatus;
 import com.github.olivergondza.dumpling.model.jmx.JmxRuntime;
+
+import java.util.Objects;
 
 public class JmxRuntimeFactoryTest {
 
@@ -100,23 +104,31 @@ public class JmxRuntimeFactoryTest {
 
         assertThat(actual.getName(), equalTo("remotely-observed-thread"));
         assertThat(actual.getStatus(), equalTo(ThreadStatus.IN_OBJECT_WAIT));
-        // TODO other attributes
 
-        // Test class and method name only as MXBean way offer filename too while thread dump way does not
-        final StackTraceElement innerFrame = trace.getElement(0);
-        assertThat(innerFrame.getClassName(), equalTo("java.lang.Object"));
-        assertThat(innerFrame.getMethodName(), equalTo("wait"));
+        // Cannot do an exact match as different JDK versions have a slightly different #wait() call hierarchy
+        assertThat(trace.getElements(), containsInRelativeOrder(
+                frameOf("java.lang.Object", "wait", "Object.java"),
+                frameOf("com.github.olivergondza.dumpling.TestThread$1", "run", "TestThread.java")
+        ));
+    }
 
-        // Do not assert line number as it changes between JDK versions
-        final StackTraceElement waitElement = trace.getElement(1);
-        assertThat(waitElement.getClassName(), equalTo("java.lang.Object"));
-        assertThat(waitElement.getMethodName(), equalTo("wait"));
-        assertThat(waitElement.getFileName(), equalTo("Object.java"));
+    private static TypeSafeMatcher<StackTraceElement> frameOf(String cls, String method, String source) {
+        return new TypeSafeMatcher<StackTraceElement>() {
+            @Override
+            protected boolean matchesSafely(StackTraceElement item) {
+                if (!Objects.equals(cls, item.getClassName())) return false;
+                if (!Objects.equals(method, item.getMethodName())) return false;
+                if (source != null && !Objects.equals(source, item.getFileName())) return false;
 
-        final StackTraceElement testFrame = trace.getElement(2);
-        assertThat(testFrame.getClassName(), equalTo("com.github.olivergondza.dumpling.TestThread$1"));
-        assertThat(testFrame.getMethodName(), equalTo("run"));
-        assertThat(testFrame.getFileName(), equalTo("TestThread.java"));
+                return true;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                StackTraceElement expected = new StackTraceElement(cls, method, source, -1);
+                description.appendText("Stack frame of ").appendValue(expected);
+            }
+        };
     }
 
     private TestThread.JMXProcess runRemoteSut() throws Exception {

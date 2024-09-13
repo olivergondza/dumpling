@@ -57,19 +57,16 @@ import com.sun.tools.attach.VirtualMachine;
 /*package*/ final class JmxLocalProcessConnector {
     private static final String CONNECTOR_ADDRESS = "com.sun.management.jmxremote.localConnectorAddress";
 
-    // This has to be called by reflection so it can as well be private to stress this is not an API
+    // This has to be called by reflection, so it can as well be private to stress this is not an API
     @SuppressWarnings("unused")
     private static MBeanServerConnection getServerConnection(int pid) {
 
         try {
             JMXServiceURL serviceURL = new JMXServiceURL(connectorAddress(pid));
             return JMXConnectorFactory.connect(serviceURL).getMBeanServerConnection();
-        } catch (MalformedURLException ex) {
-            throw failed("JMX connection failed", ex);
         } catch (IOException ex) {
             throw failed("JMX connection failed", ex);
         }
-
     }
 
     private static VirtualMachine getVm(int pid) {
@@ -96,9 +93,7 @@ import com.sun.tools.attach.VirtualMachine;
             return (String) method.invoke(vm);
         } catch (NoSuchMethodException ex) {
             diag.add("VirtualMachine.startLocalManagementAgent not supported");
-        } catch (InvocationTargetException ex) {
-            throw new AssertionError(ex);
-        } catch (IllegalAccessException ex) {
+        } catch (InvocationTargetException | IllegalAccessException ex) {
             throw new AssertionError(ex);
         }
 
@@ -119,9 +114,7 @@ import com.sun.tools.attach.VirtualMachine;
             diag.add("not a HotSpot VM - jcmd likely unsupported");
         } catch (NoSuchMethodException e) {
             diag.add("HotSpot VM with no jcmd support");
-        } catch (InvocationTargetException e) {
-            throw new AssertionError(e);
-        } catch (IllegalAccessException e) {
+        } catch (InvocationTargetException | IllegalAccessException e) {
             throw new AssertionError(e);
         }
 
@@ -170,9 +163,7 @@ import com.sun.tools.attach.VirtualMachine;
             diag.add("not an IBM JDK - unable to create local JMX connection; try HOSTNAME:PORT instead");
         } catch (NoSuchMethodException e) {
             diag.add("IBM JDK does not seem to support attach: " + e.getMessage());
-        } catch (InvocationTargetException e) {
-            throw new AssertionError(e);
-        } catch (IllegalAccessException e) {
+        } catch (InvocationTargetException | IllegalAccessException e) {
             throw new AssertionError(e);
         }
 

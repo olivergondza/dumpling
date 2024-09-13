@@ -176,15 +176,8 @@ public final class JmxRuntimeFactory {
                 Throwable cause = ex.getCause(); // Unwrap and rethrow as FailedToInitializeJmxConnection if necessary
                 if (cause instanceof FailedToInitializeJmxConnection) throw (FailedToInitializeJmxConnection) cause;
                 throw new FailedToInitializeJmxConnection(cause);
-            } catch (ClassNotFoundException ex) {
-                throw assertionError("Unable to invoke " + CONNECTOR_CLASS_NAME, ex);
-            } catch (NoSuchMethodException ex) {
-                throw assertionError("Unable to invoke " + CONNECTOR_CLASS_NAME, ex);
-            } catch (SecurityException ex) {
-                throw assertionError("Unable to invoke " + CONNECTOR_CLASS_NAME, ex);
-            } catch (IllegalAccessException ex) {
-                throw assertionError("Unable to invoke " + CONNECTOR_CLASS_NAME, ex);
-            } catch (IllegalArgumentException ex) {
+            } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException |
+                     IllegalArgumentException ex) {
                 throw assertionError("Unable to invoke " + CONNECTOR_CLASS_NAME, ex);
             }
         }
