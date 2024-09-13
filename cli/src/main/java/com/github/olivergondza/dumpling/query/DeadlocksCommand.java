@@ -41,11 +41,13 @@ public final class DeadlocksCommand implements CliCommand {
     @Option(name = "--show-stack-traces", usage = "List stack traces of all threads involved")
     private boolean showStackTraces = false;
 
+    @Nonnull
     @Override
     public String getName() {
         return "deadlocks";
     }
 
+    @Nonnull
     @Override
     public String getDescription() {
         return "Detect cycles of blocked threads";

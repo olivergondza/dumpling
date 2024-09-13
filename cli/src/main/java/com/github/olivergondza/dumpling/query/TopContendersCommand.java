@@ -41,11 +41,13 @@ public final class TopContendersCommand implements CliCommand {
     @Option(name = "--show-stack-traces", usage = "List stack traces of all threads involved")
     private boolean showStackTraces = false;
 
+    @Nonnull
     @Override
     public String getName() {
         return "top-contenders";
     }
 
+    @Nonnull
     @Override
     public String getDescription() {
         return "Detect top-contenders, threads that block largest number of other threads";

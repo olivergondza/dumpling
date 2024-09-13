@@ -29,6 +29,8 @@ import org.kohsuke.args4j.Option;
 import com.github.olivergondza.dumpling.model.ModelObject.Mode;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 
+import javax.annotation.Nonnull;
+
 /**
  * Print threaddump as string.
  *
@@ -42,18 +44,20 @@ public class ThreaddumpCommand implements CliCommand {
     @Option(name = "-p", aliases = {"--porcelain"}, usage = "Show in a format designed for machine consumption")
     private boolean porcelain = false;
 
+    @Nonnull
     @Override
     public String getName() {
         return "threaddump";
     }
 
+    @Nonnull
     @Override
     public String getDescription() {
         return "Print runtime as string";
     }
 
     @Override
-    public int run(ProcessStream process) throws CmdLineException {
+    public int run(@Nonnull ProcessStream process) throws CmdLineException {
         runtime.toString(process.out(), porcelain ? Mode.MACHINE : Mode.HUMAN);
         return 0;
     }

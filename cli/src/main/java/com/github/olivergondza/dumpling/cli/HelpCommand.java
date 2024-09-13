@@ -41,11 +41,13 @@ public class HelpCommand implements CliCommand {
     @Argument(usage = "Print detailed usage", metaVar = "COMMAND")
     private String commandName;
 
+    @Nonnull
     @Override
     public String getName() {
         return "help";
     }
 
+    @Nonnull
     @Override
     public String getDescription() {
         return "Print dumpling usage";

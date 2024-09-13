@@ -38,6 +38,8 @@ import com.github.olivergondza.dumpling.model.ModelObject.Mode;
 import com.github.olivergondza.dumpling.model.ProcessRuntime;
 import com.github.olivergondza.dumpling.model.ThreadSet;
 
+import javax.annotation.Nonnull;
+
 public class GrepCommand implements CliCommand {
 
     private static final InterpretterConfig CONFIG = new InterpretterConfig();
@@ -52,18 +54,20 @@ public class GrepCommand implements CliCommand {
     @Argument(metaVar = "PREDICATE", usage = "Groovy expression used as a filtering criteria", required = true)
     private String predicate;
 
+    @Nonnull
     @Override
     public String getName() {
         return "grep";
     }
 
+    @Nonnull
     @Override
     public String getDescription() {
         return "Filter threads using groovy expression";
     }
 
     @Override
-    public int run(ProcessStream process) throws CmdLineException {
+    public int run(@Nonnull ProcessStream process) throws CmdLineException {
         CONFIG.setupDecorateMethods();
         Binding binding = CONFIG.getDefaultBinding(process, Collections.<String>emptyList(), runtime);
         GroovyShell shell = new GroovyShell(binding, CONFIG.getCompilerConfiguration());

@@ -57,11 +57,13 @@ public class GroovyshCommand implements CliCommand {
     @Argument(metaVar = "SCRIPT_ARGS", multiValued = true, usage = "Arguments to be passed to the script")
     private @Nonnull List<String> args = new ArrayList<String>();
 
+    @Nonnull
     @Override
     public String getName() {
         return "groovysh";
     }
 
+    @Nonnull
     @Override
     public String getDescription() {
         return "Open Groovy shell to inspect runtime";

@@ -72,18 +72,20 @@ public class GroovyCommand implements CliCommand {
     @Argument(metaVar = "SCRIPT_ARGS", multiValued = true, usage = "Arguments to be passed to the script")
     private @Nonnull List<String> args = new ArrayList<String>();
 
+    @Nonnull
     @Override
     public String getName() {
         return "groovy";
     }
 
+    @Nonnull
     @Override
     public String getDescription() {
         return "Execute groovy script as a query";
     }
 
     @Override
-    public int run(ProcessStream process) throws CmdLineException {
+    public int run(@Nonnull ProcessStream process) throws CmdLineException {
         Binding binding = CONFIG.getDefaultBinding(process, args, runtime);
         if (runtime != null) {
             binding.setProperty("runtime", runtime); // Compatibility

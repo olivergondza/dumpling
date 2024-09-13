@@ -44,6 +44,7 @@ final /*package*/ class Factories {
             return "threaddump";
         }
 
+        @Nonnull
         @Override
         public String getDescription() {
             return "Parse threaddrump from file, or standard input when '-' provided as a locator.";
@@ -76,6 +77,7 @@ final /*package*/ class Factories {
             return "jmx";
         }
 
+        @Nonnull
         @Override
         public String getDescription() {
             return "Create runtime from JMX process identified by PID or HOST:PORT combination. Credentials can be provided as USER:PASSWORD@HOST:PORT.";
@@ -102,13 +104,14 @@ final /*package*/ class Factories {
             return "process";
         }
 
+        @Nonnull
         @Override
         public String getDescription() {
             return "Create runtime from running process identified by PID.";
         }
 
         @Override
-        public @Nonnull ThreadDumpRuntime createRuntime(String locator, ProcessStream streams) throws CommandFailedException {
+        public @Nonnull ThreadDumpRuntime createRuntime(@Nonnull String locator, @Nonnull ProcessStream streams) throws CommandFailedException {
             PidRuntimeFactory factory = new PidRuntimeFactory();
             try {
                 return factory.fromProcess(pid(locator));

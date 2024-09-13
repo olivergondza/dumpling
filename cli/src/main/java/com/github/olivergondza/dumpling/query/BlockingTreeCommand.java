@@ -41,11 +41,13 @@ public final class BlockingTreeCommand implements CliCommand {
     @Option(name = "--show-stack-traces", usage = "List stack traces of all threads involved")
     private boolean showStackTraces = false;
 
+    @Nonnull
     @Override
     public String getName() {
         return "blocking-tree";
     }
 
+    @Nonnull
     @Override
     public String getDescription() {
         return "Print trees of blocking threads";
